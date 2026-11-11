@@ -26,6 +26,7 @@ export const StaffTeamPage: React.FC = () => {
     currentEmployee: s.currentEmployee,
   }));
 
+  const isGerant = currentEmployee?.role === 'gerant';
   const activeStation = stations.find(s => s.id === selectedStationId) || stations[0];
   const authorName = currentEmployee?.name || 'Direction Station';
 
@@ -51,6 +52,8 @@ export const StaffTeamPage: React.FC = () => {
   const [newEmpTitle, setNewEmpTitle] = useState('Pompiste de piste');
   const [newEmpPin, setNewEmpPin] = useState('1927');
   const [newEmpStationId, setNewEmpStationId] = useState(selectedStationId);
+  const [newEmpAssignedPumps, setNewEmpAssignedPumps] = useState<number[]>([1]);
+  const [newEmpAssignedScope, setNewEmpAssignedScope] = useState('Pompe #1 (Piste)');
 
   // Edit employee form
   const [editEmpTitle, setEditEmpTitle] = useState('');
@@ -58,6 +61,8 @@ export const StaffTeamPage: React.FC = () => {
   const [editEmpStatus, setEditEmpStatus] = useState<Employee['status']>('active');
   const [editEmpStationId, setEditEmpStationId] = useState('');
   const [editEmpReason, setEditEmpReason] = useState('');
+  const [editEmpAssignedPumps, setEditEmpAssignedPumps] = useState<number[]>([]);
+  const [editEmpAssignedScope, setEditEmpAssignedScope] = useState('');
 
   const handleCreateEmployee = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,11 +86,15 @@ export const StaffTeamPage: React.FC = () => {
         status: 'active',
         stationId: newEmpStationId || selectedStationId,
         pin: newEmpPin || '1927',
+        assignedPumps: newEmpRole === 'pompiste' ? newEmpAssignedPumps : undefined,
+        assignedScope: newEmpAssignedScope.trim() || undefined,
       },
       authorName
     );
 
     setNewEmpName('');
+    setNewEmpAssignedPumps([1]);
+    setNewEmpAssignedScope('Pompe #1 (Piste)');
     setIsAddModalOpen(false);
   };
 
@@ -95,6 +104,8 @@ export const StaffTeamPage: React.FC = () => {
     setEditEmpPin(emp.pin);
     setEditEmpStatus(emp.status);
     setEditEmpStationId(emp.stationId);
+    setEditEmpAssignedPumps(emp.assignedPumps || []);
+    setEditEmpAssignedScope(emp.assignedScope || '');
     setEditEmpReason('Ajustement des habilitations et affectations');
   };
 
@@ -109,6 +120,8 @@ export const StaffTeamPage: React.FC = () => {
         pin: editEmpPin,
         status: editEmpStatus,
         stationId: editEmpStationId,
+        assignedPumps: editEmpAssignedPumps,
+        assignedScope: editEmpAssignedScope.trim() || undefined,
       },
       authorName,
       editEmpReason.trim() || 'Modification fiche collaborateur'
@@ -186,14 +199,21 @@ export const StaffTeamPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="yellow"
-            size="md"
-            icon={<Plus className="w-4 h-4" />}
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            Recruter un agent
-          </Button>
+          {isGerant ? (
+            <Button
+              variant="yellow"
+              size="md"
+              icon={<Plus className="w-4 h-4" />}
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              Recruter un agent
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 shadow-2xs">
+              <Lock className="w-3.5 h-3.5 text-slate-500" />
+              <span>Organigramme en consultation (Gestion RH réservée au Gérant)</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -233,50 +253,60 @@ export const StaffTeamPage: React.FC = () => {
                   />
                 </div>
 
-                {/* PIN Code & Status Bar */}
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 text-slate-500">
-                    <Lock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>PIN Connexion :</span>
-                  </div>
-                  <span className="font-mono font-bold text-[#0B3A82] bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                    {emp.pin || '••••'}
-                  </span>
+                {/* Scope of Responsibility */}
+                <div className="p-2.5 rounded-xl bg-blue-50/70 border border-blue-100 text-xs">
+                  <span className="text-[10px] font-bold text-blue-500 uppercase block">Périmètre sous gestion</span>
+                  <span className="font-extrabold text-[#0B3A82]">{emp.assignedScope || (emp.assignedPumps ? `Pompe #${emp.assignedPumps.join(', #')}` : 'Service de station')}</span>
                 </div>
 
-                {/* Actions */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => store.toggleEmployeeStatus(emp.id)}
-                    className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors ${
-                      emp.status === 'active'
-                        ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
-                        : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
-                    }`}
-                  >
-                    {emp.status === 'active' ? 'Pause' : 'Activer'}
-                  </button>
-
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(emp)}
-                      className="p-1.5 rounded-lg bg-blue-50 text-[#1668E3] hover:bg-blue-100 transition-colors"
-                      title="Modifier les informations"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeletingEmpId(emp.id)}
-                      className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
-                      title="Révoquer / Désactiver l'agent"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                {/* PIN Code & Status Bar (Gérant Only) */}
+                {isGerant && (
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 text-slate-500">
+                      <Lock className="w-3.5 h-3.5 text-slate-400" />
+                      <span>PIN Connexion :</span>
+                    </div>
+                    <span className="font-mono font-bold text-[#0B3A82] bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                      {emp.pin || '••••'}
+                    </span>
                   </div>
-                </div>
+                )}
+
+                {/* Actions (Gérant Only) */}
+                {isGerant && (
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => store.toggleEmployeeStatus(emp.id)}
+                      className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors ${
+                        emp.status === 'active'
+                          ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+                          : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+                      }`}
+                    >
+                      {emp.status === 'active' ? 'Pause' : 'Activer'}
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(emp)}
+                        className="p-1.5 rounded-lg bg-blue-50 text-[#1668E3] hover:bg-blue-100 transition-colors"
+                        title="Modifier les informations"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeletingEmpId(emp.id)}
+                        className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                        title="Révoquer / Désactiver l'agent"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -370,6 +400,51 @@ export const StaffTeamPage: React.FC = () => {
             </div>
           </div>
 
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Périmètre / Zone de responsabilité</label>
+            <input
+              type="text"
+              value={newEmpAssignedScope}
+              onChange={e => setNewEmpAssignedScope(e.target.value)}
+              placeholder="Ex: Pompe #1 (Piste), Caisse Boutique, Piste centrale..."
+              className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-300 text-sm"
+            />
+          </div>
+
+          {newEmpRole === 'pompiste' && (
+            <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-100 space-y-2">
+              <label className="block text-xs font-bold text-[#0B3A82]">
+                Pompe(s) assignée(s) en gestion active exclusive :
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[1, 2, 3, 4, 5, 6].map(pNum => (
+                  <label
+                    key={pNum}
+                    className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-bold cursor-pointer transition-all ${
+                      newEmpAssignedPumps.includes(pNum)
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={newEmpAssignedPumps.includes(pNum)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setNewEmpAssignedPumps([...newEmpAssignedPumps, pNum]);
+                        } else {
+                          setNewEmpAssignedPumps(newEmpAssignedPumps.filter(p => p !== pNum));
+                        }
+                      }}
+                      className="rounded text-blue-600"
+                    />
+                    <span>Pompe #{pNum}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="pt-2 flex justify-end gap-2">
             <Button variant="ghost" size="md" onClick={() => setIsAddModalOpen(false)}>
               Annuler
@@ -441,6 +516,51 @@ export const StaffTeamPage: React.FC = () => {
               ))}
             </select>
           </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Périmètre / Zone de responsabilité</label>
+            <input
+              type="text"
+              value={editEmpAssignedScope}
+              onChange={e => setEditEmpAssignedScope(e.target.value)}
+              placeholder="Ex: Pompe #1 (Super), Caisse #1, Piste Sud..."
+              className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-300 text-sm"
+            />
+          </div>
+
+          {editingEmp?.role === 'pompiste' && (
+            <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-100 space-y-2">
+              <label className="block text-xs font-bold text-[#0B3A82]">
+                Pompe(s) assignée(s) en gestion active exclusive :
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[1, 2, 3, 4, 5, 6].map(pNum => (
+                  <label
+                    key={pNum}
+                    className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-bold cursor-pointer transition-all ${
+                      editEmpAssignedPumps.includes(pNum)
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={editEmpAssignedPumps.includes(pNum)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setEditEmpAssignedPumps([...editEmpAssignedPumps, pNum]);
+                        } else {
+                          setEditEmpAssignedPumps(editEmpAssignedPumps.filter(p => p !== pNum));
+                        }
+                      }}
+                      className="rounded text-blue-600"
+                    />
+                    <span>Pompe #{pNum}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">

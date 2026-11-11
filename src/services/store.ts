@@ -47,7 +47,7 @@ export interface AppState {
   auditLogs: AuditLogEntry[];
 }
 
-const STORAGE_KEY = 'stationpro_state_v3';
+const STORAGE_KEY = 'stationpro_state_v4';
 
 function loadInitialState(): AppState {
   const seed = getSeedState();
@@ -290,7 +290,24 @@ export const store = {
       p.number === params.pumpNumber ? { ...p, litersToday: p.litersToday + params.quantityLiters } : p
     );
 
-    // Update metrics
+    // Update corresponding Tank in real-time
+    const isSuper = params.product.toLowerCase().includes('super');
+    const targetFuelType = isSuper ? 'Super' : 'Gasoil';
+    const updatedTanks = state.tanks.map(tank => {
+      if (tank.fuelType === targetFuelType) {
+        const newLiters = Math.max(0, tank.currentLiters - params.quantityLiters);
+        const newPercent = Math.round((newLiters / tank.capacityLiters) * 100);
+        return {
+          ...tank,
+          currentLiters: newLiters,
+          levelPercent: newPercent,
+          status: (newPercent <= 15 ? 'critical' : newPercent <= 30 ? 'low' : 'ok') as TankLevel['status'],
+        };
+      }
+      return tank;
+    });
+
+    // Update metrics in real-time
     const updatedMetrics: DailyMetrics = {
       ...state.dailyMetrics,
       fuelRevenueFCFA: state.dailyMetrics.fuelRevenueFCFA + params.amountFCFA,
@@ -302,6 +319,7 @@ export const store = {
       ...state,
       fuelTransactions: [newTx, ...state.fuelTransactions],
       pumps: updatedPumps,
+      tanks: updatedTanks,
       dailyMetrics: updatedMetrics,
     };
     notify();
@@ -589,9 +607,19 @@ export const store = {
       'Gérant'
     );
 
+    // Synchronize pump assignments if assignedPumps specified
+    const updatedPumps = newEmp.assignedPumps && newEmp.assignedPumps.length > 0
+      ? state.pumps.map(p =>
+          newEmp.assignedPumps?.includes(p.number)
+            ? { ...p, assignedEmployeeId: newId, assignedEmployeeName: newEmp.name }
+            : p
+        )
+      : state.pumps;
+
     state = {
       ...state,
       employees: [...state.employees, newEmp],
+      pumps: updatedPumps,
       auditLogs: [auditEntry, ...state.auditLogs],
     };
     notify();
@@ -621,9 +649,23 @@ export const store = {
       'Gérant'
     );
 
+    // Synchronize pump assignments
+    let updatedPumps = state.pumps;
+    if (updates.assignedPumps !== undefined) {
+      updatedPumps = state.pumps.map(p => {
+        if (updates.assignedPumps?.includes(p.number)) {
+          return { ...p, assignedEmployeeId: employeeId, assignedEmployeeName: updatedEmp.name };
+        } else if (p.assignedEmployeeId === employeeId) {
+          return { ...p, assignedEmployeeId: undefined, assignedEmployeeName: undefined };
+        }
+        return p;
+      });
+    }
+
     state = {
       ...state,
       employees: state.employees.map(e => (e.id === employeeId ? updatedEmp : e)),
+      pumps: updatedPumps,
       auditLogs: [auditEntry, ...state.auditLogs],
     };
     notify();
@@ -649,6 +691,11 @@ export const store = {
     state = {
       ...state,
       employees: state.employees.filter(e => e.id !== employeeId),
+      pumps: state.pumps.map(p =>
+        p.assignedEmployeeId === employeeId
+          ? { ...p, assignedEmployeeId: undefined, assignedEmployeeName: undefined }
+          : p
+      ),
       auditLogs: [auditEntry, ...state.auditLogs],
     };
     notify();

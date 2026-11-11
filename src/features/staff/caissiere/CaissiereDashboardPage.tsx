@@ -18,14 +18,17 @@ import {
   AlertTriangle,
   RotateCw,
   Info,
+  Lock,
 } from 'lucide-react';
 
 export const CaissiereDashboardPage: React.FC = () => {
-  const { products, cart, boutiqueSales, lastCompletedSale } = useAppStore(s => ({
+  const { products, cart, boutiqueSales, lastCompletedSale, dailyMetrics, currentEmployee } = useAppStore(s => ({
     products: s.products,
     cart: s.cart,
     boutiqueSales: s.boutiqueSales,
     lastCompletedSale: s.lastCompletedSale,
+    dailyMetrics: s.dailyMetrics,
+    currentEmployee: s.currentEmployee,
   }));
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,6 +58,69 @@ export const CaissiereDashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* ================= FIRST-GLANCE HERO: CAISSE #1 & REAL-TIME STRATEGIC METRICS ================= */}
+      <div className="bg-gradient-to-r from-[#0B3A82] via-[#0D449A] to-[#1668E3] rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden border border-blue-400/30">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold bg-[#F7B928] text-[#0A162B] px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                Caisse Active #1
+              </span>
+              <span className="text-xs font-semibold bg-white/15 text-blue-100 px-3 py-1 rounded-full border border-white/20">
+                {currentEmployee?.name || 'Mireille BIBANG'}
+              </span>
+              <span className="text-xs font-semibold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Terminal connecté
+              </span>
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                Point d'Encaissement Boutique
+              </h2>
+              <p className="text-xs text-blue-100 mt-0.5 flex flex-wrap items-center gap-2">
+                <span>Gestion opérationnelle exclusive de votre caisse</span>
+                <span>•</span>
+                <span className="flex items-center gap-1 text-blue-200">
+                  <Lock className="w-3 h-3 text-[#F7B928]" />
+                  Catalogue & tarifs fixés par le Gérant (Lecture seule)
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {/* Strategic Metrics Cards */}
+          <div className="flex items-center gap-3">
+            <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-center min-w-[130px]">
+              <span className="text-[10px] font-bold text-blue-200 uppercase block tracking-wider">
+                Recette Caisse (Jour)
+              </span>
+              <span className="text-lg sm:text-xl font-extrabold text-[#F7B928] font-mono block mt-0.5">
+                {new Intl.NumberFormat('fr-FR').format(dailyMetrics.boutiqueRevenueFCFA)} FCFA
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-center min-w-[90px]">
+              <span className="text-[10px] font-bold text-blue-200 uppercase block tracking-wider">
+                Tickets émis
+              </span>
+              <span className="text-lg sm:text-xl font-extrabold text-white font-mono block mt-0.5">
+                {boutiqueSales.length}
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-center min-w-[110px]">
+              <span className="text-[10px] font-bold text-blue-200 uppercase block tracking-wider">
+                Stocks alertes
+              </span>
+              <span className="text-lg sm:text-xl font-extrabold text-amber-300 font-mono block mt-0.5">
+                {products.filter(p => p.id.startsWith('pos-') && p.stockQuantity <= p.minStockThreshold).length} critique(s)
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ================= TOP WORKSPACE: CATALOGUE (LEFT) + PANIER (RIGHT) ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Catalogue Produits (7 cols) */}
@@ -93,29 +159,56 @@ export const CaissiereDashboardPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Grid of 10 Products (Screen 02) */}
+            {/* Grid of 10 Products (Screen 02) with live stock counts */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
-              {posProducts.map(prod => (
-                <div
-                  key={prod.id}
-                  onClick={() => store.addToCart(prod)}
-                  className="bg-white rounded-2xl border border-slate-200 p-3 flex flex-col items-center text-center hover:border-blue-500 hover:shadow-md cursor-pointer transition-all active:scale-95 group"
-                >
-                  <div className="w-14 h-16 flex items-center justify-center mb-1">
-                    <img
-                      src={prod.image}
-                      alt={prod.name}
-                      className="max-h-14 max-w-14 object-contain group-hover:scale-105 transition-transform"
-                    />
+              {posProducts.map(prod => {
+                const isLow = prod.stockQuantity <= prod.minStockThreshold;
+                const isOutOfStock = prod.stockQuantity <= 0;
+                return (
+                  <div
+                    key={prod.id}
+                    onClick={() => {
+                      if (!isOutOfStock) store.addToCart(prod);
+                    }}
+                    className={`bg-white rounded-2xl border p-3 flex flex-col items-center text-center transition-all duration-150 group relative ${
+                      isOutOfStock
+                        ? 'opacity-60 border-red-200 cursor-not-allowed bg-slate-50'
+                        : 'border-slate-200 hover:border-blue-500 hover:shadow-md cursor-pointer active:scale-95'
+                    }`}
+                  >
+                    <div className="w-14 h-16 flex items-center justify-center mb-1">
+                      <img
+                        src={prod.image}
+                        alt={prod.name}
+                        className="max-h-14 max-w-14 object-contain group-hover:scale-105 transition-transform"
+                      />
+                    </div>
+                    <h3 className="text-xs font-bold text-[#0F172A] leading-tight mt-1 line-clamp-1">
+                      {prod.name}
+                    </h3>
+                    <p className="text-[11px] font-extrabold text-[#0B3A82] mt-0.5">
+                      {new Intl.NumberFormat('fr-FR').format(prod.priceFCFA)} FCFA
+                    </p>
+
+                    {/* High-visibility Stock indicator placed strategically */}
+                    <div className="mt-1.5 w-full">
+                      {isOutOfStock ? (
+                        <span className="inline-block text-[9px] font-extrabold bg-red-500 text-white px-2 py-0.5 rounded-full">
+                          Épuisé
+                        </span>
+                      ) : isLow ? (
+                        <span className="inline-block text-[9px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
+                          Reste: {prod.stockQuantity}
+                        </span>
+                      ) : (
+                        <span className="inline-block text-[9px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                          Stock: {prod.stockQuantity}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <h3 className="text-xs font-bold text-[#0F172A] leading-tight mt-1 line-clamp-1">
-                    {prod.name}
-                  </h3>
-                  <p className="text-[11px] font-extrabold text-[#0B3A82] mt-0.5">
-                    {new Intl.NumberFormat('fr-FR').format(prod.priceFCFA)} FCFA
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

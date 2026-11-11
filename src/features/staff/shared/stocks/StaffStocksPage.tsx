@@ -17,6 +17,7 @@ import {
   MapPin,
   ChevronDown,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 
 export const StaffStocksPage: React.FC = () => {
@@ -28,6 +29,7 @@ export const StaffStocksPage: React.FC = () => {
     currentEmployee: s.currentEmployee,
   }));
 
+  const isGerant = currentEmployee?.role === 'gerant';
   const activeStation = stations.find(s => s.id === selectedStationId) || stations[0];
   const authorName = currentEmployee?.name || 'Responsable Station';
 
@@ -168,14 +170,21 @@ export const StaffStocksPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="yellow"
-            size="md"
-            icon={<Plus className="w-4 h-4" />}
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            Ajouter un produit
-          </Button>
+          {isGerant ? (
+            <Button
+              variant="yellow"
+              size="md"
+              icon={<Plus className="w-4 h-4" />}
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              Ajouter un produit
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 shadow-2xs">
+              <Lock className="w-3.5 h-3.5 text-slate-500" />
+              <span>Consultation seule (Édition réservée au Gérant)</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -227,26 +236,34 @@ export const StaffStocksPage: React.FC = () => {
               <div className="flex flex-col items-end gap-2">
                 <div className="text-right">
                   <div className="text-lg font-extrabold text-slate-800">{g.stockQuantity}</div>
-                  <div className="text-[10px] text-slate-400">en stock</div>
+                  <div className="text-[10px] text-slate-400">en stock ({g.unit})</div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleOpenEditProduct(g)}
-                    className="p-1.5 rounded-lg bg-blue-50 text-[#1668E3] hover:bg-blue-100"
-                    title="Modifier stock ou prix"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeletingProductId(g.id)}
-                    className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"
-                    title="Supprimer la référence"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                {isGerant ? (
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEditProduct(g)}
+                      className="p-1.5 rounded-lg bg-blue-50 text-[#1668E3] hover:bg-blue-100"
+                      title="Modifier stock ou prix"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeletingProductId(g.id)}
+                      className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"
+                      title="Supprimer la référence"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <StatusPill
+                    type={g.stockQuantity <= g.minStockThreshold ? 'danger' : 'disponible'}
+                    label={g.stockQuantity <= g.minStockThreshold ? 'Stock faible' : 'Disponible'}
+                    size="sm"
+                  />
+                )}
               </div>
             </div>
           ))}
@@ -273,24 +290,32 @@ export const StaffStocksPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0 ml-2">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEditProduct(p)}
-                  className="p-1.5 rounded-lg bg-blue-50 text-[#1668E3] hover:bg-blue-100"
-                  title="Modifier"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeletingProductId(p.id)}
-                  className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"
-                  title="Supprimer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              {isGerant ? (
+                <div className="flex items-center gap-1 shrink-0 ml-2">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditProduct(p)}
+                    className="p-1.5 rounded-lg bg-blue-50 text-[#1668E3] hover:bg-blue-100"
+                    title="Modifier"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeletingProductId(p.id)}
+                    className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"
+                    title="Supprimer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <StatusPill
+                  type={p.stockQuantity <= p.minStockThreshold ? 'danger' : 'disponible'}
+                  label={p.stockQuantity <= p.minStockThreshold ? 'Faible' : 'OK'}
+                  size="sm"
+                />
+              )}
             </div>
           ))}
         </div>

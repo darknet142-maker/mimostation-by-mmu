@@ -141,6 +141,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '1927',
+    assignedPumps: [1],
+    assignedScope: 'Pompe #1 (Super)',
   },
   {
     id: 'emp-2',
@@ -152,6 +154,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '1928',
+    assignedPumps: [2],
+    assignedScope: 'Pompe #2 (Gasoil)',
   },
   {
     id: 'emp-3',
@@ -163,6 +167,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '1929',
+    assignedPumps: [3],
+    assignedScope: 'Pompe #3 (Super)',
   },
   {
     id: 'emp-4',
@@ -174,6 +180,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '3310',
+    assignedPumps: [4],
+    assignedScope: 'Pompe #4 (Gasoil)',
   },
   {
     id: 'emp-5',
@@ -185,6 +193,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '2481',
+    assignedScope: 'Supervision Pistes 1-6',
   },
   {
     id: 'emp-6',
@@ -196,6 +205,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '2480',
+    assignedScope: 'Supervision Pistes 1-6',
   },
   {
     id: 'emp-7',
@@ -207,6 +217,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '1104',
+    assignedScope: 'Caisse Boutique #1 & Rayons',
   },
   {
     id: 'emp-8',
@@ -218,6 +229,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '1105',
+    assignedScope: 'Caisse Boutique #2',
   },
   {
     id: 'emp-9',
@@ -229,6 +241,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '4492',
+    assignedScope: 'Comptoir Café & Snacking',
   },
   {
     id: 'emp-10',
@@ -240,6 +253,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '5521',
+    assignedScope: 'Supervision Globale du Poste',
   },
   {
     id: 'emp-11',
@@ -251,6 +265,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     status: 'active',
     stationId: 'station-liberte',
     pin: '9900',
+    assignedScope: 'Direction Générale & Administration',
   },
 ];
 
@@ -501,12 +516,12 @@ export const INITIAL_PRODUCTS: Product[] = [
 ];
 
 export const INITIAL_PUMPS: Pump[] = [
-  { id: 'pump-1', number: 1, fuelType: 'Super', status: 'available', litersToday: 480 },
-  { id: 'pump-2', number: 2, fuelType: 'Gasoil', status: 'available', litersToday: 620 },
-  { id: 'pump-3', number: 3, fuelType: 'Super', status: 'available', litersToday: 390 },
-  { id: 'pump-4', number: 4, fuelType: 'Gasoil', status: 'available', litersToday: 510 },
-  { id: 'pump-5', number: 5, fuelType: 'Super', status: 'available', litersToday: 440 },
-  { id: 'pump-6', number: 6, fuelType: 'Gasoil', status: 'available', litersToday: 580 },
+  { id: 'pump-1', number: 1, fuelType: 'Super', status: 'available', litersToday: 480, assignedEmployeeId: 'emp-1', assignedEmployeeName: 'Jean Dupont' },
+  { id: 'pump-2', number: 2, fuelType: 'Gasoil', status: 'available', litersToday: 620, assignedEmployeeId: 'emp-2', assignedEmployeeName: 'Pierre MOUKALA' },
+  { id: 'pump-3', number: 3, fuelType: 'Super', status: 'available', litersToday: 390, assignedEmployeeId: 'emp-3', assignedEmployeeName: 'Michel NGOMA' },
+  { id: 'pump-4', number: 4, fuelType: 'Gasoil', status: 'available', litersToday: 510, assignedEmployeeId: 'emp-4', assignedEmployeeName: 'Daniel BIKOUMOU' },
+  { id: 'pump-5', number: 5, fuelType: 'Super', status: 'available', litersToday: 440, assignedEmployeeId: 'emp-1', assignedEmployeeName: 'Jean Dupont' },
+  { id: 'pump-6', number: 6, fuelType: 'Gasoil', status: 'available', litersToday: 580, assignedEmployeeId: 'emp-2', assignedEmployeeName: 'Pierre MOUKALA' },
 ];
 
 export const INITIAL_TANKS: TankLevel[] = [

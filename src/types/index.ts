@@ -26,6 +26,8 @@ export interface Employee {
   status: 'active' | 'break' | 'offline';
   stationId: string;
   pin: string;
+  assignedPumps?: number[]; // [1] pour Pompe 1, ou [1, 2]
+  assignedScope?: string; // ex: "Pompe #1 (Super)", "Caisse Principale & Boutique", "Supervision Piste"
 }
 
 export interface StationServiceOverview {
@@ -78,6 +80,8 @@ export interface Pump {
   fuelType: 'Super' | 'Gasoil';
   status: PumpStatus;
   litersToday: number;
+  assignedEmployeeId?: string;
+  assignedEmployeeName?: string;
 }
 
 export interface TankLevel {

@@ -94,12 +94,16 @@ export const GerantDashboardPage: React.FC = () => {
   const [newEmpTitle, setNewEmpTitle] = useState('Pompiste de piste');
   const [newEmpPin, setNewEmpPin] = useState('1927');
   const [newEmpStationId, setNewEmpStationId] = useState(selectedStationId);
+  const [newEmpAssignedPumps, setNewEmpAssignedPumps] = useState<number[]>([1]);
+  const [newEmpAssignedScope, setNewEmpAssignedScope] = useState('Pompe #1 (Piste)');
 
   // Edit employee form
   const [editEmpTitle, setEditEmpTitle] = useState('');
   const [editEmpPin, setEditEmpPin] = useState('');
   const [editEmpStatus, setEditEmpStatus] = useState<Employee['status']>('active');
   const [editEmpReason, setEditEmpReason] = useState('');
+  const [editEmpAssignedPumps, setEditEmpAssignedPumps] = useState<number[]>([]);
+  const [editEmpAssignedScope, setEditEmpAssignedScope] = useState('');
 
   // --- AUDIT TRAIL SEARCH & FILTER STATE ---
   const [auditDateFilter, setAuditDateFilter] = useState('');
@@ -197,11 +201,15 @@ export const GerantDashboardPage: React.FC = () => {
         status: 'active',
         stationId: newEmpStationId || selectedStationId,
         pin: newEmpPin || '1927',
+        assignedPumps: newEmpRole === 'pompiste' ? newEmpAssignedPumps : undefined,
+        assignedScope: newEmpAssignedScope.trim() || undefined,
       },
       currentAuthorName
     );
 
     setNewEmpName('');
+    setNewEmpAssignedPumps([1]);
+    setNewEmpAssignedScope('Pompe #1 (Piste)');
     setIsAddEmpOpen(false);
   };
 
@@ -210,7 +218,9 @@ export const GerantDashboardPage: React.FC = () => {
     setEditEmpTitle(emp.title);
     setEditEmpPin(emp.pin);
     setEditEmpStatus(emp.status);
-    setEditEmpReason('Mise à jour des fonctions et habilitations');
+    setEditEmpAssignedPumps(emp.assignedPumps || []);
+    setEditEmpAssignedScope(emp.assignedScope || '');
+    setEditEmpReason('Mise à jour des fonctions et affectations');
   };
 
   const handleSaveEmployeeEdit = (e: React.FormEvent) => {
@@ -223,6 +233,8 @@ export const GerantDashboardPage: React.FC = () => {
         title: editEmpTitle,
         pin: editEmpPin,
         status: editEmpStatus,
+        assignedPumps: editEmpAssignedPumps,
+        assignedScope: editEmpAssignedScope.trim() || undefined,
       },
       currentAuthorName,
       editEmpReason.trim() || 'Ajustement des habilitations'
@@ -1078,6 +1090,54 @@ export const GerantDashboardPage: React.FC = () => {
             </div>
           </div>
 
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Périmètre / Zone de responsabilité</label>
+            <input
+              type="text"
+              value={newEmpAssignedScope}
+              onChange={e => setNewEmpAssignedScope(e.target.value)}
+              placeholder="Ex: Pompe #1 (Piste), Caisse Boutique, Piste centrale..."
+              className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-300 text-sm"
+            />
+          </div>
+
+          {newEmpRole === 'pompiste' && (
+            <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-100 space-y-2">
+              <label className="block text-xs font-bold text-[#0B3A82]">
+                Pompe(s) assignée(s) en gestion active exclusive :
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[1, 2, 3, 4, 5, 6].map(pNum => (
+                  <label
+                    key={pNum}
+                    className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-bold cursor-pointer transition-all ${
+                      newEmpAssignedPumps.includes(pNum)
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={newEmpAssignedPumps.includes(pNum)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setNewEmpAssignedPumps([...newEmpAssignedPumps, pNum]);
+                        } else {
+                          setNewEmpAssignedPumps(newEmpAssignedPumps.filter(p => p !== pNum));
+                        }
+                      }}
+                      className="rounded text-blue-600"
+                    />
+                    <span>Pompe #{pNum}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-[10px] text-blue-600 font-medium">
+                Le pompiste aura l'accès opérationnel exclusif à cette pompe (les autres pompes seront pour lui en consultation seule).
+              </p>
+            </div>
+          )}
+
           <div className="pt-2 flex justify-end gap-2">
             <Button variant="ghost" size="md" onClick={() => setIsAddEmpOpen(false)}>
               Annuler
@@ -1134,6 +1194,54 @@ export const GerantDashboardPage: React.FC = () => {
               </select>
             </div>
           </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Périmètre / Zone de responsabilité</label>
+            <input
+              type="text"
+              value={editEmpAssignedScope}
+              onChange={e => setEditEmpAssignedScope(e.target.value)}
+              placeholder="Ex: Pompe #1 (Super), Caisse #1, Piste Sud..."
+              className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-300 text-sm"
+            />
+          </div>
+
+          {editingEmp?.role === 'pompiste' && (
+            <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-100 space-y-2">
+              <label className="block text-xs font-bold text-[#0B3A82]">
+                Pompe(s) assignée(s) en gestion active exclusive :
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[1, 2, 3, 4, 5, 6].map(pNum => (
+                  <label
+                    key={pNum}
+                    className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-bold cursor-pointer transition-all ${
+                      editEmpAssignedPumps.includes(pNum)
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={editEmpAssignedPumps.includes(pNum)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setEditEmpAssignedPumps([...editEmpAssignedPumps, pNum]);
+                        } else {
+                          setEditEmpAssignedPumps(editEmpAssignedPumps.filter(p => p !== pNum));
+                        }
+                      }}
+                      className="rounded text-blue-600"
+                    />
+                    <span>Pompe #{pNum}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-[10px] text-blue-600 font-medium">
+                Cette modification réattribue immédiatement la pompe sur l'interface du pompiste.
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">Motif RH</label>

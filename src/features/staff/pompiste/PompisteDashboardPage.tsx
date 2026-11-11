@@ -19,37 +19,79 @@ import {
   TrendingUp,
   Droplet,
   BarChart3,
+  Lock,
 } from 'lucide-react';
 
 export const PompisteDashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { pumps, fuelTransactions, currentEmployee } = useAppStore(s => ({
+  const { pumps, fuelTransactions, currentEmployee, tanks } = useAppStore(s => ({
     pumps: s.pumps,
     fuelTransactions: s.fuelTransactions,
     currentEmployee: s.currentEmployee,
+    tanks: s.tanks,
   }));
+
+  // Pompiste's assigned pump(s)
+  const assignedPumpNumbers =
+    currentEmployee?.assignedPumps && currentEmployee.assignedPumps.length > 0
+      ? currentEmployee.assignedPumps
+      : [1];
+
+  const [selectedPumpNumber, setSelectedPumpNumber] = useState<number>(assignedPumpNumbers[0] || 1);
+  const activePump = pumps.find(p => p.number === selectedPumpNumber) || pumps[0];
+  const associatedTank = tanks.find(t => t.fuelType === activePump.fuelType) || tanks[0];
+
+  // Specific metrics for this pompiste's active pump
+  const pumpTransactions = fuelTransactions.filter(tx => tx.pumpNumber === activePump.number);
+  const pumpRevenueToday = pumpTransactions.reduce((acc, tx) => acc + tx.amountFCFA, 0);
+  const pumpLitersToday = activePump.litersToday;
 
   // Modals for actions
   const [serveModalOpen, setServeModalOpen] = useState(false);
   const [incidentModalOpen, setIncidentModalOpen] = useState(false);
-  const [selectedPumpNumber, setSelectedPumpNumber] = useState(1);
-  const [serveFuelType, setServeFuelType] = useState<'Super' | 'Gasoil'>('Super');
-  const [serveLiters, setServeLiters] = useState('15.0');
+  const [serveFuelType, setServeFuelType] = useState<'Super' | 'Gasoil'>(activePump.fuelType);
+  const [serveLiters, setServeLiters] = useState('20.0');
+  const [serveAmountFCFA, setServeAmountFCFA] = useState('14000');
+  const [serveMode, setServeMode] = useState<'liters' | 'amount'>('liters');
   const [servePaymentMethod, setServePaymentMethod] = useState<'Mobile Money' | 'Espèces' | 'Carte'>('Mobile Money');
   const [incidentText, setIncidentText] = useState('');
-  const [incidentPump, setIncidentPump] = useState('Pompe 2');
+  const [incidentPump, setIncidentPump] = useState(`Pompe ${activePump.number}`);
+  const [readOnlyWarning, setReadOnlyWarning] = useState<string | null>(null);
 
   const availablePumpsCount = pumps.filter(p => p.status === 'available').length;
+
+  const currentPricePerLiter = serveFuelType === 'Super' ? 700 : 650;
+
+  const handleLitersChange = (litersVal: string) => {
+    setServeLiters(litersVal);
+    const num = parseFloat(litersVal) || 0;
+    setServeAmountFCFA(String(Math.round(num * currentPricePerLiter)));
+  };
+
+  const handleAmountChange = (amountVal: string) => {
+    setServeAmountFCFA(amountVal);
+    const num = parseFloat(amountVal) || 0;
+    setServeLiters((num / currentPricePerLiter).toFixed(2));
+  };
+
+  const applyShortcutPreset = (liters: number) => {
+    setServeLiters(liters.toFixed(1));
+    setServeAmountFCFA(String(Math.round(liters * currentPricePerLiter)));
+  };
+
+  const applyAmountPreset = (amount: number) => {
+    setServeAmountFCFA(String(amount));
+    setServeLiters((amount / currentPricePerLiter).toFixed(2));
+  };
 
   const handleServeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const litersNum = parseFloat(serveLiters) || 10;
-    const pricePerLiter = serveFuelType === 'Super' ? 700 : 650;
-    const totalAmount = Math.round(litersNum * pricePerLiter);
+    const totalAmount = Math.round(litersNum * currentPricePerLiter);
 
     store.recordFuelTransaction({
-      pumpNumber: selectedPumpNumber,
-      product: serveFuelType,
+      pumpNumber: activePump.number,
+      product: activePump.fuelType,
       quantityLiters: litersNum,
       amountFCFA: totalAmount,
       paymentMethod: servePaymentMethod,
@@ -62,8 +104,8 @@ export const PompisteDashboardPage: React.FC = () => {
     e.preventDefault();
     if (!incidentText) return;
     store.reportIncident(
-      `${incidentPump} : Signalement anomalie`,
-      incidentText
+      `Pompe ${activePump.number} : ${incidentText}`,
+      `Signalé par le pompiste en service (${currentEmployee?.name || 'Jean Dupont'})`
     );
     setIncidentText('');
     setIncidentModalOpen(false);
@@ -166,6 +208,148 @@ export const PompisteDashboardPage: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* ================= HERO CARD: MA POMPE EN GESTION EXCLUSIVE & NIVEAU DE CUVE EN DIRECT ================= */}
+      <div className="bg-gradient-to-r from-[#0B3A82] via-[#0D449A] to-[#1668E3] rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden border border-blue-400/30">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold bg-[#F7B928] text-[#0A162B] px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                Votre Poste en Gestion
+              </span>
+              <span className="text-xs font-semibold bg-white/15 text-blue-100 px-3 py-1 rounded-full border border-white/20">
+                {currentEmployee?.name || 'Jean Dupont'}
+              </span>
+              <span className="text-xs font-semibold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Pompe opérationnelle
+              </span>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  Pompe #{activePump.number} — {activePump.fuelType}
+                </h2>
+              </div>
+              <p className="text-xs text-blue-100 mt-1">
+                Tarif officiel station : <strong className="text-white font-bold">{currentPricePerLiter} FCFA / Litre</strong> • Données sécurisées en lecture seule
+              </p>
+            </div>
+
+            {/* Select pump if multiple assigned */}
+            {assignedPumpNumbers.length > 1 && (
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-xs text-blue-200">Basculer entre vos pompes :</span>
+                {assignedPumpNumbers.map(pNum => (
+                  <button
+                    key={pNum}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPumpNumber(pNum);
+                      const pObj = pumps.find(p => p.number === pNum);
+                      if (pObj) setServeFuelType(pObj.fuelType);
+                    }}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                      selectedPumpNumber === pNum
+                        ? 'bg-white text-[#0B3A82] shadow-md'
+                        : 'bg-white/10 hover:bg-white/20 text-white'
+                    }`}
+                  >
+                    Pompe #{pNum}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Strategic Tank Gauge Card: Au premier coup d'œil */}
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 sm:p-5 flex-1 max-w-md space-y-3">
+            <div className="flex items-center justify-between text-xs font-bold text-blue-100">
+              <span className="flex items-center gap-1.5 uppercase tracking-wide">
+                <Gauge className="w-4 h-4 text-[#F7B928]" />
+                Niveau Cuve {associatedTank.fuelType}
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                associatedTank.levelPercent > 30 ? 'bg-emerald-500/30 text-emerald-200' : 'bg-red-500/30 text-red-200'
+              }`}>
+                {associatedTank.levelPercent}% RESTANT
+              </span>
+            </div>
+
+            <div>
+              <div className="flex items-baseline justify-between">
+                <span className="text-2xl sm:text-3xl font-extrabold text-white font-mono">
+                  {new Intl.NumberFormat('fr-FR').format(associatedTank.currentLiters)}
+                </span>
+                <span className="text-xs text-blue-200">
+                  / {new Intl.NumberFormat('fr-FR').format(associatedTank.capacityLiters)} Litres
+                </span>
+              </div>
+
+              {/* High Contrast Gauge Bar */}
+              <div className="w-full bg-black/30 h-3 rounded-full overflow-hidden mt-2 p-0.5 border border-white/10">
+                <div
+                  style={{ width: `${associatedTank.levelPercent}%` }}
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    associatedTank.levelPercent > 30
+                      ? 'bg-gradient-to-r from-emerald-400 to-[#10B981]'
+                      : 'bg-gradient-to-r from-amber-400 to-red-500'
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* Quick Metrics of this pump */}
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
+              <div>
+                <span className="text-blue-200 text-[10px] block">Servis par vous aujourd'hui</span>
+                <strong className="text-white font-bold">{pumpLitersToday.toFixed(1)} L</strong>
+              </div>
+              <div className="text-right">
+                <span className="text-blue-200 text-[10px] block">Encaissé sur votre pompe</span>
+                <strong className="text-white font-bold">{new Intl.NumberFormat('fr-FR').format(pumpRevenueToday)} FCFA</strong>
+              </div>
+            </div>
+
+            {/* Direct Instant Serve Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setServeFuelType(activePump.fuelType);
+                setServeModalOpen(true);
+              }}
+              className="w-full py-3 px-4 bg-[#F7B928] hover:bg-amber-400 active:scale-[0.98] text-[#0A162B] font-extrabold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
+            >
+              <Zap className="w-4 h-4 fill-[#0A162B]" />
+              <span>Servir un client & Encaisser (Pompe #{activePump.number})</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Subtle Watermark decoration */}
+        <img
+          src={ASSETS.scenes.headerStation}
+          alt=""
+          className="absolute right-0 top-0 bottom-0 h-full w-96 object-cover object-right opacity-15 pointer-events-none"
+        />
+      </div>
+
+      {readOnlyWarning && (
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between text-xs font-semibold animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>{readOnlyWarning}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setReadOnlyWarning(null)}
+            className="text-amber-700 underline font-bold ml-2"
+          >
+            Fermer
+          </button>
+        </div>
+      )}
 
       {/* ================= MOBILE 2x2 TILES (< 1024px, from Capture 01C) ================= */}
       <div className="grid grid-cols-2 lg:hidden gap-3">
@@ -310,45 +494,82 @@ export const PompisteDashboardPage: React.FC = () => {
             actionLabel="Rafraîchir"
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {pumps.map(pump => (
-                <div
-                  key={pump.id}
-                  onClick={() => {
-                    setSelectedPumpNumber(pump.number);
-                    setServeFuelType(pump.fuelType);
-                    setServeModalOpen(true);
-                  }}
-                  className="bg-white rounded-2xl border border-[#DCE4F0] p-4 flex flex-col items-center text-center hover:border-blue-400 hover:shadow-md cursor-pointer transition-all duration-150 relative group"
-                >
-                  {/* Pump number badge circle (Screen 06) */}
-                  <span className="absolute top-3 left-3 w-6 h-6 rounded-full bg-[#1668E3] text-white font-bold text-xs flex items-center justify-center">
-                    {pump.number}
-                  </span>
+              {pumps.map(pump => {
+                const isMyAssignedPump = pump.number === activePump.number;
+                return (
+                  <div
+                    key={pump.id}
+                    onClick={() => {
+                      if (isMyAssignedPump) {
+                        setSelectedPumpNumber(pump.number);
+                        setServeFuelType(pump.fuelType);
+                        setServeModalOpen(true);
+                      } else {
+                        setReadOnlyWarning(
+                          `La Pompe #${pump.number} est sous la responsabilité d'un autre collègue. Vous avez la gestion exclusive de la Pompe #${activePump.number}.`
+                        );
+                      }
+                    }}
+                    className={`bg-white rounded-2xl p-4 flex flex-col items-center text-center transition-all duration-150 relative group cursor-pointer ${
+                      isMyAssignedPump
+                        ? 'border-2 border-[#1668E3] shadow-md ring-2 ring-blue-400/20'
+                        : 'border border-[#DCE4F0] opacity-80 hover:opacity-100 hover:border-slate-300'
+                    }`}
+                  >
+                    {/* Pump number badge circle (Screen 06) */}
+                    <span
+                      className={`absolute top-3 left-3 w-6 h-6 rounded-full font-bold text-xs flex items-center justify-center text-white ${
+                        isMyAssignedPump ? 'bg-[#1668E3]' : 'bg-slate-400'
+                      }`}
+                    >
+                      {pump.number}
+                    </span>
 
-                  {/* 3D Gas Pump Graphic */}
-                  <div className="w-16 h-18 my-2 flex items-center justify-center">
-                    <img
-                      src={ASSETS.icons.pump}
-                      alt={`Pompe ${pump.number}`}
-                      className="max-h-16 object-contain group-hover:scale-105 transition-transform"
-                    />
-                  </div>
+                    {/* Lock / Active badge */}
+                    {isMyAssignedPump ? (
+                      <span className="absolute top-3 right-3 text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                        Votre Pompe
+                      </span>
+                    ) : (
+                      <span className="absolute top-3 right-3 text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                        <Lock className="w-2.5 h-2.5" />
+                        <span>Autre</span>
+                      </span>
+                    )}
 
-                  {/* Status Pill */}
-                  <div className="w-full mb-2">
-                    <StatusPill
-                      type={pump.status === 'available' ? 'disponible' : 'maintenance'}
-                      size="sm"
-                      label={pump.status === 'available' ? 'Disponible' : 'Maintenance'}
-                    />
-                  </div>
+                    {/* 3D Gas Pump Graphic */}
+                    <div className="w-16 h-18 my-2 flex items-center justify-center">
+                      <img
+                        src={ASSETS.icons.pump}
+                        alt={`Pompe ${pump.number}`}
+                        className="max-h-16 object-contain group-hover:scale-105 transition-transform"
+                      />
+                    </div>
 
-                  {/* Fuel Type */}
-                  <div className="text-xs font-bold text-slate-700">
-                    {pump.fuelType}
+                    {/* Status Pill */}
+                    <div className="w-full mb-1">
+                      <StatusPill
+                        type={pump.status === 'available' ? 'disponible' : 'maintenance'}
+                        size="sm"
+                        label={pump.status === 'available' ? 'Disponible' : 'Maintenance'}
+                      />
+                    </div>
+
+                    {/* Fuel Type */}
+                    <div className="text-xs font-bold text-slate-700">
+                      {pump.fuelType}
+                    </div>
+
+                    <div className="text-[10px] text-slate-400 mt-1">
+                      {isMyAssignedPump ? (
+                        <span className="text-blue-600 font-bold">En gestion active</span>
+                      ) : (
+                        <span>Lecture seule</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </SectionCard>
         </div>
@@ -539,86 +760,151 @@ export const PompisteDashboardPage: React.FC = () => {
         <Modal
           isOpen={true}
           onClose={() => setServeModalOpen(false)}
-          title="Servir un client"
-          subtitle="Enregistrer une distribution et paiement de carburant"
+          title={`Distribution & Encaissement — Pompe #${activePump.number}`}
+          subtitle={`Pompiste en service : ${currentEmployee?.name || 'Jean Dupont'}`}
           maxWidth="sm"
         >
           <form onSubmit={handleServeSubmit} className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Numéro de Pompe
-              </label>
-              <select
-                value={selectedPumpNumber}
-                onChange={e => setSelectedPumpNumber(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl border border-slate-300 text-sm font-bold bg-white"
-              >
-                {pumps.map(p => (
-                  <option key={p.id} value={p.number}>
-                    Pompe #{p.number} ({p.fuelType})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Type de carburant
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setServeFuelType('Super')}
-                  className={`p-2.5 rounded-xl text-xs font-bold border ${
-                    serveFuelType === 'Super'
-                      ? 'bg-amber-50 border-amber-500 text-amber-900'
-                      : 'border-slate-200'
-                  }`}
-                >
-                  Super (700 FCFA/L)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setServeFuelType('Gasoil')}
-                  className={`p-2.5 rounded-xl text-xs font-bold border ${
-                    serveFuelType === 'Gasoil'
-                      ? 'bg-amber-50 border-amber-500 text-amber-900'
-                      : 'border-slate-200'
-                  }`}
-                >
-                  Gasoil (650 FCFA/L)
-                </button>
+            {/* Header Lock Info: Pompe & Carburant fixé par la Direction */}
+            <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-[#1668E3] text-white flex items-center justify-center font-bold text-xs">
+                  #{activePump.number}
+                </span>
+                <div>
+                  <div className="font-extrabold text-[#0B3A82]">Pompe #{activePump.number} ({activePump.fuelType})</div>
+                  <div className="text-[10px] text-slate-500">Tarif fixé : {currentPricePerLiter} FCFA / Litre</div>
+                </div>
               </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Litres servis
-              </label>
-              <input
-                type="number"
-                step="0.5"
-                min="1"
-                max="500"
-                value={serveLiters}
-                onChange={e => setServeLiters(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-300 text-sm font-bold bg-white"
-              />
-            </div>
-
-            <div className="p-3 bg-blue-50 rounded-xl flex items-center justify-between text-sm font-bold text-[#0B3A82]">
-              <span>Total à encaisser :</span>
-              <span>
-                {new Intl.NumberFormat('fr-FR').format(
-                  Math.round(
-                    (parseFloat(serveLiters) || 0) *
-                      (serveFuelType === 'Super' ? 700 : 650)
-                  )
-                )}{' '}
-                FCFA
+              <span className="text-[10px] bg-white text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-semibold flex items-center gap-1">
+                <Lock className="w-2.5 h-2.5" />
+                <span>Fixé</span>
               </span>
             </div>
 
+            {/* Input Mode Selector: Litres vs Montant */}
+            <div className="flex items-center p-1 bg-slate-100 rounded-xl text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setServeMode('liters')}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${
+                  serveMode === 'liters'
+                    ? 'bg-white text-[#1668E3] shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Saisir en Litres (L)
+              </button>
+              <button
+                type="button"
+                onClick={() => setServeMode('amount')}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${
+                  serveMode === 'amount'
+                    ? 'bg-white text-[#1668E3] shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Saisir en Montant (FCFA)
+              </button>
+            </div>
+
+            {/* Main Input based on mode */}
+            {serveMode === 'liters' ? (
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Volume de carburant à servir (Litres)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="1"
+                    max="500"
+                    value={serveLiters}
+                    onChange={e => handleLitersChange(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-extrabold text-[#0F172A] bg-white focus:ring-2 focus:ring-[#1668E3]"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">
+                    Litres
+                  </span>
+                </div>
+
+                {/* Liters Quick Shortcut Pills */}
+                <div className="grid grid-cols-4 gap-1.5 mt-2">
+                  {[10, 20, 30, 50].map(l => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => applyShortcutPreset(l)}
+                      className="py-1 px-2 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-[#1668E3] hover:border-blue-200"
+                    >
+                      {l} L
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Montant demandé par le client (FCFA)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="500"
+                    min="500"
+                    max="500000"
+                    value={serveAmountFCFA}
+                    onChange={e => handleAmountChange(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-extrabold text-[#0F172A] bg-white focus:ring-2 focus:ring-[#1668E3]"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">
+                    FCFA
+                  </span>
+                </div>
+
+                {/* Amount Quick Shortcut Pills */}
+                <div className="grid grid-cols-4 gap-1.5 mt-2">
+                  {[5000, 10000, 15000, 20000].map(amt => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => applyAmountPreset(amt)}
+                      className="py-1 px-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-bold text-slate-700 hover:bg-blue-50 hover:text-[#1668E3] hover:border-blue-200 truncate"
+                    >
+                      {amt.toLocaleString('fr-FR')} F
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Recalculated Summary Card with Live Tank Projection */}
+            <div className="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600 font-medium">Quantité calculée :</span>
+                <span className="font-mono font-extrabold text-[#0B3A82] text-base">
+                  {parseFloat(serveLiters || '0').toFixed(2)} Litres
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-base border-t border-blue-100 pt-1.5">
+                <span className="font-extrabold text-slate-800">Total à encaisser :</span>
+                <span className="font-mono font-extrabold text-[#1668E3] text-lg">
+                  {new Intl.NumberFormat('fr-FR').format(
+                    Math.round(parseFloat(serveLiters || '0') * currentPricePerLiter)
+                  )}{' '}
+                  FCFA
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-500 pt-1 border-t border-blue-100 flex items-center justify-between">
+                <span>Niveau cuve après service :</span>
+                <span className="font-bold text-emerald-700">
+                  {Math.max(0, associatedTank.currentLiters - (parseFloat(serveLiters) || 0)).toLocaleString('fr-FR')} L restants
+                </span>
+              </div>
+            </div>
+
+            {/* Payment Method Selector */}
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
                 Mode d'encaissement
@@ -629,10 +915,10 @@ export const PompisteDashboardPage: React.FC = () => {
                     key={method}
                     type="button"
                     onClick={() => setServePaymentMethod(method as any)}
-                    className={`py-2 rounded-lg border ${
+                    className={`py-2 rounded-xl border transition-all ${
                       servePaymentMethod === method
-                        ? 'bg-[#1668E3] text-white border-[#1668E3]'
-                        : 'border-slate-200 bg-slate-50 text-slate-700'
+                        ? 'bg-[#1668E3] text-white border-[#1668E3] shadow-xs'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     {method}
@@ -642,7 +928,7 @@ export const PompisteDashboardPage: React.FC = () => {
             </div>
 
             <Button variant="yellow" size="lg" fullWidth type="submit">
-              Enregistrer l'encaissement
+              Valider la distribution & Encaisser
             </Button>
           </form>
         </Modal>
