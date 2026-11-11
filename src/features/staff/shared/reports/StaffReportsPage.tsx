@@ -1,8 +1,10 @@
 import React from 'react';
 import { useAppStore } from '@/hooks/useAppStore';
 import { SectionCard } from '@/components/ui/SectionCard';
-import { BarChart3, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+
+import { ASSETS } from '@/config/assets';
 
 export const StaffReportsPage: React.FC = () => {
   const { dailyMetrics, fuelTransactions, boutiqueSales } = useAppStore(s => ({
@@ -43,7 +45,7 @@ export const StaffReportsPage: React.FC = () => {
       {/* Hourly Sales Chart */}
       <SectionCard
         title="Progression des Ventes par Tranche Horaire"
-        icon={<BarChart3 className="w-5 h-5" />}
+        icon={<img src={ASSETS.official.uiActions.rapports} alt="" className="w-5 h-5 object-contain" />}
       >
         <div className="space-y-4">
           <div className="flex items-end gap-2 sm:gap-4 h-48 pt-6 pb-2 px-2 border-b border-slate-100">

@@ -9,7 +9,6 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ASSETS } from '@/config/assets';
 import { Employee, StaffRole } from '@/types';
 import {
-  Users,
   Plus,
   Pencil,
   Trash2,
@@ -220,7 +219,7 @@ export const StaffTeamPage: React.FC = () => {
       {/* Team Roster Grid */}
       <SectionCard
         title={`Équipe en service (${activeCount} actif(s) sur ${stationEmployees.length})`}
-        icon={<Users className="w-5 h-5 text-[#1668E3]" />}
+        icon={<img src={ASSETS.official.services.restauration} alt="" className="w-5 h-5 object-contain" />}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {stationEmployees.map(emp => {

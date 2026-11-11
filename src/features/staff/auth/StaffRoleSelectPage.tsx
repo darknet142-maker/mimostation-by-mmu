@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROLE_DEFINITIONS } from '@/data/fixtures';
 import { ASSETS } from '@/config/assets';
 import { BrandLogo } from '@/components/ui/BrandLogo';
-import { Shield, ChevronRight, Info } from 'lucide-react';
+import { Shield, ChevronRight } from 'lucide-react';
 
 export const StaffRoleSelectPage: React.FC = () => {
   const navigate = useNavigate();
@@ -81,7 +81,7 @@ export const StaffRoleSelectPage: React.FC = () => {
           {/* Bottom Info Banner (Screen 01A) */}
           <div className="mt-4 pt-2">
             <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#EEF4FD] rounded-xl text-[#1668E3] text-xs font-semibold">
-              <Info className="w-4 h-4 shrink-0" />
+              <img src={ASSETS.official.uiActions.information} alt="" className="w-4 h-4 object-contain shrink-0" />
               <span>Votre accès est sécurisé et personnel.</span>
             </div>
 

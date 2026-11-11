@@ -13,13 +13,7 @@ import {
   Zap,
   TrendingUp,
   AlertTriangle,
-  Info,
   CheckCircle2,
-  FileText,
-  Boxes,
-  ClipboardCheck,
-  ShoppingCart,
-  Coins,
 } from 'lucide-react';
 
 export const ChefDePosteDashboardPage: React.FC = () => {
@@ -60,8 +54,8 @@ export const ChefDePosteDashboardPage: React.FC = () => {
         {/* Card 1: 6 / 6 Pompes opérationnelles */}
         <div className="bg-white rounded-2xl p-4 border border-[#DBE5F1] shadow-station-card flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-blue-50 text-[#1668E3] flex items-center justify-center">
-              <Fuel className="w-6 h-6 stroke-[2.2]" />
+            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center p-1.5">
+              <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="text-xs font-semibold text-slate-500">
@@ -69,9 +63,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
               </div>
               <div className="text-2xl font-extrabold text-[#0F172A] flex items-center gap-2 mt-0.5">
                 <span>{availablePumpsCount} / {pumps.length}</span>
-                <span className="w-5 h-5 rounded-full bg-[#10B981] text-white flex items-center justify-center text-xs">
-                  ✓
-                </span>
+                <img src={ASSETS.official.uiActions.disponible} alt="OK" className="w-5 h-5 object-contain" />
               </div>
             </div>
           </div>
@@ -80,7 +72,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
         {/* Card 2: Super */}
         <div className="bg-white rounded-2xl p-4 border border-[#DBE5F1] shadow-station-card flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={ASSETS.icons.fuelDrop} alt="" className="w-9 h-9 object-contain" />
+            <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-9 h-9 object-contain" />
             <div>
               <div className="text-sm font-bold text-[#0F172A]">Super</div>
               <div className="mt-1">
@@ -88,15 +80,13 @@ export const ChefDePosteDashboardPage: React.FC = () => {
               </div>
             </div>
           </div>
-          <span className="w-5 h-5 rounded-full bg-[#10B981] text-white flex items-center justify-center text-xs">
-            ✓
-          </span>
+          <img src={ASSETS.official.uiActions.disponible} alt="OK" className="w-5 h-5 object-contain" />
         </div>
 
         {/* Card 3: Gasoil */}
         <div className="bg-white rounded-2xl p-4 border border-[#DBE5F1] shadow-station-card flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={ASSETS.icons.barrel} alt="" className="w-9 h-9 object-contain" />
+            <img src={ASSETS.official.carburantsGaz.gasoil} alt="" className="w-9 h-9 object-contain" />
             <div>
               <div className="text-sm font-bold text-[#0F172A]">Gasoil</div>
               <div className="mt-1">
@@ -104,15 +94,13 @@ export const ChefDePosteDashboardPage: React.FC = () => {
               </div>
             </div>
           </div>
-          <span className="w-5 h-5 rounded-full bg-[#10B981] text-white flex items-center justify-center text-xs">
-            ✓
-          </span>
+          <img src={ASSETS.official.uiActions.disponible} alt="OK" className="w-5 h-5 object-contain" />
         </div>
 
         {/* Card 4: Gaz Butane */}
         <div className="bg-white rounded-2xl p-4 border border-[#DBE5F1] shadow-station-card flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={ASSETS.products.gazButane} alt="" className="w-8 h-9 object-contain" />
+            <img src={ASSETS.official.carburantsGaz.gazButane} alt="" className="w-8 h-9 object-contain" />
             <div>
               <div className="text-sm font-bold text-[#0F172A]">Gaz Butane</div>
               <div className="mt-1">
@@ -120,9 +108,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
               </div>
             </div>
           </div>
-          <span className="w-5 h-5 rounded-full bg-[#10B981] text-white flex items-center justify-center text-xs">
-            ✓
-          </span>
+          <img src={ASSETS.official.uiActions.disponible} alt="OK" className="w-5 h-5 object-contain" />
         </div>
       </div>
 
@@ -219,7 +205,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
                 className="w-full p-2.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-slate-50 flex items-center justify-between text-left transition-all"
               >
                 <div className="flex items-center gap-2.5">
-                  <img src={ASSETS.products.gazoil} alt="" className="w-5 h-5 object-contain" />
+                  <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-5 h-5 object-contain" />
                   <span className="text-xs font-bold text-[#0F172A]">
                     Contrôler les pompes
                   </span>
@@ -233,7 +219,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
                 className="w-full p-2.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-slate-50 flex items-center justify-between text-left transition-all"
               >
                 <div className="flex items-center gap-2.5">
-                  <Boxes className="w-5 h-5 text-[#1668E3]" />
+                  <img src={ASSETS.official.uiActions.niveauCuve} alt="" className="w-5 h-5 object-contain" />
                   <span className="text-xs font-bold text-[#0F172A]">
                     Vérifier les stocks
                   </span>
@@ -247,7 +233,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
                 className="w-full p-2.5 rounded-xl border border-slate-200 hover:border-red-400 hover:bg-slate-50 flex items-center justify-between text-left transition-all"
               >
                 <div className="flex items-center gap-2.5">
-                  <AlertTriangle className="w-5 h-5 text-[#EF4444]" />
+                  <img src={ASSETS.official.uiActions.alerte} alt="" className="w-5 h-5 object-contain" />
                   <span className="text-xs font-bold text-[#0F172A]">
                     Signaler un incident
                   </span>
@@ -261,7 +247,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
                 className="w-full p-2.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-slate-50 flex items-center justify-between text-left transition-all"
               >
                 <div className="flex items-center gap-2.5">
-                  <FileText className="w-5 h-5 text-[#1668E3]" />
+                  <img src={ASSETS.official.uiActions.rapports} alt="" className="w-5 h-5 object-contain" />
                   <span className="text-xs font-bold text-[#0F172A]">
                     Voir les rapports
                   </span>
@@ -275,7 +261,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
                 className="w-full p-2.5 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-100 flex items-center justify-between text-left transition-all"
               >
                 <div className="flex items-center gap-2.5">
-                  <ClipboardCheck className="w-5 h-5 text-[#1668E3]" />
+                  <img src={ASSETS.official.uiActions.disponible} alt="" className="w-5 h-5 object-contain" />
                   <span className="text-xs font-bold text-[#0B3A82]">
                     Clôturer le poste
                   </span>
@@ -404,7 +390,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
             <div className="space-y-3">
               {/* Alert 1 */}
               <div className="flex items-start gap-2.5 text-xs pb-2 border-b border-slate-100">
-                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <img src={ASSETS.official.uiActions.stockFaible} alt="" className="w-4 h-4 object-contain shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-[#0F172A] truncate">
@@ -417,7 +403,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
 
               {/* Alert 2 */}
               <div className="flex items-start gap-2.5 text-xs pb-2 border-b border-slate-100">
-                <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                <img src={ASSETS.official.uiActions.information} alt="" className="w-4 h-4 object-contain shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-[#0F172A] truncate">
@@ -430,7 +416,7 @@ export const ChefDePosteDashboardPage: React.FC = () => {
 
               {/* Alert 3 */}
               <div className="flex items-start gap-2.5 text-xs">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <img src={ASSETS.official.uiActions.disponible} alt="" className="w-4 h-4 object-contain shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-[#0F172A] truncate">
@@ -453,20 +439,20 @@ export const ChefDePosteDashboardPage: React.FC = () => {
             <div className="space-y-4">
               {/* 3 Metric Columns (Screen 03) */}
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                  <Fuel className="w-4 h-4 text-blue-600 mx-auto mb-1" />
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center">
+                  <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-5 h-5 object-contain mb-1" />
                   <div className="text-xs font-bold text-slate-800">243 500</div>
                   <div className="text-[10px] text-slate-400">FCFA Carburant</div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                  <ShoppingCart className="w-4 h-4 text-amber-600 mx-auto mb-1" />
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center">
+                  <img src={ASSETS.official.services.panierBoutique} alt="" className="w-5 h-5 object-contain mb-1" />
                   <div className="text-xs font-bold text-slate-800">410 200</div>
                   <div className="text-[10px] text-slate-400">FCFA Boutique</div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                  <Coins className="w-4 h-4 text-yellow-600 mx-auto mb-1" />
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center">
+                  <img src={ASSETS.official.services.recu} alt="" className="w-5 h-5 object-contain mb-1" />
                   <div className="text-xs font-bold text-[#0B3A82]">653 700</div>
                   <div className="text-[10px] text-slate-400">FCFA Total</div>
                 </div>

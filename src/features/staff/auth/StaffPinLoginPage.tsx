@@ -10,11 +10,11 @@ import {
   ArrowLeft,
   Lock,
   ArrowRight,
-  QrCode,
-  ShieldCheck,
   AlertCircle,
   Camera,
 } from 'lucide-react';
+
+import { ASSETS } from '@/config/assets';
 
 export const StaffPinLoginPage: React.FC = () => {
   const { role } = useParams<{ role: StaffRole }>();
@@ -189,7 +189,7 @@ export const StaffPinLoginPage: React.FC = () => {
               variant="outline-blue"
               size="lg"
               fullWidth
-              icon={<QrCode className="w-5 h-5 text-[#1668E3]" />}
+              icon={<img src={ASSETS.official.services.qrCode} alt="" className="w-5 h-5 object-contain" />}
               onClick={() => setScannerModalOpen(true)}
             >
               Scanner votre badge
@@ -198,7 +198,7 @@ export const StaffPinLoginPage: React.FC = () => {
 
           {/* Bottom Status (Screen 01B) */}
           <div className="pt-4 flex items-center justify-center gap-2 text-xs font-semibold text-slate-600">
-            <ShieldCheck className="w-5 h-5 text-[#10B981]" />
+            <img src={ASSETS.official.uiActions.disponible} alt="" className="w-5 h-5 object-contain" />
             <span>Accès sécurisé réservé au personnel</span>
           </div>
         </div>

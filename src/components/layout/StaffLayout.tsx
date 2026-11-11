@@ -13,8 +13,6 @@ import {
   Bell,
   MapPin,
   Clock,
-  LogOut,
-  Home,
   Fuel,
   BarChart3,
   Settings,
@@ -24,7 +22,6 @@ import {
   Package,
   AlertTriangle,
   Receipt,
-  User,
   Layers,
   RefreshCw,
   Coffee,
@@ -37,7 +34,8 @@ import {
 interface NavItem {
   id: string;
   label: string;
-  icon: LucideIcon;
+  iconSvg: string;
+  icon?: LucideIcon;
   badge?: number;
 }
 
@@ -93,73 +91,73 @@ export const StaffLayout: React.FC = () => {
 
   const role: StaffRole = currentEmployee?.role || 'pompiste';
 
-  // Specific navigation items per role matching the exact screenshots
+  // Specific navigation items per role using official SVGs exclusively
   const getNavItems = (): NavItem[] => {
     switch (role) {
       case 'pompiste':
         return [
-          { id: '', label: 'Piste', icon: Fuel },
-          { id: 'boutique', label: 'Boutique', icon: ShoppingBag },
-          { id: 'rapports', label: 'Rapports', icon: BarChart3 },
-          { id: 'alertes', label: 'Alertes', icon: Bell, badge: unreadAlertsCount },
-          { id: 'parametres', label: 'Paramètres', icon: Settings },
+          { id: '', label: 'Piste', iconSvg: ASSETS.official.carburantsGaz.super, icon: Fuel },
+          { id: 'boutique', label: 'Boutique', iconSvg: ASSETS.official.services.panierBoutique, icon: ShoppingBag },
+          { id: 'rapports', label: 'Rapports', iconSvg: ASSETS.official.uiActions.rapports, icon: BarChart3 },
+          { id: 'alertes', label: 'Alertes', iconSvg: ASSETS.official.uiActions.alerte, icon: Bell, badge: unreadAlertsCount },
+          { id: 'parametres', label: 'Paramètres', iconSvg: ASSETS.official.uiActions.parametres, icon: Settings },
         ];
       case 'chef-de-piste':
         return [
-          { id: '', label: 'Tableau de bord', icon: LayoutGrid },
-          { id: 'pompes', label: 'Pistes & Pompes', icon: Fuel },
-          { id: 'equipe', label: 'Équipe', icon: Users },
-          { id: 'stocks', label: 'Stocks & Produits', icon: Package },
-          { id: 'rapports', label: 'Rapports', icon: BarChart3 },
-          { id: 'alertes', label: 'Alertes', icon: Bell, badge: unreadAlertsCount },
-          { id: 'parametres', label: 'Paramètres', icon: Settings },
+          { id: '', label: 'Tableau de bord', iconSvg: ASSETS.official.carburantsGaz.super, icon: LayoutGrid },
+          { id: 'pompes', label: 'Pistes & Pompes', iconSvg: ASSETS.official.carburantsGaz.gasoil, icon: Fuel },
+          { id: 'equipe', label: 'Équipe', iconSvg: ASSETS.official.services.restauration, icon: Users },
+          { id: 'stocks', label: 'Stocks & Produits', iconSvg: ASSETS.official.uiActions.niveauCuve, icon: Package },
+          { id: 'rapports', label: 'Rapports', iconSvg: ASSETS.official.uiActions.rapports, icon: BarChart3 },
+          { id: 'alertes', label: 'Alertes', iconSvg: ASSETS.official.uiActions.alerte, icon: Bell, badge: unreadAlertsCount },
+          { id: 'parametres', label: 'Paramètres', iconSvg: ASSETS.official.uiActions.parametres, icon: Settings },
         ];
       case 'caissiere':
         return [
-          { id: '', label: 'Caisse Boutique', icon: ShoppingCart },
-          { id: 'produits', label: 'Produits', icon: Package },
-          { id: 'stocks', label: 'Stocks', icon: Layers },
-          { id: 'rapports', label: 'Rapports', icon: BarChart3 },
-          { id: 'alertes', label: 'Alertes', icon: Bell, badge: unreadAlertsCount },
-          { id: 'parametres', label: 'Paramètres', icon: Settings },
+          { id: '', label: 'Caisse Boutique', iconSvg: ASSETS.official.services.panierBoutique, icon: ShoppingCart },
+          { id: 'produits', label: 'Produits', iconSvg: ASSETS.official.boutiqueSnack.chips, icon: Package },
+          { id: 'stocks', label: 'Stocks', iconSvg: ASSETS.official.uiActions.niveauCuve, icon: Layers },
+          { id: 'rapports', label: 'Rapports', iconSvg: ASSETS.official.uiActions.rapports, icon: BarChart3 },
+          { id: 'alertes', label: 'Alertes', iconSvg: ASSETS.official.uiActions.alerte, icon: Bell, badge: unreadAlertsCount },
+          { id: 'parametres', label: 'Paramètres', iconSvg: ASSETS.official.uiActions.parametres, icon: Settings },
         ];
       case 'chef-de-poste':
         return [
-          { id: '', label: 'Tableau de bord', icon: LayoutGrid },
-          { id: 'equipe', label: 'Équipe', icon: Users },
-          { id: 'pompes', label: 'Pistes & Pompes', icon: Fuel },
-          { id: 'stocks', label: 'Stocks', icon: Layers },
-          { id: 'rapports', label: 'Rapports', icon: BarChart3 },
-          { id: 'incidents', label: 'Incidents', icon: AlertTriangle },
-          { id: 'parametres', label: 'Paramètres', icon: Settings },
+          { id: '', label: 'Tableau de bord', iconSvg: ASSETS.official.carburantsGaz.super, icon: LayoutGrid },
+          { id: 'equipe', label: 'Équipe', iconSvg: ASSETS.official.services.restauration, icon: Users },
+          { id: 'pompes', label: 'Pistes & Pompes', iconSvg: ASSETS.official.carburantsGaz.gasoil, icon: Fuel },
+          { id: 'stocks', label: 'Stocks', iconSvg: ASSETS.official.uiActions.niveauCuve, icon: Layers },
+          { id: 'rapports', label: 'Rapports', iconSvg: ASSETS.official.uiActions.rapports, icon: BarChart3 },
+          { id: 'incidents', label: 'Incidents', iconSvg: ASSETS.official.uiActions.alerte, icon: AlertTriangle },
+          { id: 'parametres', label: 'Paramètres', iconSvg: ASSETS.official.uiActions.parametres, icon: Settings },
         ];
       case 'rayonniste':
         return [
-          { id: '', label: 'Tableau de bord', icon: LayoutGrid },
-          { id: 'rayons', label: 'Rayons', icon: Layers },
-          { id: 'stocks', label: 'Stocks', icon: Package },
-          { id: 'reassort', label: 'Réassort', icon: RefreshCw },
-          { id: 'alertes', label: 'Alertes', icon: Bell, badge: unreadAlertsCount },
-          { id: 'parametres', label: 'Paramètres', icon: Settings },
+          { id: '', label: 'Tableau de bord', iconSvg: ASSETS.official.services.panierBoutique, icon: LayoutGrid },
+          { id: 'rayons', label: 'Rayons', iconSvg: ASSETS.official.boutiqueSnack.snacks, icon: Layers },
+          { id: 'stocks', label: 'Stocks', iconSvg: ASSETS.official.uiActions.niveauCuve, icon: Package },
+          { id: 'reassort', label: 'Réassort', iconSvg: ASSETS.official.services.panier, icon: RefreshCw },
+          { id: 'alertes', label: 'Alertes', iconSvg: ASSETS.official.uiActions.alerte, icon: Bell, badge: unreadAlertsCount },
+          { id: 'parametres', label: 'Paramètres', iconSvg: ASSETS.official.uiActions.parametres, icon: Settings },
         ];
       case 'agent-comptoir':
         return [
-          { id: '', label: 'Comptoir Café', icon: Coffee },
-          { id: 'commandes', label: 'Commandes', icon: Receipt },
-          { id: 'produits', label: 'Produits', icon: Package },
-          { id: 'rapports', label: 'Rapports', icon: BarChart3 },
-          { id: 'parametres', label: 'Paramètres', icon: Settings },
+          { id: '', label: 'Comptoir Café', iconSvg: ASSETS.official.boutiqueSnack.cafe, icon: Coffee },
+          { id: 'commandes', label: 'Commandes', iconSvg: ASSETS.official.services.recu, icon: Receipt },
+          { id: 'produits', label: 'Produits', iconSvg: ASSETS.official.boutiqueSnack.sandwich, icon: Package },
+          { id: 'rapports', label: 'Rapports', iconSvg: ASSETS.official.uiActions.rapports, icon: BarChart3 },
+          { id: 'parametres', label: 'Paramètres', iconSvg: ASSETS.official.uiActions.parametres, icon: Settings },
         ];
       case 'gerant':
         return [
-          { id: '', label: 'Tableau de bord', icon: LayoutGrid },
-          { id: 'equipe', label: 'Équipe', icon: Users },
-          { id: 'pompes', label: 'Pistes & Pompes', icon: Fuel },
-          { id: 'stocks', label: 'Stocks', icon: Layers },
-          { id: 'finances', label: 'Finances', icon: DollarSign },
-          { id: 'rapports', label: 'Rapports', icon: BarChart3 },
-          { id: 'incidents', label: 'Incidents', icon: AlertTriangle },
-          { id: 'parametres', label: 'Paramètres', icon: Settings },
+          { id: '', label: 'Tableau de bord', iconSvg: ASSETS.official.carburantsGaz.super, icon: LayoutGrid },
+          { id: 'equipe', label: 'Équipe', iconSvg: ASSETS.official.services.restauration, icon: Users },
+          { id: 'pompes', label: 'Pistes & Pompes', iconSvg: ASSETS.official.carburantsGaz.gasoil, icon: Fuel },
+          { id: 'stocks', label: 'Stocks', iconSvg: ASSETS.official.uiActions.niveauCuve, icon: Layers },
+          { id: 'finances', label: 'Finances', iconSvg: ASSETS.official.services.recu, icon: DollarSign },
+          { id: 'rapports', label: 'Rapports', iconSvg: ASSETS.official.uiActions.rapports, icon: BarChart3 },
+          { id: 'incidents', label: 'Incidents', iconSvg: ASSETS.official.uiActions.alerte, icon: AlertTriangle },
+          { id: 'parametres', label: 'Paramètres', iconSvg: ASSETS.official.uiActions.parametres, icon: Settings },
         ];
     }
   };
@@ -194,7 +192,6 @@ export const StaffLayout: React.FC = () => {
           <nav className="p-4 space-y-1.5" aria-label="Menu principal">
             {navItems.map(item => {
               const isActive = currentSection === item.id;
-              const Icon = item.icon;
               const targetPath = item.id ? `/personnel/${role}/${item.id}` : `/personnel/${role}`;
 
               return (
@@ -208,7 +205,13 @@ export const StaffLayout: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`w-5 h-5 ${isActive ? 'text-[#0A162B]' : 'text-white/80 group-hover:text-white'}`} />
+                    <img
+                      src={item.iconSvg}
+                      alt=""
+                      className={`w-5 h-5 object-contain transition-transform group-hover:scale-110 ${
+                        isActive ? 'drop-shadow-xs' : 'opacity-90'
+                      }`}
+                    />
                     <span>{item.label}</span>
                   </div>
                   {item.badge !== undefined && item.badge > 0 && (
@@ -234,7 +237,7 @@ export const StaffLayout: React.FC = () => {
             onClick={() => setShowLogoutConfirm(true)}
             className="relative z-10 w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/20 bg-black/20 hover:bg-white/10 text-white font-medium text-sm backdrop-blur-xs transition-colors"
           >
-            <LogOut className="w-5 h-5" />
+            <img src={ASSETS.official.uiActions.deconnexion} alt="" className="w-5 h-5 object-contain" />
             <span>Déconnexion</span>
           </button>
         </div>
@@ -504,7 +507,6 @@ export const StaffLayout: React.FC = () => {
               <nav className="space-y-1">
                 {navItems.map(item => {
                   const isActive = currentSection === item.id;
-                  const Icon = item.icon;
                   const targetPath = item.id ? `/personnel/${role}/${item.id}` : `/personnel/${role}`;
 
                   return (
@@ -519,7 +521,7 @@ export const StaffLayout: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5" />
+                        <img src={item.iconSvg} alt="" className="w-5 h-5 object-contain" />
                         <span>{item.label}</span>
                       </div>
                       {item.badge !== undefined && item.badge > 0 && (
@@ -541,7 +543,7 @@ export const StaffLayout: React.FC = () => {
               }}
               className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/20 bg-black/20 text-white font-medium text-sm"
             >
-              <LogOut className="w-5 h-5" />
+              <img src={ASSETS.official.uiActions.deconnexion} alt="" className="w-5 h-5 object-contain" />
               <span>Déconnexion</span>
             </button>
           </div>
@@ -559,8 +561,12 @@ export const StaffLayout: React.FC = () => {
             location.pathname === `/personnel/${role}` ? 'text-[#1668E3] font-bold' : 'text-slate-500'
           }`}
         >
-          <Home className="w-5 h-5" />
-          <span className="text-[10px] mt-1">Accueil</span>
+          <img
+            src={ASSETS.official.carburantsGaz.super}
+            alt="Accueil"
+            className={`w-5 h-5 object-contain mb-0.5 ${location.pathname === `/personnel/${role}` ? 'scale-110 drop-shadow-xs' : 'opacity-70'}`}
+          />
+          <span className="text-[10px]">Accueil</span>
         </Link>
 
         <Link
@@ -569,8 +575,12 @@ export const StaffLayout: React.FC = () => {
             location.pathname.includes('/transactions') ? 'text-[#1668E3] font-bold' : 'text-slate-500'
           }`}
         >
-          <Receipt className="w-5 h-5" />
-          <span className="text-[10px] mt-1">Transactions</span>
+          <img
+            src={ASSETS.official.services.recu}
+            alt="Transactions"
+            className={`w-5 h-5 object-contain mb-0.5 ${location.pathname.includes('/transactions') ? 'scale-110 drop-shadow-xs' : 'opacity-70'}`}
+          />
+          <span className="text-[10px]">Transactions</span>
         </Link>
 
         <Link
@@ -579,8 +589,12 @@ export const StaffLayout: React.FC = () => {
             location.pathname.includes('/rapports') ? 'text-[#1668E3] font-bold' : 'text-slate-500'
           }`}
         >
-          <BarChart3 className="w-5 h-5" />
-          <span className="text-[10px] mt-1">Rapports</span>
+          <img
+            src={ASSETS.official.uiActions.rapports}
+            alt="Rapports"
+            className={`w-5 h-5 object-contain mb-0.5 ${location.pathname.includes('/rapports') ? 'scale-110 drop-shadow-xs' : 'opacity-70'}`}
+          />
+          <span className="text-[10px]">Rapports</span>
         </Link>
 
         <Link
@@ -589,8 +603,12 @@ export const StaffLayout: React.FC = () => {
             location.pathname.includes('/parametres') ? 'text-[#1668E3] font-bold' : 'text-slate-500'
           }`}
         >
-          <User className="w-5 h-5" />
-          <span className="text-[10px] mt-1">Profil</span>
+          <img
+            src={ASSETS.official.uiActions.parametres}
+            alt="Profil"
+            className={`w-5 h-5 object-contain mb-0.5 ${location.pathname.includes('/parametres') ? 'scale-110 drop-shadow-xs' : 'opacity-70'}`}
+          />
+          <span className="text-[10px]">Profil</span>
         </Link>
       </nav>
 

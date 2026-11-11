@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { Button } from '@/components/ui/Button';
 import { QRCodeCanvas } from '@/components/ui/QRCodeCanvas';
-import { CheckCircle2, Clock, FileText } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import { ASSETS } from '@/config/assets';
 
 export const PaymentMobileMoneyPage: React.FC = () => {
   const { reservationId } = useParams<{ reservationId: string }>();
@@ -37,8 +38,12 @@ export const PaymentMobileMoneyPage: React.FC = () => {
     <div className="flex flex-col items-center justify-between p-5 sm:p-8 bg-white min-h-full space-y-6 text-center max-w-lg mx-auto lg:my-6 lg:rounded-3xl lg:border lg:border-slate-200 lg:shadow-md">
       {/* Top Success Badge (Screen 04C) */}
       <div className="flex flex-col items-center pt-2">
-        <div className="w-16 h-16 rounded-full bg-[#E6F7EF] flex items-center justify-center text-[#10B981] mb-3">
-          <CheckCircle2 className="w-12 h-12 stroke-[2.5]" />
+        <div className="w-16 h-16 flex items-center justify-center mb-2">
+          <img
+            src={ASSETS.official.uiActions.disponible}
+            alt="Confirmé"
+            className="w-16 h-16 object-contain drop-shadow-sm"
+          />
         </div>
         <h2 className="text-xl font-extrabold text-[#0F172A]">
           Réservation confirmée !
@@ -74,7 +79,7 @@ export const PaymentMobileMoneyPage: React.FC = () => {
       {/* Détails de votre réservation Card */}
       <div className="w-full bg-[#F8FAFC] rounded-2xl border border-slate-200 p-4 text-left space-y-2">
         <div className="flex items-center gap-2 text-xs font-bold text-[#0F172A] pb-1 border-b border-slate-200">
-          <FileText className="w-4 h-4 text-[#1668E3]" />
+          <img src={ASSETS.official.services.recu} alt="" className="w-4 h-4 object-contain" />
           <span>Détails de votre réservation</span>
         </div>
 

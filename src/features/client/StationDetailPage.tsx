@@ -9,10 +9,6 @@ import {
   MapPin,
   Heart,
   Navigation,
-  Fuel,
-  ShoppingCart,
-  Coffee,
-  Sparkles,
   ChevronRight,
   Calendar,
 } from 'lucide-react';
@@ -96,10 +92,10 @@ export const StationDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 4 Services in a Row (Screen 05B) */}
+        {/* 4 Services in a Row (Screen 05B) with Official SVG icons */}
         <div className="grid grid-cols-4 gap-2 py-1">
           <div className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#F0F5FD] border border-[#DCE8FB] text-center">
-            <Fuel className="w-6 h-6 text-[#1668E3] mb-1" />
+            <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-7 h-7 object-contain mb-1" />
             <span className="text-[11px] font-bold text-[#0F172A]">
               {station.services.pumpsAvailable}/{station.services.pumpsTotal}
             </span>
@@ -107,19 +103,19 @@ export const StationDetailPage: React.FC = () => {
           </div>
 
           <div className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#F0F5FD] border border-[#DCE8FB] text-center">
-            <ShoppingCart className="w-6 h-6 text-[#1668E3] mb-1" />
+            <img src={ASSETS.official.services.panierBoutique} alt="" className="w-7 h-7 object-contain mb-1" />
             <span className="text-[11px] font-bold text-[#0F172A]">Boutique</span>
             <span className="text-[10px] text-slate-500">Ouverte</span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#F0F5FD] border border-[#DCE8FB] text-center">
-            <Coffee className="w-6 h-6 text-[#1668E3] mb-1" />
+            <img src={ASSETS.official.boutiqueSnack.cafe} alt="" className="w-7 h-7 object-contain mb-1" />
             <span className="text-[11px] font-bold text-[#0F172A]">Café</span>
             <span className="text-[10px] text-slate-500">Service</span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#F0F5FD] border border-[#DCE8FB] text-center">
-            <Sparkles className="w-6 h-6 text-[#1668E3] mb-1" />
+            <img src={ASSETS.official.services.lavageAuto} alt="" className="w-7 h-7 object-contain mb-1" />
             <span className="text-[11px] font-bold text-[#0F172A]">Lavage</span>
             <span className="text-[10px] text-slate-500">Auto</span>
           </div>

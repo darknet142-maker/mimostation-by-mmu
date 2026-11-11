@@ -16,6 +16,8 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
+import { ASSETS } from '@/config/assets';
+
 export const ClientLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -63,16 +65,17 @@ export const ClientLayout: React.FC = () => {
   ).length;
 
   const navItems = [
-    { label: 'Accueil', path: '/', icon: Home },
-    { label: 'Stations', path: '/stations', icon: MapPin },
+    { label: 'Accueil', path: '/', iconSvg: ASSETS.official.carburantsGaz.super, icon: Home },
+    { label: 'Stations', path: '/stations', iconSvg: ASSETS.official.carburantsGaz.gasoil, icon: MapPin },
     {
       label: 'Mes réservations',
       path: '/reservations',
+      iconSvg: ASSETS.official.services.recu,
       icon: Calendar,
       badge: activeReservationsCount > 0 ? activeReservationsCount : undefined,
     },
-    { label: 'Mes QR', path: '/qr', icon: QrCode },
-    { label: 'Profil', path: '/profil', icon: User },
+    { label: 'Mes QR', path: '/qr', iconSvg: ASSETS.official.services.qrCode, icon: QrCode },
+    { label: 'Profil', path: '/profil', iconSvg: ASSETS.official.uiActions.parametres, icon: User },
   ];
 
   return (
@@ -116,7 +119,6 @@ export const ClientLayout: React.FC = () => {
                 item.path === '/'
                   ? location.pathname === '/'
                   : location.pathname.startsWith(item.path);
-              const Icon = item.icon;
 
               return (
                 <Link
@@ -129,7 +131,11 @@ export const ClientLayout: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
+                    <img
+                      src={item.iconSvg}
+                      alt=""
+                      className={`w-6 h-6 object-contain ${isActive ? 'scale-110 drop-shadow-xs' : 'opacity-90'}`}
+                    />
                     <span className="text-sm">{item.label}</span>
                   </div>
                   {item.badge !== undefined && (
@@ -304,20 +310,21 @@ export const ClientLayout: React.FC = () => {
               item.path === '/'
                 ? location.pathname === '/'
                 : location.pathname.startsWith(item.path);
-            const Icon = item.icon;
 
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 className={`flex flex-col items-center justify-center flex-1 py-1 px-1 transition-colors relative ${
-                  isActive ? 'text-[#1668E3]' : 'text-slate-400 hover:text-slate-600'
+                  isActive ? 'text-[#1668E3]' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 <div className="relative">
-                  <Icon
-                    className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform ${
-                      isActive ? 'scale-110 stroke-[2.5]' : 'stroke-[1.8]'
+                  <img
+                    src={item.iconSvg}
+                    alt=""
+                    className={`w-6 h-6 object-contain transition-transform ${
+                      isActive ? 'scale-110 drop-shadow-xs' : 'opacity-70'
                     }`}
                   />
                   {item.badge !== undefined && (

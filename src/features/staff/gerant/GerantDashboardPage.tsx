@@ -13,15 +13,12 @@ import {
   AlertTriangle,
   CheckCircle2,
   Package,
-  Users,
-  FileCheck2,
   Plus,
   Pencil,
   Trash2,
   Calendar,
   Search,
   Lock,
-  DollarSign,
   Layers,
   Fuel,
   TrendingUp,
@@ -337,7 +334,7 @@ export const GerantDashboardPage: React.FC = () => {
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          <ShieldCheck className="w-4 h-4" />
+          <img src={ASSETS.official.uiActions.disponible} alt="" className="w-4 h-4 object-contain" />
           <span>Vue d'ensemble</span>
         </button>
 
@@ -350,7 +347,7 @@ export const GerantDashboardPage: React.FC = () => {
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          <Package className="w-4 h-4" />
+          <img src={ASSETS.official.uiActions.niveauCuve} alt="" className="w-4 h-4 object-contain" />
           <span>Produits & Stocks ({safeProducts.length})</span>
         </button>
 
@@ -363,7 +360,7 @@ export const GerantDashboardPage: React.FC = () => {
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          <Users className="w-4 h-4" />
+          <img src={ASSETS.official.services.restauration} alt="" className="w-4 h-4 object-contain" />
           <span>Équipes & RH ({safeEmployees.length})</span>
         </button>
 
@@ -376,7 +373,7 @@ export const GerantDashboardPage: React.FC = () => {
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          <FileCheck2 className="w-4 h-4 text-[#F7B928]" />
+          <img src={ASSETS.official.services.recu} alt="" className="w-4 h-4 object-contain" />
           <span>Journal d'Audit Immuable ({safeAuditLogs.length})</span>
         </button>
       </div>
@@ -389,7 +386,7 @@ export const GerantDashboardPage: React.FC = () => {
             <div className="bg-white rounded-2xl p-4 border border-[#DBE5F1] shadow-station-card">
               <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
                 <span>Chiffre d’Affaires Total</span>
-                <DollarSign className="w-4 h-4 text-[#0B3A82]" />
+                <img src={ASSETS.official.services.recu} alt="" className="w-4 h-4 object-contain" />
               </div>
               <div className="text-2xl font-extrabold text-[#0B3A82] mt-1">
                 {new Intl.NumberFormat('fr-FR').format(dailyMetrics.totalRevenueFCFA)} FCFA
@@ -402,7 +399,7 @@ export const GerantDashboardPage: React.FC = () => {
             <div className="bg-white rounded-2xl p-4 border border-[#DBE5F1] shadow-station-card">
               <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
                 <span>Revenus Carburant</span>
-                <Fuel className="w-4 h-4 text-blue-600" />
+                <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-4 h-4 object-contain" />
               </div>
               <div className="text-2xl font-extrabold text-blue-700 mt-1">
                 {new Intl.NumberFormat('fr-FR').format(dailyMetrics.fuelRevenueFCFA)} FCFA
@@ -413,7 +410,7 @@ export const GerantDashboardPage: React.FC = () => {
             <div className="bg-white rounded-2xl p-4 border border-[#DBE5F1] shadow-station-card">
               <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
                 <span>Revenus Boutique & Gaz</span>
-                <Package className="w-4 h-4 text-amber-500" />
+                <img src={ASSETS.official.carburantsGaz.gazButane} alt="" className="w-4 h-4 object-contain" />
               </div>
               <div className="text-2xl font-extrabold text-amber-600 mt-1">
                 {new Intl.NumberFormat('fr-FR').format(dailyMetrics.boutiqueRevenueFCFA)} FCFA
@@ -424,7 +421,7 @@ export const GerantDashboardPage: React.FC = () => {
             <div className="bg-white rounded-2xl p-4 border border-[#DBE5F1] shadow-station-card">
               <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
                 <span>Personnel en Poste</span>
-                <Users className="w-4 h-4 text-emerald-600" />
+                <img src={ASSETS.official.services.restauration} alt="" className="w-4 h-4 object-contain" />
               </div>
               <div className="text-2xl font-extrabold text-[#0F172A] mt-1">
                 {activeStaffCount} / {safeEmployees.length}

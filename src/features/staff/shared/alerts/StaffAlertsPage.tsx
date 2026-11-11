@@ -2,7 +2,7 @@ import React from 'react';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
 import { SectionCard } from '@/components/ui/SectionCard';
-import { Bell, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
+import { ASSETS } from '@/config/assets';
 
 export const StaffAlertsPage: React.FC = () => {
   const { alerts } = useAppStore(s => ({
@@ -17,7 +17,7 @@ export const StaffAlertsPage: React.FC = () => {
     <div className="space-y-6">
       <SectionCard
         title="Journal des Alertes & Notifications"
-        icon={<Bell className="w-5 h-5 text-amber-500" />}
+        icon={<img src={ASSETS.official.uiActions.alerte} alt="" className="w-5 h-5 object-contain" />}
         actionLabel="Tout marquer comme lu"
         onAction={handleMarkAllRead}
       >
@@ -32,11 +32,11 @@ export const StaffAlertsPage: React.FC = () => {
               <div className="flex items-start gap-3">
                 <div className="mt-0.5">
                   {alt.type === 'danger' ? (
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                    <img src={ASSETS.official.uiActions.stockFaible} alt="" className="w-5 h-5 object-contain" />
                   ) : alt.type === 'info' ? (
-                    <Info className="w-5 h-5 text-blue-500" />
+                    <img src={ASSETS.official.uiActions.information} alt="" className="w-5 h-5 object-contain" />
                   ) : (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    <img src={ASSETS.official.uiActions.disponible} alt="" className="w-5 h-5 object-contain" />
                   )}
                 </div>
 

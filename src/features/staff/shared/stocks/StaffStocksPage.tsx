@@ -9,14 +9,11 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ASSETS } from '@/config/assets';
 import { Product, ProductCategory } from '@/types';
 import {
-  Layers,
-  Package,
   Plus,
   Pencil,
   Trash2,
   MapPin,
   ChevronDown,
-  Sparkles,
   Lock,
 } from 'lucide-react';
 
@@ -189,7 +186,7 @@ export const StaffStocksPage: React.FC = () => {
       </div>
 
       {/* 1. Stocks Carburants */}
-      <SectionCard title={`Stocks Carburants & Gaz Souterrains — ${activeStation.name}`} icon={<Layers className="w-5 h-5 text-blue-600" />}>
+      <SectionCard title={`Stocks Carburants & Gaz Souterrains — ${activeStation.name}`} icon={<img src={ASSETS.official.uiActions.niveauCuve} alt="" className="w-5 h-5 object-contain" />}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {fuelTanks.map(t => (
             <div key={t.id} className="p-4 rounded-2xl border border-slate-200 bg-white space-y-2 shadow-2xs">
@@ -214,7 +211,7 @@ export const StaffStocksPage: React.FC = () => {
       {/* 2. Bouteilles de Gaz */}
       <SectionCard
         title={`Bouteilles de Gaz (${gasProducts.length} références)`}
-        icon={<Package className="w-5 h-5 text-amber-500" />}
+        icon={<img src={ASSETS.official.carburantsGaz.gazButane} alt="" className="w-5 h-5 object-contain" />}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {gasProducts.map(g => (
@@ -273,7 +270,7 @@ export const StaffStocksPage: React.FC = () => {
       {/* 3. Articles Boutique & Lubrifiants */}
       <SectionCard
         title={`Articles Boutique & Lubrifiants (${boutiqueProducts.length} références)`}
-        icon={<Sparkles className="w-5 h-5 text-indigo-600" />}
+        icon={<img src={ASSETS.official.services.panierBoutique} alt="" className="w-5 h-5 object-contain" />}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {boutiqueProducts.map(p => (

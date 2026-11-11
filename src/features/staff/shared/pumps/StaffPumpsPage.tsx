@@ -5,7 +5,7 @@ import { SectionCard } from '@/components/ui/SectionCard';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { Button } from '@/components/ui/Button';
 import { ASSETS } from '@/config/assets';
-import { Fuel, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 export const StaffPumpsPage: React.FC = () => {
   const { pumps, tanks } = useAppStore(s => ({
@@ -23,7 +23,7 @@ export const StaffPumpsPage: React.FC = () => {
       {/* 6 Pompes Management */}
       <SectionCard
         title="Supervision et contrôle des 6 pompes"
-        icon={<Fuel className="w-5 h-5" />}
+        icon={<img src={ASSETS.official.carburantsGaz.super} alt="" className="w-5 h-5 object-contain" />}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {pumps.map(pump => (
@@ -51,9 +51,9 @@ export const StaffPumpsPage: React.FC = () => {
 
               <div className="my-4 flex items-center justify-center">
                 <img
-                  src={ASSETS.icons.pump}
-                  alt=""
-                  className="h-20 object-contain"
+                  src={pump.fuelType === 'Super' ? ASSETS.official.carburantsGaz.super : ASSETS.official.carburantsGaz.gasoil}
+                  alt={pump.fuelType}
+                  className="h-20 object-contain drop-shadow-xs"
                 />
               </div>
 

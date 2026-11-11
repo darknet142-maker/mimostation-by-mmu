@@ -7,6 +7,7 @@ import { StatusPill } from '@/components/ui/StatusPill';
 import { QuantityStepper } from '@/components/ui/QuantityStepper';
 import { QRCodeCanvas } from '@/components/ui/QRCodeCanvas';
 import { Modal } from '@/components/ui/Modal';
+import { ASSETS } from '@/config/assets';
 import {
   ShoppingCart,
   Search,
@@ -14,10 +15,8 @@ import {
   X,
   Banknote,
   Smartphone,
-  CheckCircle2,
   AlertTriangle,
   RotateCw,
-  Info,
   Lock,
 } from 'lucide-react';
 
@@ -350,17 +349,15 @@ export const CaissiereDashboardPage: React.FC = () => {
                       {new Intl.NumberFormat('fr-FR').format(sale.totalFCFA)} FCFA
                     </td>
                     <td className="py-2.5">
-                      <span className="inline-flex items-center gap-1 font-semibold text-[11px] text-slate-700">
+                      <span className="inline-flex items-center gap-1.5 font-semibold text-[11px] text-slate-700">
                         {sale.paymentMethod === 'Mobile Money' ? (
                           <>
-                            <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[8px] font-bold">
-                              ✓
-                            </span>
+                            <img src={ASSETS.official.uiActions.disponible} alt="OK" className="w-3.5 h-3.5 object-contain" />
                             <span>Mobile Money</span>
                           </>
                         ) : (
                           <>
-                            <Banknote className="w-3.5 h-3.5 text-blue-600" />
+                            <img src={ASSETS.official.services.recu} alt="" className="w-3.5 h-3.5 object-contain" />
                             <span>Espèces</span>
                           </>
                         )}
@@ -402,8 +399,8 @@ export const CaissiereDashboardPage: React.FC = () => {
         {/* Card 3: Paiement confirmé ! (Bottom Right, Screen 02) */}
         <div className="bg-white rounded-2xl border border-[#DCE4F0] shadow-station-card p-5 flex flex-col justify-between items-center text-center">
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-[#E6F7EF] text-[#10B981] flex items-center justify-center mb-2">
-              <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
+            <div className="w-12 h-12 flex items-center justify-center mb-2">
+              <img src={ASSETS.official.uiActions.disponible} alt="Paiement confirmé" className="w-12 h-12 object-contain" />
             </div>
             <h3 className="text-base font-extrabold text-[#0F172A]">
               Paiement confirmé !
@@ -421,7 +418,7 @@ export const CaissiereDashboardPage: React.FC = () => {
 
           {/* Ticket Number Pill */}
           <div className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#EEF4FD] rounded-xl text-xs font-semibold text-[#0B3A82] border border-[#DCE8FB]">
-            <Info className="w-4 h-4 text-[#1668E3]" />
+            <img src={ASSETS.official.uiActions.information} alt="" className="w-4 h-4 object-contain" />
             <span>Ticket N° : <span className="font-mono font-bold">{lastCompletedSale ? lastCompletedSale.ticketNumber : 'TKT-20261110-048'}</span></span>
           </div>
         </div>

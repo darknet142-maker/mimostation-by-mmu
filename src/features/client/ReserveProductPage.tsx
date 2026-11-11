@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { QuantityStepper } from '@/components/ui/QuantityStepper';
 import { QRCodeCanvas } from '@/components/ui/QRCodeCanvas';
 import { Reservation } from '@/types';
+import { ASSETS } from '@/config/assets';
 import {
-  Info,
   Calendar,
   Banknote,
   Smartphone,
@@ -190,9 +190,7 @@ export const ReserveProductPage: React.FC = () => {
 
           {/* Info Blue Alert Box (Screen 04B) */}
           <div className="flex items-center gap-3 p-3.5 bg-[#EEF4FD] rounded-2xl border border-[#D8E6FC] text-[#1668E3]">
-            <div className="w-6 h-6 rounded-full bg-[#1668E3] text-white flex items-center justify-center shrink-0">
-              <Info className="w-4 h-4 stroke-[2.5]" />
-            </div>
+            <img src={ASSETS.official.uiActions.information} alt="" className="w-6 h-6 object-contain shrink-0" />
             <p className="text-xs font-semibold text-[#1668E3]">
               Votre réservation est valable pendant <span className="font-extrabold">30 minutes</span> à compter de la confirmation.
             </p>

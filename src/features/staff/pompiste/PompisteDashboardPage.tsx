@@ -2,26 +2,24 @@ import React, { useState } from 'react';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
 import { QRCodeCanvas } from '@/components/ui/QRCodeCanvas';
+import { StatusPill } from '@/components/ui/StatusPill';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
 import { ASSETS } from '@/config/assets';
 import {
-  Fuel,
-  Droplet,
-  Coins,
   CreditCard,
-  Smartphone,
-  Banknote,
-  Check,
-  CheckCircle2,
-  Info,
-  ChevronRight,
   Sparkles,
+  ChevronRight,
+  TrendingUp,
+  AlertTriangle,
 } from 'lucide-react';
 
 export const PompisteDashboardPage: React.FC = () => {
-  const { pumps, currentEmployee, tanks } = useAppStore(s => ({
+  const { pumps, currentEmployee, tanks, products } = useAppStore(s => ({
     pumps: s.pumps,
     currentEmployee: s.currentEmployee,
     tanks: s.tanks,
+    products: s.products,
   }));
 
   // Pompiste's assigned pump (defaults to Pompe #1 or first assigned pump)
@@ -33,6 +31,17 @@ export const PompisteDashboardPage: React.FC = () => {
   const [selectedPumpNumber, setSelectedPumpNumber] = useState<number>(assignedPumpNumbers[0] || 1);
   const activePump = pumps.find(p => p.number === selectedPumpNumber) || pumps[0];
   const associatedTank = tanks.find(t => t.fuelType === activePump.fuelType) || tanks[0];
+
+  // Mobile sub-view toggle: 'overview' (Capture 01C / Screen 03) vs 'station_piste' (Capture 04 / Image 6)
+  const [mobileSubView, setMobileSubView] = useState<'overview' | 'station_piste'>('station_piste');
+
+  // Modals for Mobile Quick Actions
+  const [productsModalOpen, setProductsModalOpen] = useState(false);
+  const [tanksModalOpen, setTanksModalOpen] = useState(false);
+  const [incidentModalOpen, setIncidentModalOpen] = useState(false);
+  const [incidentTitle, setIncidentTitle] = useState('');
+  const [incidentDescription, setIncidentDescription] = useState('');
+  const [incidentSent, setIncidentSent] = useState(false);
 
   // Official fixed tariff (non-editable by pompiste)
   const pricePerLiter = activePump.fuelType === 'Super' ? 700 : 650;
@@ -111,14 +120,60 @@ export const PompisteDashboardPage: React.FC = () => {
     }, 4000);
   };
 
+  const handleReportIncident = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!incidentTitle.trim()) return;
+
+    store.reportIncident(
+      `[Pompe #${activePump.number}] ${incidentTitle}`,
+      incidentDescription || 'Signalé depuis le poste Pompiste.'
+    );
+    setIncidentSent(true);
+    setTimeout(() => {
+      setIncidentSent(false);
+      setIncidentModalOpen(false);
+      setIncidentTitle('');
+      setIncidentDescription('');
+    }, 1500);
+  };
+
   return (
     <div className="space-y-6">
+      {/* ================= MOBILE VIEW SWITCHER PILL (< 1024px) ================= */}
+      <div className="flex lg:hidden items-center justify-between bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
+        <button
+          type="button"
+          onClick={() => setMobileSubView('overview')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+            mobileSubView === 'overview'
+              ? 'bg-[#0B3A82] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-4 h-4 object-contain" />
+          <span>Vue d'ensemble</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileSubView('station_piste')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+            mobileSubView === 'station_piste'
+              ? 'bg-[#10B981] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <img src={ASSETS.official.services.recu} alt="" className="w-4 h-4 object-contain" />
+          <span>Poste & Encaissement</span>
+        </button>
+      </div>
+
       {/* ================= SUCCESS BANNER NOTIFICATION ================= */}
       {successToast && (
         <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-6 h-6 text-white stroke-[2.5]" />
+              <img src={ASSETS.official.uiActions.disponible} alt="Succès" className="w-6 h-6 object-contain" />
             </div>
             <div>
               <div className="text-sm font-extrabold flex items-center gap-2">
@@ -140,16 +195,149 @@ export const PompisteDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* ================= MAIN OPERATIONAL WORKSPACE (2 COLUMNS: ZERO CLUTTER) ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* ================= MOBILE OVERVIEW VIEW (SCREEN 01C / SCREEN 03) ================= */}
+      {mobileSubView === 'overview' && (
+        <div className="space-y-4 lg:hidden animate-in fade-in duration-200">
+          {/* Top User Card (Capture 01C) */}
+          <div className="bg-white rounded-2xl p-4 border border-[#DBE5F1] shadow-station-card flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <img
+                  src={currentEmployee?.avatar || ASSETS.avatars.pompiste}
+                  alt={currentEmployee?.name || 'Jean Dupont'}
+                  className="w-12 h-12 rounded-full border border-slate-200 object-cover"
+                />
+                <img
+                  src={ASSETS.official.uiActions.disponible}
+                  alt="Actif"
+                  className="w-4 h-4 object-contain absolute bottom-0 right-0"
+                />
+              </div>
+              <div>
+                <h2 className="text-base font-extrabold text-[#0F172A] leading-tight">Pompiste</h2>
+                <p className="text-xs text-slate-500">Bienvenue, {currentEmployee?.name || 'Jean Dupont'}</p>
+              </div>
+            </div>
+
+            <StatusPill type="active" label="En service" size="sm" />
+          </div>
+
+          {/* 4 Large Quick Action Cards (2x2 Grid, Screen 01C) */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Card 1: Produits dispo */}
+            <div
+              onClick={() => setProductsModalOpen(true)}
+              className="bg-white rounded-2xl p-4 border border-[#DCE4F0] shadow-station-card flex flex-col justify-between cursor-pointer hover:border-blue-400 active:scale-95 transition-all min-h-[120px]"
+            >
+              <div className="w-10 h-10 flex items-center justify-center mb-1">
+                <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-9 h-9 object-contain" />
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-[#0F172A]">Produits dispo</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">Consulter l'état</p>
+              </div>
+            </div>
+
+            {/* Card 2: Encaissement -> Directly launches the workstation */}
+            <div
+              onClick={() => setMobileSubView('station_piste')}
+              className="bg-white rounded-2xl p-4 border border-[#DCE4F0] shadow-station-card flex flex-col justify-between cursor-pointer hover:border-blue-400 active:scale-95 transition-all min-h-[120px]"
+            >
+              <div className="w-10 h-10 flex items-center justify-center mb-1">
+                <img src={ASSETS.official.services.recu} alt="" className="w-9 h-9 object-contain" />
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-[#0F172A]">Encaissement</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">Enregistrer</p>
+              </div>
+            </div>
+
+            {/* Card 3: Niveaux cuves */}
+            <div
+              onClick={() => setTanksModalOpen(true)}
+              className="bg-white rounded-2xl p-4 border border-[#DCE4F0] shadow-station-card flex flex-col justify-between cursor-pointer hover:border-blue-400 active:scale-95 transition-all min-h-[120px]"
+            >
+              <div className="w-10 h-10 flex items-center justify-center mb-1">
+                <img src={ASSETS.official.uiActions.niveauCuve} alt="" className="w-9 h-9 object-contain" />
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-[#0F172A]">Niveaux cuves</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">Voir les niveaux</p>
+              </div>
+            </div>
+
+            {/* Card 4: Incidents */}
+            <div
+              onClick={() => setIncidentModalOpen(true)}
+              className="bg-white rounded-2xl p-4 border border-[#DCE4F0] shadow-station-card flex flex-col justify-between cursor-pointer hover:border-red-400 active:scale-95 transition-all min-h-[120px]"
+            >
+              <div className="w-10 h-10 flex items-center justify-center mb-1">
+                <img src={ASSETS.official.uiActions.alerte} alt="" className="w-9 h-9 object-contain" />
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-[#0F172A]">Incidents</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">Signaler</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Vue rapide station (Capture 01C) */}
+          <div className="bg-white rounded-2xl p-4 border border-[#DCE4F0] shadow-station-card space-y-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-[#1668E3]" />
+              <h3 className="text-sm font-extrabold text-[#0F172A]">Vue rapide station</h3>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {/* Super */}
+              <div className="flex flex-col items-center text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-8 h-8 object-contain mb-1" />
+                <span className="text-xs font-bold text-[#0F172A] mb-1">Super</span>
+                <StatusPill type="disponible" size="sm" />
+              </div>
+
+              {/* Gazole */}
+              <div className="flex flex-col items-center text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <img src={ASSETS.official.carburantsGaz.gasoil} alt="" className="w-8 h-8 object-contain mb-1" />
+                <span className="text-xs font-bold text-[#0F172A] mb-1">Gazole</span>
+                <StatusPill type="disponible" size="sm" />
+              </div>
+
+              {/* Gaz Butane */}
+              <div className="flex flex-col items-center text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <img src={ASSETS.official.carburantsGaz.gazButane} alt="" className="w-7 h-8 object-contain mb-1" />
+                <span className="text-xs font-bold text-[#0F172A] mb-1">Gaz Butane</span>
+                <StatusPill type="disponible" size="sm" />
+              </div>
+            </div>
+          </div>
+
+          {/* Banner: Station opérationnelle (Capture 01C) */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-100 shadow-station-card flex items-center gap-3.5 relative overflow-hidden">
+            <img src={ASSETS.official.uiActions.disponible} alt="OK" className="w-9 h-9 object-contain shrink-0 relative z-10" />
+            <div className="relative z-10">
+              <h4 className="text-sm font-extrabold text-[#0F172A]">Station opérationnelle</h4>
+              <p className="text-xs text-slate-500">Tous les services sont disponibles.</p>
+            </div>
+            <img
+              src={ASSETS.scenes.stationFront}
+              alt=""
+              className="absolute right-0 top-0 bottom-0 w-32 object-cover opacity-20 pointer-events-none"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ================= MAIN OPERATIONAL WORKSPACE (DESKTOP OR MOBILE PUMP WORKSTATION) ================= */}
+      <div className={`${mobileSubView === 'overview' ? 'hidden lg:grid' : 'grid'} grid-cols-1 lg:grid-cols-12 gap-6 items-start`}>
         {/* ================= LEFT COLUMN: PUMP INFO & DISTRIBUTION (7 COLS) ================= */}
         <div className="lg:col-span-7 space-y-6">
           {/* Card 1: Pompe #1 (Super) & Fixed Price Badge */}
           <div className="bg-white rounded-3xl border border-[#DCE4F0] p-6 shadow-station-card flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            {/* 3D Fuel Nozzle Visual with droplets */}
+            {/* Official 3D Fuel Graphic */}
             <div className="w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center shrink-0">
               <img
-                src={ASSETS.products.super}
+                src={activePump.fuelType === 'Super' ? ASSETS.official.carburantsGaz.super : ASSETS.official.carburantsGaz.gasoil}
                 alt={activePump.fuelType}
                 className="max-h-28 max-w-28 object-contain drop-shadow-md"
               />
@@ -161,8 +349,8 @@ export const PompisteDashboardPage: React.FC = () => {
                 <h2 className="text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">
                   Pompe #{activePump.number} ({activePump.fuelType})
                 </h2>
-                <span className="inline-flex items-center gap-1 bg-[#10B981] text-white text-xs font-bold px-3 py-1 rounded-full shadow-xs">
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <span className="inline-flex items-center gap-1.5 bg-[#10B981] text-white text-xs font-bold px-3 py-1 rounded-full shadow-xs">
+                  <img src={ASSETS.official.uiActions.disponible} alt="" className="w-3.5 h-3.5 object-contain" />
                   <span>Tarif fixe</span>
                 </span>
               </div>
@@ -209,7 +397,7 @@ export const PompisteDashboardPage: React.FC = () => {
                     : 'text-slate-700 hover:text-slate-900'
                 }`}
               >
-                <Fuel className="w-4 h-4" />
+                <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-4 h-4 object-contain" />
                 <span>Saisir en Litres (L)</span>
               </button>
 
@@ -225,7 +413,7 @@ export const PompisteDashboardPage: React.FC = () => {
                     : 'text-slate-700 hover:text-slate-900'
                 }`}
               >
-                <Coins className="w-4 h-4" />
+                <img src={ASSETS.official.services.recu} alt="" className="w-4 h-4 object-contain" />
                 <span>Saisir en Montant (FCFA)</span>
               </button>
             </div>
@@ -317,8 +505,8 @@ export const PompisteDashboardPage: React.FC = () => {
             <div className="bg-[#EEF4FD] rounded-2xl border border-[#DCE8FB] p-5 space-y-4">
               {/* Row 1: Quantité calculée */}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#1668E3] flex items-center justify-center shrink-0">
-                  <Droplet className="w-6 h-6 fill-[#1668E3]" />
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center p-1.5 shrink-0">
+                  <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <div className="text-xs text-slate-600 font-semibold">Quantité calculée :</div>
@@ -330,8 +518,8 @@ export const PompisteDashboardPage: React.FC = () => {
 
               {/* Row 2: Total à encaisser */}
               <div className="flex items-center gap-3 pt-1 border-t border-blue-200/50">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                  <Coins className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center p-1.5 shrink-0">
+                  <img src={ASSETS.official.services.recu} alt="" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <div className="text-xs text-slate-600 font-semibold">Total à encaisser :</div>
@@ -345,8 +533,8 @@ export const PompisteDashboardPage: React.FC = () => {
             {/* Underground Tank Level Simulator Bar */}
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-bold text-xs">
-                  🛢️
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0 p-1">
+                  <img src={ASSETS.official.uiActions.niveauCuve} alt="" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Niveau cuve après service :</div>
@@ -395,7 +583,7 @@ export const PompisteDashboardPage: React.FC = () => {
                 }`}
               >
                 <div className="relative my-1">
-                  <Smartphone className="w-7 h-7 text-[#1668E3]" />
+                  <img src={ASSETS.official.services.qrCode} alt="Mobile Money" className="w-7 h-7 object-contain" />
                   {paymentMethod === 'Mobile Money' && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] text-white flex items-center justify-center text-[9px] font-black">
                       ✓
@@ -419,7 +607,7 @@ export const PompisteDashboardPage: React.FC = () => {
                 }`}
               >
                 <div className="my-1">
-                  <Banknote className="w-7 h-7 text-emerald-600" />
+                  <img src={ASSETS.official.services.recu} alt="Espèces" className="w-7 h-7 object-contain" />
                 </div>
                 <div className="text-xs font-extrabold text-[#0F172A] mt-1">Espèces</div>
                 <div className="text-[9px] text-slate-400 leading-tight mt-0.5">Cash direct</div>
@@ -445,39 +633,171 @@ export const PompisteDashboardPage: React.FC = () => {
 
             {/* Instruction Banner */}
             <div className="bg-[#EEF4FD] border border-[#DCE8FB] p-3 rounded-2xl flex items-center gap-2.5">
-              <Info className="w-5 h-5 text-[#1668E3] shrink-0" />
+              <img src={ASSETS.official.uiActions.information} alt="" className="w-5 h-5 object-contain shrink-0" />
               <p className="text-xs font-semibold text-[#0B3A82]">
                 Scannez le QR Code ou présentez-le au caissier.
               </p>
             </div>
 
             {/* Dynamic Scannable QR Code */}
-            <div className="p-4 bg-white rounded-2xl border border-slate-100 flex flex-col items-center justify-center my-2 shadow-2xs">
-              <QRCodeCanvas value={qrPayload} size={155} />
-              <div className="text-[10px] text-slate-400 font-mono mt-2">
-                REF : P{activePump.number}-{currentVolumeLiters.toFixed(1)}L-{currentTotalAmount}F
+            <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200">
+              <div className="p-2 bg-white rounded-xl shadow-xs border border-slate-200">
+                <QRCodeCanvas value={qrPayload} size={150} />
+              </div>
+              <div className="mt-2 text-[11px] font-mono font-bold text-slate-500">
+                POMPE #{activePump.number} • {currentVolumeLiters.toFixed(2)} L
               </div>
             </div>
           </div>
 
-          {/* Large Action CTA Button */}
+          {/* Large Full-Width Green Validation Button */}
           <div className="pt-2">
             <button
               type="button"
               onClick={handleValidateTransaction}
-              className="w-full bg-[#10B981] hover:bg-[#059669] active:scale-[0.98] text-white font-extrabold text-sm sm:text-base py-4 px-5 rounded-2xl shadow-lg shadow-emerald-600/20 flex items-center justify-between transition-all cursor-pointer"
+              className="w-full py-4 px-6 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-white font-black text-base sm:text-lg flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/25 active:scale-[0.99] transition-all cursor-pointer"
             >
-              <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-black">
-                  ✓
-                </span>
-                <span>Valider la distribution & Encaisser</span>
-              </div>
-              <ChevronRight className="w-5 h-5 stroke-[2.5]" />
+              <img src={ASSETS.official.uiActions.disponible} alt="" className="w-6 h-6 object-contain" />
+              <span>Valider la distribution & Encaisser</span>
+              <ChevronRight className="w-5 h-5 stroke-[3]" />
             </button>
           </div>
         </div>
       </div>
+
+      {/* ================= MODAL: PRODUITS DISPO ================= */}
+      {productsModalOpen && (
+        <Modal
+          isOpen={true}
+          onClose={() => setProductsModalOpen(false)}
+          title="Produits disponibles à la station"
+          subtitle="État des stocks et tarifs en vigueur"
+          maxWidth="md"
+        >
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+            {products.slice(0, 8).map(prod => (
+              <div
+                key={prod.id}
+                className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200"
+              >
+                <div className="flex items-center gap-3">
+                  <img src={prod.image} alt={prod.name} className="w-9 h-9 object-contain" />
+                  <div>
+                    <h4 className="text-xs font-bold text-[#0F172A]">{prod.name}</h4>
+                    <p className="text-[11px] text-slate-500">{prod.subtitle}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono font-bold text-[#0B3A82]">
+                    {new Intl.NumberFormat('fr-FR').format(prod.priceFCFA)} F
+                  </span>
+                  <StatusPill type="disponible" size="sm" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Modal>
+      )}
+
+      {/* ================= MODAL: NIVEAUX CUVES ================= */}
+      {tanksModalOpen && (
+        <Modal
+          isOpen={true}
+          onClose={() => setTanksModalOpen(false)}
+          title="Niveaux des cuves souterraines"
+          subtitle="Suivi en temps réel des jauges de carburant et gaz"
+          maxWidth="md"
+        >
+          <div className="space-y-4">
+            {tanks.map(tank => (
+              <div key={tank.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <img src={ASSETS.official.uiActions.niveauCuve} alt="" className="w-6 h-6 object-contain" />
+                    <div>
+                      <h4 className="text-sm font-bold text-[#0F172A]">{tank.fuelType}</h4>
+                      <p className="text-xs text-slate-500">Capacité : {tank.capacityLiters.toLocaleString('fr-FR')} L</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-black text-[#0B3A82] font-mono">
+                    {tank.currentLiters.toLocaleString('fr-FR')} L ({tank.levelPercent}%)
+                  </span>
+                </div>
+
+                <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden p-0.5">
+                  <div
+                    style={{ width: `${tank.levelPercent}%` }}
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      tank.levelPercent > 30 ? 'bg-emerald-500' : 'bg-red-500'
+                    }`}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Modal>
+      )}
+
+      {/* ================= MODAL: SIGNALER UN INCIDENT ================= */}
+      {incidentModalOpen && (
+        <Modal
+          isOpen={true}
+          onClose={() => setIncidentModalOpen(false)}
+          title="Signaler une anomalie / incident"
+          subtitle={`Pompe #${activePump.number} • ${activePump.fuelType}`}
+          maxWidth="sm"
+        >
+          {incidentSent ? (
+            <div className="py-6 flex flex-col items-center text-center space-y-3">
+              <img src={ASSETS.official.uiActions.disponible} alt="Envoyé" className="w-14 h-14 object-contain animate-bounce" />
+              <h4 className="text-base font-extrabold text-[#0F172A]">Incident transmis au Chef de Poste !</h4>
+              <p className="text-xs text-slate-500">L'équipe a été notifiée instantanément.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleReportIncident} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Type d'incident / problème
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex : Pistolet bloqué, fuite légère, TPE éteint"
+                  value={incidentTitle}
+                  onChange={e => setIncidentTitle(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Détails ou précisions (optionnel)
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Préciser l'état de la pompe ou du matériel..."
+                  value={incidentDescription}
+                  onChange={e => setIncidentDescription(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  variant="danger"
+                  size="md"
+                  fullWidth
+                  type="submit"
+                  icon={<AlertTriangle className="w-4 h-4" />}
+                >
+                  Envoyer le signalement d'urgence
+                </Button>
+              </div>
+            </form>
+          )}
+        </Modal>
+      )}
     </div>
   );
 };

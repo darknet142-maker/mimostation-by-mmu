@@ -7,8 +7,8 @@ import { StaffRole } from '@/types';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { Button } from '@/components/ui/Button';
 import { StatusPill } from '@/components/ui/StatusPill';
+import { ASSETS } from '@/config/assets';
 import {
-  User,
   Shield,
   RefreshCw,
   Smartphone,
@@ -38,7 +38,7 @@ export const StaffSettingsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Employee Identity Card */}
-      <SectionCard title="Mon Profil Professionnel" icon={<User className="w-5 h-5" />}>
+      <SectionCard title="Mon Profil Professionnel" icon={<img src={ASSETS.official.uiActions.parametres} alt="" className="w-5 h-5 object-contain" />}>
         <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200">
           <div className="flex items-center gap-4">
             <img
