@@ -6,6 +6,7 @@ export interface BrandLogoProps {
   mode?: 'staff' | 'client';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  sloganOverride?: string;
   onClick?: () => void;
 }
 
@@ -14,6 +15,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   mode = 'staff',
   size = 'md',
   className = '',
+  sloganOverride,
   onClick,
 }) => {
   const isDark = theme === 'dark';
@@ -30,7 +32,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     lg: 'text-3xl',
   };
 
-  const slogan = mode === 'client' ? 'Vérifiez • Réservez • Payez' : 'Gérer • Servir • Performer';
+  const slogan =
+    sloganOverride ||
+    (mode === 'client' ? 'Vérifiez • Réservez • Payez' : 'Gérer • Servir • Performer');
 
   return (
     <div

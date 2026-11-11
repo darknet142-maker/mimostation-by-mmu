@@ -16,7 +16,6 @@ import {
   LogOut,
   Home,
   Fuel,
-  CreditCard,
   BarChart3,
   Settings,
   LayoutGrid,
@@ -32,6 +31,7 @@ import {
   DollarSign,
   LucideIcon,
   ChevronDown,
+  ShoppingBag,
 } from 'lucide-react';
 
 interface NavItem {
@@ -98,11 +98,10 @@ export const StaffLayout: React.FC = () => {
     switch (role) {
       case 'pompiste':
         return [
-          { id: '', label: 'Accueil', icon: Home },
-          { id: 'piste', label: 'Piste', icon: Fuel },
-          { id: 'encaissement', label: 'Encaissement', icon: CreditCard },
-          { id: 'stocks', label: 'Stock & Niveaux', icon: Layers },
+          { id: '', label: 'Piste', icon: Fuel },
+          { id: 'boutique', label: 'Boutique', icon: ShoppingBag },
           { id: 'rapports', label: 'Rapports', icon: BarChart3 },
+          { id: 'alertes', label: 'Alertes', icon: Bell, badge: unreadAlertsCount },
           { id: 'parametres', label: 'Paramètres', icon: Settings },
         ];
       case 'chef-de-piste':
@@ -182,7 +181,13 @@ export const StaffLayout: React.FC = () => {
         <div>
           {/* Logo Header */}
           <div className="p-6 pb-8 border-b border-white/10">
-            <BrandLogo theme="dark" mode="staff" size="md" onClick={() => navigate(`/personnel/${role}`)} />
+            <BrandLogo
+              theme="dark"
+              mode="staff"
+              size="md"
+              sloganOverride={role === 'pompiste' ? 'Servir • Encaisser • Avancer' : undefined}
+              onClick={() => navigate(`/personnel/${role}`)}
+            />
           </div>
 
           {/* Navigation items */}
@@ -239,106 +244,162 @@ export const StaffLayout: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-8">
         {/* ================= DESKTOP HEADER BAR (>= 1024px) ================= */}
         <header className="hidden lg:flex bg-gradient-to-r from-[#0B3A82] via-[#0A2E6E] to-[#0D449A] text-white px-8 py-4 justify-between items-center shadow-lg relative overflow-hidden">
-          {/* User profile & status */}
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="relative">
-              <img
-                src={currentEmployee?.avatar || ASSETS.avatars.pompiste}
-                alt={currentEmployee?.name || 'Agent'}
-                className="w-14 h-14 rounded-full border-2 border-white shadow-md bg-blue-500 object-cover"
-              />
-              <span className="absolute bottom-0 right-0 w-4 h-4 bg-[#10B981] border-2 border-white rounded-full" />
-            </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl font-bold text-white tracking-tight">
-                  {currentEmployee?.title || 'Personnel'}
-                </h1>
-                <StatusPill type="active" label="En service" size="sm" />
-              </div>
-              <p className="text-sm text-blue-100 font-medium mt-0.5">
-                {currentEmployee?.name || 'Jean Dupont'}
-              </p>
-            </div>
-          </div>
-
-          {/* Location & Live Clock */}
-          <div className="flex items-center gap-8 relative z-10">
-            {/* Interactive Station Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setStationDropdownOpen(!stationDropdownOpen)}
-                className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
-                  <MapPin className="w-4 h-4 text-white" />
+          {role === 'pompiste' ? (
+            /* Pompiste Dedicated Header from Capture */
+            <>
+              {/* Left: Pompiste en service */}
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="relative">
+                  <img
+                    src={currentEmployee?.avatar || ASSETS.avatars.pompiste}
+                    alt={currentEmployee?.name || 'Jean Dupont'}
+                    className="w-14 h-14 rounded-full border-2 border-white shadow-md bg-blue-500 object-cover"
+                  />
+                  <span className="absolute bottom-0 right-0 w-4 h-4 bg-[#10B981] border-2 border-white rounded-full" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold flex items-center gap-1.5">
-                    <span>{activeStation.name}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-blue-200" />
+                  <span className="text-xs text-blue-200 block font-medium">Pompiste en service :</span>
+                  <h1 className="text-xl font-extrabold text-white tracking-tight leading-tight">
+                    {currentEmployee?.name || 'Jean Dupont'}
+                  </h1>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+                    <span className="text-xs font-semibold text-emerald-300">En service</span>
                   </div>
-                  <div className="text-[11px] text-blue-200">{activeStation.city}, {activeStation.country}</div>
                 </div>
-              </button>
+              </div>
 
-              {stationDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white text-slate-900 rounded-xl border border-slate-200 shadow-2xl z-50 p-2 space-y-1">
-                  <div className="text-[10px] font-bold text-slate-400 px-3 py-1 uppercase">
-                    Changer de station active
+              {/* Center: Pompe #1 (Super) */}
+              <div className="flex items-center gap-3.5 px-6 py-2.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xs relative z-10">
+                <div className="w-10 h-10 rounded-xl bg-white text-[#0B3A82] flex items-center justify-center shadow-xs">
+                  <Fuel className="w-6 h-6 stroke-[2.2]" />
+                </div>
+                <div>
+                  <div className="text-base font-extrabold text-white tracking-tight">
+                    Pompe #{currentEmployee?.assignedPumps?.[0] || 1}
                   </div>
-                  {stations.map(st => (
-                    <button
-                      key={st.id}
-                      type="button"
-                      onClick={() => {
-                        store.setSelectedStation(st.id);
-                        setStationDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors ${
-                        st.id === selectedStationId
-                          ? 'bg-[#1668E3] text-white font-bold'
-                          : 'hover:bg-slate-100 text-slate-700'
-                      }`}
-                    >
-                      <div>
-                        <div>{st.name}</div>
-                        <div className={`text-[10px] ${st.id === selectedStationId ? 'text-blue-100' : 'text-slate-400'}`}>
-                          {st.address}
-                        </div>
+                  <div className="text-xs text-blue-200 font-medium">
+                    ({currentEmployee?.assignedScope || 'Super'})
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Live Clock */}
+              <div className="flex items-center gap-2.5 relative z-10">
+                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white tracking-wide">{currentTime || '09:47'}</div>
+                  <div className="text-xs text-blue-200">{currentDate || 'Lun. 10 Nov. 2026'}</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Standard Staff Header for Other Roles */
+            <>
+              {/* User profile & status */}
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="relative">
+                  <img
+                    src={currentEmployee?.avatar || ASSETS.avatars.pompiste}
+                    alt={currentEmployee?.name || 'Agent'}
+                    className="w-14 h-14 rounded-full border-2 border-white shadow-md bg-blue-500 object-cover"
+                  />
+                  <span className="absolute bottom-0 right-0 w-4 h-4 bg-[#10B981] border-2 border-white rounded-full" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-xl font-bold text-white tracking-tight">
+                      {currentEmployee?.title || 'Personnel'}
+                    </h1>
+                    <StatusPill type="active" label="En service" size="sm" />
+                  </div>
+                  <p className="text-sm text-blue-100 font-medium mt-0.5">
+                    {currentEmployee?.name || 'Jean Dupont'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Location & Live Clock */}
+              <div className="flex items-center gap-8 relative z-10">
+                {/* Interactive Station Dropdown */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setStationDropdownOpen(!stationDropdownOpen)}
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all text-left"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
+                      <MapPin className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold flex items-center gap-1.5">
+                        <span>{activeStation.name}</span>
+                        <ChevronDown className="w-3.5 h-3.5 text-blue-200" />
                       </div>
-                      {st.id === selectedStationId && <span className="text-[10px] bg-white text-[#1668E3] font-bold px-1.5 py-0.5 rounded-full">Active</span>}
-                    </button>
-                  ))}
+                      <div className="text-[11px] text-blue-200">{activeStation.city}, {activeStation.country}</div>
+                    </div>
+                  </button>
+
+                  {stationDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white text-slate-900 rounded-xl border border-slate-200 shadow-2xl z-50 p-2 space-y-1">
+                      <div className="text-[10px] font-bold text-slate-400 px-3 py-1 uppercase">
+                        Changer de station active
+                      </div>
+                      {stations.map(st => (
+                        <button
+                          key={st.id}
+                          type="button"
+                          onClick={() => {
+                            store.setSelectedStation(st.id);
+                            setStationDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors ${
+                            st.id === selectedStationId
+                              ? 'bg-[#1668E3] text-white font-bold'
+                              : 'hover:bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          <div>
+                            <div>{st.name}</div>
+                            <div className={`text-[10px] ${st.id === selectedStationId ? 'text-blue-100' : 'text-slate-400'}`}>
+                              {st.address}
+                            </div>
+                          </div>
+                          {st.id === selectedStationId && <span className="text-[10px] bg-white text-[#1668E3] font-bold px-1.5 py-0.5 rounded-full">Active</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white">
-                <Clock className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-white tracking-wide">{currentTime || '09:48'}</div>
-                <div className="text-xs text-blue-200">{currentDate || 'Lun. 10 Nov. 2026'}</div>
-              </div>
-            </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white">
+                    <Clock className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-white tracking-wide">{currentTime || '09:48'}</div>
+                    <div className="text-xs text-blue-200">{currentDate || 'Lun. 10 Nov. 2026'}</div>
+                  </div>
+                </div>
 
-            {/* Notification Bell */}
-            <Link
-              to={`/personnel/${role}/alertes`}
-              className="relative w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-              aria-label="Alertes & Notifications"
-            >
-              <Bell className="w-5 h-5" />
-              {unreadAlertsCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-[#EF4444] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#0B3A82]">
-                  {unreadAlertsCount}
-                </span>
-              )}
-            </Link>
-          </div>
+                {/* Notification Bell */}
+                <Link
+                  to={`/personnel/${role}/alertes`}
+                  className="relative w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  aria-label="Alertes & Notifications"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadAlertsCount > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-[#EF4444] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#0B3A82]">
+                      {unreadAlertsCount}
+                    </span>
+                  )}
+                </Link>
+              </div>
+            </>
+          )}
 
           {/* Right canopy silhouette backdrop */}
           <img
