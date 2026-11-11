@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 140" width="120" height="140" fill="none">
+    <!-- Blue Gas Pump 3D -->
+    <rect x="26" y="24" width="56" height="96" rx="8" fill="#1565C0"/>
+    <rect x="34" y="34" width="40" height="26" rx="4" fill="#0D47A1"/>
+    <!-- Screen -->
+    <rect x="38" y="38" width="32" height="18" rx="2" fill="#E3F2FD"/>
+    <text x="54" y="51" font-family="monospace" font-size="9" font-weight="bold" fill="#0D47A1" text-anchor="middle">0.00</text>
+    <!-- Fuel symbol drop on pump -->
+    <circle cx="54" cy="74" r="5" fill="#F59E0B"/>
+    <!-- Side Nozzle & Hose -->
+    <path d="M82 60C92 60 96 70 96 85V110" stroke="#1E293B" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <rect x="90" y="55" width="8" height="18" rx="3" fill="#334155"/>
+    <rect x="20" y="116" width="68" height="8" rx="3" fill="#0D47A1"/>
+  </svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 180" width="140" height="180" fill="none">
+    <!-- Shiny Chips Bag -->
+    <defs>
+      <linearGradient id="chipG" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#F59E0B"/>
+        <stop offset="50%" stop-color="#D97706"/>
+        <stop offset="100%" stop-color="#B45309"/>
+      </linearGradient>
+    </defs>
+    <path d="M35 30L30 150L45 156L105 156L120 150L115 30L100 24L50 24L35 30Z" fill="url(#chipG)"/>
+    <!-- Serrated Top & Bottom -->
+    <path d="M35 30H115V36H35Z" fill="#92400E"/>
+    <path d="M30 146H120V152H30Z" fill="#92400E"/>
+    <!-- Big Chips Label -->
+    <ellipse cx="75" cy="88" rx="28" ry="18" fill="#EF4444"/>
+    <text x="75" y="93" font-family="sans-serif" font-size="11" font-weight="900" fill="#FDE047" text-anchor="middle">CHIPS</text>
+    <path d="M50 36L65 144" stroke="#FFFFFF" stroke-width="3" opacity="0.4"/>
+  </svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" fill="none">
+    <defs>
+      <linearGradient id="nozG" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFD000"/>
+        <stop offset="100%" stop-color="#E59400"/>
+      </linearGradient>
+      <linearGradient id="pipeG" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#94A3B8"/>
+        <stop offset="50%" stop-color="#CBD5E1"/>
+        <stop offset="100%" stop-color="#64748B"/>
+      </linearGradient>
+    </defs>
+    <!-- Fuel Dispenser Nozzle -->
+    <!-- Metal Pipe Spout -->
+    <path d="M96 28L130 52L134 46L102 24C98 21 92 23 88 28L60 62L68 68L94 36C95 34 96 30 96 28Z" fill="url(#pipeG)"/>
+    <path d="M128 50L144 62L140 66L126 54Z" fill="#475569"/>
+    <!-- Yellow Handle Body -->
+    <path d="M48 64C48 58 54 54 60 56L92 72C98 75 100 82 98 88L84 122C81 128 74 130 68 128L48 116C42 113 40 106 42 100L48 64Z" fill="url(#nozG)"/>
+    <!-- Black Grip trigger guard -->
+    <path d="M54 78C62 82 72 86 80 84C82 83 84 88 82 94C74 102 62 98 56 90Z" fill="#1E293B"/>
+    <!-- Trigger Lever -->
+    <rect x="62" y="86" width="18" height="4" rx="2" transform="rotate(-25 62 86)" fill="#CBD5E1"/>
+    <!-- Black Hose tail -->
+    <path d="M44 112C36 116 28 126 24 140H16C18 120 30 106 40 102Z" fill="#1E293B"/>
+  </svg>

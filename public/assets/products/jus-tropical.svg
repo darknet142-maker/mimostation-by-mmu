@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 180" width="110" height="180" fill="none">
+    <!-- Juice Brick / Tetra Pak -->
+    <path d="M30 40L42 28H82L70 40H30Z" fill="#84CC16"/>
+    <rect x="30" y="40" width="50" height="110" rx="4" fill="#65A30D"/>
+    <path d="M80 40L92 28V138L80 150V40Z" fill="#4D7C0F"/>
+    <circle cx="55" cy="85" r="16" fill="#FACC15"/>
+    <circle cx="52" cy="83" r="10" fill="#EA580C"/>
+    <text x="55" y="120" font-family="sans-serif" font-size="7" font-weight="bold" fill="#FFFFFF" text-anchor="middle">TROPICAL</text>
+  </svg>

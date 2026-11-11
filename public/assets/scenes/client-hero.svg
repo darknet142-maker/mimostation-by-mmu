@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400" fill="none">
+    <defs>
+      <linearGradient id="skyG" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#4A90E2"/>
+        <stop offset="60%" stop-color="#7BB6F8"/>
+        <stop offset="100%" stop-color="#C2E0FF"/>
+      </linearGradient>
+      <linearGradient id="roofG" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#FFB300"/>
+        <stop offset="100%" stop-color="#F57C00"/>
+      </linearGradient>
+    </defs>
+    <!-- Sky -->
+    <rect width="800" height="400" fill="url(#skyG)"/>
+    <!-- City Skyline Silhouette -->
+    <path d="M0 300H800V340H0Z" fill="#88B8E8" opacity="0.5"/>
+    <rect x="50" y="200" width="40" height="110" fill="#88B8E8" opacity="0.6"/>
+    <rect x="110" y="170" width="55" height="140" fill="#88B8E8" opacity="0.6"/>
+    <rect x="620" y="160" width="60" height="150" fill="#88B8E8" opacity="0.6"/>
+    <rect x="700" y="210" width="50" height="100" fill="#88B8E8" opacity="0.6"/>
+    <!-- Trees (round green) -->
+    <circle cx="90" cy="290" r="35" fill="#34A853"/>
+    <circle cx="720" cy="285" r="40" fill="#34A853"/>
+    <circle cx="760" cy="295" r="30" fill="#2E7D32"/>
+    <!-- Ground / Pavement -->
+    <path d="M0 310L800 310L800 400L0 400Z" fill="#607289"/>
+    <path d="M120 340L680 340L720 400L80 400Z" fill="#4B5868"/>
+    <!-- Canopy (Auvent) Station -->
+    <path d="M140 180L400 120L660 180L660 205L400 150L140 205Z" fill="url(#roofG)"/>
+    <!-- Canopy Underbody (White) -->
+    <path d="M140 205L400 150L660 205V218L400 162L140 218Z" fill="#FFFFFF"/>
+    <!-- Pillars (Poteaux) -->
+    <rect x="220" y="218" width="16" height="95" fill="#E2E8F0"/>
+    <rect x="236" y="218" width="8" height="95" fill="#94A3B8"/>
+    <rect x="390" y="162" width="20" height="150" fill="#E2E8F0"/>
+    <rect x="410" y="162" width="10" height="150" fill="#94A3B8"/>
+    <rect x="560" y="218" width="16" height="95" fill="#E2E8F0"/>
+    <rect x="576" y="218" width="8" height="95" fill="#94A3B8"/>
+    <!-- Fuel Pumps under canopy -->
+    <rect x="260" y="270" width="28" height="42" rx="4" fill="#0D47A1"/>
+    <rect x="330" y="270" width="28" height="42" rx="4" fill="#0D47A1"/>
+    <rect x="450" y="270" width="28" height="42" rx="4" fill="#0D47A1"/>
+    <rect x="510" y="270" width="28" height="42" rx="4" fill="#0D47A1"/>
+    <!-- Station Totem Sign -->
+    <rect x="680" y="180" width="40" height="120" rx="6" fill="#0F2D6B"/>
+    <circle cx="700" cy="205" r="12" fill="#F5A623"/>
+    <text x="700" y="235" font-family="sans-serif" font-size="7" font-weight="bold" fill="#FFFFFF" text-anchor="middle">StationPro</text>
+  </svg>

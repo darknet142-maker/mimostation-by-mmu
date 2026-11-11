@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" fill="none">
+  <defs>
+    <linearGradient id="flameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB800"/>
+      <stop offset="40%" stop-color="#FF8A00"/>
+      <stop offset="100%" stop-color="#FF4D00"/>
+    </linearGradient>
+    <linearGradient id="dropGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2575FC"/>
+      <stop offset="60%" stop-color="#1A56C4"/>
+      <stop offset="100%" stop-color="#0E3A8C"/>
+    </linearGradient>
+    <linearGradient id="highlightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#FF8A00" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer Flame Body (Yellow to Orange to Red) -->
+  <path d="M50 4C50 4 22 42 22 74C22 93 35 110 54 114C34 104 36 82 46 66C49 61 54 54 58 48C63 56 68 64 70 72C73 83 71 96 64 105C76 96 82 82 82 68C82 38 50 4 50 4Z" 
+        fill="url(#flameGrad)" filter="url(#glow)"/>
+        
+  <!-- Flame left curved curl -->
+  <path d="M50 4C50 4 30 38 28 66C26 84 37 100 50 108C36 100 34 80 42 66C45 60 50 52 50 4Z" 
+        fill="#FFC72C" opacity="0.9"/>
+        
+  <!-- Center Blue Fuel Droplet -->
+  <path d="M56 46C56 46 42 66 42 80C42 90 48 98 56 100C64 98 70 90 70 80C70 66 56 46 56 46Z" 
+        fill="url(#dropGrad)"/>
+        
+  <!-- Droplet Highlight Reflexion -->
+  <path d="M50 72C48 76 48 84 52 87C50 85 49 80 50 75C51 72 53 68 54 66C52 68 51 70 50 72Z" 
+        fill="url(#highlightGrad)"/>
+        
+  <!-- Bottom warm highlight -->
+  <circle cx="56" cy="85" r="4" fill="#60A5FA" opacity="0.6"/>
+</svg>
+

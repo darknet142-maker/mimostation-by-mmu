@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160" width="400" height="160" fill="none">
+    <!-- Canopy cropped with gradient fade left -->
+    <defs>
+      <linearGradient id="fadeL" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#0A285F" stop-opacity="1"/>
+        <stop offset="40%" stop-color="#0A285F" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#0A285F" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="400" height="160" fill="#5A96E8"/>
+    <!-- Canopy -->
+    <path d="M60 40L250 15L390 40V55L250 30L60 55Z" fill="#F59E0B"/>
+    <path d="M60 55L250 30L390 55V65L250 40L60 65Z" fill="#FFFFFF"/>
+    <!-- Pillars -->
+    <rect x="140" y="65" width="12" height="75" fill="#E2E8F0"/>
+    <rect x="245" y="40" width="14" height="100" fill="#E2E8F0"/>
+    <rect x="330" y="65" width="12" height="75" fill="#E2E8F0"/>
+    <!-- Pumps -->
+    <rect x="180" y="100" width="22" height="38" rx="3" fill="#1D4ED8"/>
+    <rect x="280" y="100" width="22" height="38" rx="3" fill="#1D4ED8"/>
+    <!-- Ground -->
+    <rect y="138" width="400" height="22" fill="#334155"/>
+    <!-- Fade overlay to left -->
+    <rect width="400" height="160" fill="url(#fadeL)"/>
+  </svg>

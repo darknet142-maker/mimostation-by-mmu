@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" fill="none">
+    <defs>
+      <linearGradient id="bgG" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#4A90E2"/>
+        <stop offset="100%" stop-color="#1A53B0"/>
+      </linearGradient>
+      <linearGradient id="skinG" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#693F23"/>
+        <stop offset="100%" stop-color="#3F2415"/>
+      </linearGradient>
+      <linearGradient id="shirtG" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0F56B3"/>
+        <stop offset="100%" stop-color="#0B3B7B"/>
+      </linearGradient>
+      <clipPath id="circleClip">
+        <circle cx="100" cy="100" r="96"/>
+      </clipPath>
+    </defs>
+    
+    <!-- Circle background -->
+    <circle cx="100" cy="100" r="98" fill="url(#bgG)"/>
+    
+    <g clip-path="url(#circleClip)">
+      <!-- Torso / Shoulders -->
+      <path d="M40 200C40 162 68 140 100 140C132 140 160 162 160 200Z" fill="url(#shirtG)"/>
+      
+      
+        <!-- Polo Collar (Yellow) -->
+        <path d="M82 140L100 168L118 140L130 144L100 178L70 144Z" fill="#F5A623"/>
+        <path d="M90 140L100 156L110 140Z" fill="#693F23"/>
+      
+      
+      <!-- Neck -->
+      <rect x="85" y="112" width="30" height="34" rx="6" fill="url(#skinG)"/>
+      
+      <!-- Head -->
+      <ellipse cx="100" cy="92" rx="38" ry="44" fill="url(#skinG)"/>
+      
+      
+        <!-- Hair (Male side) -->
+        <path d="M62 82C62 65 72 55 100 55C128 55 138 65 138 82Z" fill="#1E1B18"/>
+      
+      
+      <!-- Ears -->
+      <ellipse cx="61" cy="94" rx="7" ry="11" fill="url(#skinG)"/>
+      <ellipse cx="139" cy="94" rx="7" ry="11" fill="url(#skinG)"/>
+      
+      <!-- Eyes & Eyebrows -->
+      <ellipse cx="85" cy="88" rx="5" ry="3.5" fill="#1C140E"/>
+      <circle cx="86" cy="87" r="1.2" fill="#FFFFFF"/>
+      <ellipse cx="115" cy="88" rx="5" ry="3.5" fill="#1C140E"/>
+      <circle cx="116" cy="87" r="1.2" fill="#FFFFFF"/>
+      <path d="M78 81Q85 78 92 81" stroke="#1A110B" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M108 81Q115 78 122 81" stroke="#1A110B" stroke-width="2.5" stroke-linecap="round"/>
+      
+      <!-- Nose -->
+      <path d="M96 92Q100 102 104 92" stroke="#2B160C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      
+      <!-- Mouth / Smile -->
+      <path d="M88 110Q100 120 112 110" stroke="#FFFFFF" stroke-width="3" fill="#883333" stroke-linecap="round"/>
+      
+      
+      
+      
+        <!-- Cap Base -->
+        <path d="M62 76C62 48 78 40 100 40C122 40 138 48 138 76H62Z" fill="#125BB5"/>
+        <!-- Cap Brim -->
+        <path d="M52 74C65 68 135 68 148 74C140 82 60 82 52 74Z" fill="#0D3E80"/>
+        <!-- Cap Logo (Teardrop) -->
+        <path d="M100 48C97 53 94 57 94 61C94 64 97 67 100 67C103 67 106 64 106 61C106 57 103 53 100 48Z" fill="#F5A623"/>
+      
+    </g>
+  </svg>

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 200" width="160" height="200" fill="none">
+    <defs>
+      <linearGradient id="gasG" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#0F4BA8"/>
+        <stop offset="25%" stop-color="#1E75E8"/>
+        <stop offset="60%" stop-color="#3D92FF"/>
+        <stop offset="85%" stop-color="#1A60CC"/>
+        <stop offset="100%" stop-color="#0B377A"/>
+      </linearGradient>
+      <linearGradient id="metalG" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#D1D5DB"/>
+        <stop offset="50%" stop-color="#9CA3AF"/>
+        <stop offset="100%" stop-color="#4B5563"/>
+      </linearGradient>
+      <filter id="pShadow" x="-10%" y="-10%" width="120%" height="130%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0C285A" flood-opacity="0.18"/>
+      </filter>
+    </defs>
+    <g filter="url(#pShadow)">
+      <!-- Collar Handle Ring -->
+      <path d="M48 30C48 20 62 16 80 16C98 16 112 20 112 30V48H48V30Z" fill="url(#gasG)"/>
+      <ellipse cx="80" cy="30" rx="20" ry="6" fill="#0A2C68"/>
+      <!-- Valve -->
+      <rect x="74" y="24" width="12" height="18" rx="2" fill="url(#metalG)"/>
+      <circle cx="80" cy="22" r="5" fill="#EF4444"/>
+      <!-- Cylinder Body Top Dome -->
+      <path d="M32 80C32 54 52 46 80 46C108 46 128 54 128 80Z" fill="url(#gasG)"/>
+      <!-- Middle Main Body -->
+      <rect x="32" y="80" width="96" height="85" fill="url(#gasG)"/>
+      <!-- Weld ring ridge -->
+      <rect x="30" y="112" width="100" height="6" rx="3" fill="#1256BA"/>
+      <!-- Bottom Dome -->
+      <path d="M32 165C32 182 52 188 80 188C108 188 128 182 128 165Z" fill="url(#gasG)"/>
+      <!-- Base Ring Foot -->
+      <path d="M44 182C44 192 60 196 80 196C100 196 116 192 116 182V192C116 197 100 200 80 200C60 200 44 197 44 192Z" fill="#0A2C68"/>
+      <!-- Specular Highlight Strip -->
+      <rect x="58" y="52" width="10" height="126" rx="5" fill="#FFFFFF" opacity="0.35"/>
+      <!-- Label "TOTAL" or "6 KG" badge -->
+      <rect x="56" y="90" width="48" height="18" rx="3" fill="#FFFFFF" opacity="0.9"/>
+      <text x="80" y="103" font-family="sans-serif" font-size="9" font-weight="bold" fill="#0F4BA8" text-anchor="middle">6 KG</text>
+    </g>
+  </svg>
