@@ -13,6 +13,7 @@ import {
   StaffRole,
   AuditLogEntry,
   AuditActionType,
+  NetworkConfig,
 } from '@/types';
 import {
   INITIAL_STATIONS,
@@ -26,10 +27,12 @@ import {
   INITIAL_ALERTS,
   INITIAL_DAILY_METRICS,
   INITIAL_AUDIT_LOGS,
+  INITIAL_NETWORK_CONFIG,
   ROLE_DEFINITIONS,
 } from '@/data/fixtures';
 
 export interface AppState {
+  networkConfig: NetworkConfig;
   stations: Station[];
   selectedStationId: string;
   employees: Employee[];
@@ -85,6 +88,7 @@ function loadInitialState(): AppState {
       return {
         ...seed,
         ...parsed,
+        networkConfig: parsed.networkConfig ? { ...seed.networkConfig, ...parsed.networkConfig } : seed.networkConfig,
         stations: finalStations,
         selectedStationId: parsed.selectedStationId || seed.selectedStationId,
         employees: Array.isArray(parsed.employees) && parsed.employees.length > 0 ? parsed.employees : seed.employees,
@@ -110,6 +114,7 @@ function loadInitialState(): AppState {
 
 function getSeedState(): AppState {
   return {
+    networkConfig: INITIAL_NETWORK_CONFIG,
     stations: INITIAL_STATIONS,
     selectedStationId: 'station-liberte',
     employees: INITIAL_EMPLOYEES,
@@ -838,6 +843,242 @@ export const store = {
         state.selectedStationId === stationId
           ? (remaining[0]?.id || 'station-liberte')
           : state.selectedStationId,
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+  },
+
+  // --- 360° NETWORK & PLATFORM CUSTOMIZATION ---
+  updateNetworkConfig(updates: Partial<NetworkConfig>, authorName = 'Admin Global') {
+    const updated = { ...state.networkConfig, ...updates };
+    const auditEntry = createAuditLog(
+      'CONFIGURATION_RESEAU',
+      'station',
+      'network-global',
+      'Plateforme Globale',
+      `Mise à jour configuration réseau : Devise=${updated.currency}, Plateforme=${updated.platformName}`,
+      JSON.stringify(state.networkConfig),
+      JSON.stringify(updated),
+      authorName,
+      'Super Administrateur'
+    );
+
+    state = {
+      ...state,
+      networkConfig: updated,
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return updated;
+  },
+
+  updateFuelPrices(
+    prices: { super: number; gasoil: number; petroleLampant: number; gazButane: number },
+    authorName = 'Admin Global'
+  ) {
+    const oldPrices = state.networkConfig.fuelPrices;
+    const updatedConfig: NetworkConfig = {
+      ...state.networkConfig,
+      fuelPrices: prices,
+    };
+
+    // Synchronize price directly in products catalog
+    const updatedProducts = state.products.map(p => {
+      if (p.id.includes('super')) {
+        return { ...p, priceFCFA: prices.super };
+      }
+      if (p.id.includes('gazoil') || p.id.includes('gasoil')) {
+        return { ...p, priceFCFA: prices.gasoil };
+      }
+      if (p.id.includes('petrole')) {
+        return { ...p, priceFCFA: prices.petroleLampant };
+      }
+      if (p.id.includes('gaz-butane') && p.unit.includes('6 kg')) {
+        return { ...p, priceFCFA: prices.gazButane };
+      }
+      return p;
+    });
+
+    const auditEntry = createAuditLog(
+      'MODIFICATION_PRIX',
+      'product',
+      'fuel-prices',
+      'Tarification Carburants & Gaz Réseau',
+      `Ajustement officiel des prix : Super=${prices.super} F, Gasoil=${prices.gasoil} F, Pétrole=${prices.petroleLampant} F, Gaz=${prices.gazButane} F`,
+      `Super: ${oldPrices.super} F, Gasoil: ${oldPrices.gasoil} F`,
+      `Super: ${prices.super} F, Gasoil: ${prices.gasoil} F`,
+      authorName,
+      'Super Administrateur'
+    );
+
+    state = {
+      ...state,
+      networkConfig: updatedConfig,
+      products: updatedProducts,
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+  },
+
+  // --- 360° TANKS & CUVE LOGISTICS ---
+  refillTank(
+    tankId: string,
+    litersAdded: number,
+    supplier = 'TOTAL Distribution',
+    authorName = 'Admin Global'
+  ) {
+    const tank = state.tanks.find(t => t.id === tankId);
+    if (!tank) return;
+
+    const newCurrent = Math.min(tank.capacityLiters, tank.currentLiters + litersAdded);
+    const newPercent = Math.round((newCurrent / tank.capacityLiters) * 100);
+    const newStatus: 'ok' | 'low' | 'critical' =
+      newPercent <= 15 ? 'critical' : newPercent <= 30 ? 'low' : 'ok';
+
+    const updatedTank: TankLevel = {
+      ...tank,
+      currentLiters: newCurrent,
+      levelPercent: newPercent,
+      status: newStatus,
+    };
+
+    const auditEntry = createAuditLog(
+      'LIVRAISON_CUVE',
+      'station',
+      tankId,
+      `Cuve ${tank.fuelType}`,
+      `Réception livraison camion-citerne ${supplier} : +${litersAdded.toLocaleString('fr-FR')} L dans cuve ${tank.fuelType}`,
+      `${tank.currentLiters.toLocaleString('fr-FR')} L (${tank.levelPercent}%)`,
+      `${newCurrent.toLocaleString('fr-FR')} L (${newPercent}%)`,
+      authorName,
+      'Super Administrateur'
+    );
+
+    const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const newAlert: AlertNotification = {
+      id: `alert-refill-${Date.now()}`,
+      type: 'success',
+      title: `Livraison effectuée • Cuve ${tank.fuelType}`,
+      subtitle: `+${litersAdded.toLocaleString('fr-FR')} Litres réceptionnés de ${supplier}`,
+      time: nowTime,
+      isRead: false,
+    };
+
+    state = {
+      ...state,
+      tanks: state.tanks.map(t => (t.id === tankId ? updatedTank : t)),
+      alerts: [newAlert, ...state.alerts],
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return updatedTank;
+  },
+
+  updateTank(tankId: string, updates: Partial<TankLevel>, authorName = 'Admin Global') {
+    const current = state.tanks.find(t => t.id === tankId);
+    if (!current) return;
+
+    const updated = { ...current, ...updates };
+    if (updates.currentLiters !== undefined || updates.capacityLiters !== undefined) {
+      updated.levelPercent = Math.round((updated.currentLiters / updated.capacityLiters) * 100);
+      updated.status = updated.levelPercent <= 15 ? 'critical' : updated.levelPercent <= 30 ? 'low' : 'ok';
+    }
+
+    const auditEntry = createAuditLog(
+      'MODIFICATION_STOCK',
+      'station',
+      tankId,
+      `Cuve ${current.fuelType}`,
+      `Mise à jour paramètres ou jauge de la cuve ${current.fuelType}`,
+      `${current.currentLiters} L (${current.levelPercent}%)`,
+      `${updated.currentLiters} L (${updated.levelPercent}%)`,
+      authorName,
+      'Super Administrateur'
+    );
+
+    state = {
+      ...state,
+      tanks: state.tanks.map(t => (t.id === tankId ? updated : t)),
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return updated;
+  },
+
+  // --- 360° PUMPS INFRASTRUCTURE ---
+  addPump(pumpData: Omit<Pump, 'id'>, authorName = 'Admin Global') {
+    const newId = `pump-${Date.now()}`;
+    const newPump: Pump = {
+      ...pumpData,
+      id: newId,
+    };
+
+    const auditEntry = createAuditLog(
+      'CONFIGURATION_POMPE',
+      'station',
+      newId,
+      `Pompe #${newPump.number}`,
+      `Ajout du distributeur Pompe #${newPump.number} (${newPump.fuelType})`,
+      'Non existant',
+      `Pompe #${newPump.number} créée`,
+      authorName,
+      'Super Administrateur'
+    );
+
+    state = {
+      ...state,
+      pumps: [...state.pumps, newPump],
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return newPump;
+  },
+
+  updatePump(pumpId: string, updates: Partial<Pump>, authorName = 'Admin Global') {
+    const current = state.pumps.find(p => p.id === pumpId);
+    if (!current) return;
+
+    const updated = { ...current, ...updates };
+    const auditEntry = createAuditLog(
+      'CONFIGURATION_POMPE',
+      'station',
+      pumpId,
+      `Pompe #${updated.number}`,
+      `Mise à jour distributeur #${updated.number} : Statut=${updated.status}, Produit=${updated.fuelType}`,
+      `${current.status} (${current.fuelType})`,
+      `${updated.status} (${updated.fuelType})`,
+      authorName,
+      'Super Administrateur'
+    );
+
+    state = {
+      ...state,
+      pumps: state.pumps.map(p => (p.id === pumpId ? updated : p)),
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return updated;
+  },
+
+  deletePump(pumpId: string, authorName = 'Admin Global') {
+    const current = state.pumps.find(p => p.id === pumpId);
+    if (!current) return;
+
+    const auditEntry = createAuditLog(
+      'CONFIGURATION_POMPE',
+      'station',
+      pumpId,
+      `Pompe #${current.number}`,
+      `Suppression du distributeur Pompe #${current.number}`,
+      `Pompe #${current.number} active`,
+      'Pompe démantelée / supprimée',
+      authorName,
+      'Super Administrateur'
+    );
+
+    state = {
+      ...state,
+      pumps: state.pumps.filter(p => p.id !== pumpId),
       auditLogs: [auditEntry, ...state.auditLogs],
     };
     notify();

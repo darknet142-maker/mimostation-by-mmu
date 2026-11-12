@@ -11,8 +11,26 @@ import {
   AlertNotification,
   DailyMetrics,
   AuditLogEntry,
+  NetworkConfig,
 } from '@/types';
 import { ASSETS } from '@/config/assets';
+
+export const INITIAL_NETWORK_CONFIG: NetworkConfig = {
+  platformName: 'StationPro',
+  platformSlogan: "Console d'administration des stations-services",
+  currency: 'FCFA',
+  supportPhone: '+241 011 88 99 00',
+  supportEmail: 'support@stationpro.ga',
+  systemTheme: 'navy-pro',
+  fuelPrices: {
+    super: 700,
+    gasoil: 650,
+    petroleLampant: 450,
+    gazButane: 6000,
+  },
+  enableNetworkAlerts: true,
+  enableGlobalMobileMoney: true,
+};
 
 export const ROLE_DEFINITIONS: RoleInfo[] = [
   {

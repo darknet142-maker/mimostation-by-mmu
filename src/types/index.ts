@@ -38,21 +38,34 @@ export interface StationServiceOverview {
   hasCarWash: boolean;
   hasLubricants?: boolean;
   hasGas?: boolean;
+  hasTyreService?: boolean;
+  hasMechanic?: boolean;
 }
 
 export interface StationAdvancedSettings {
   enableReservations: boolean;
   enableMobileMoney: boolean;
   enableClientNotifications: boolean;
+  reservationDurationMin?: number;
+  airtelMoneyNumber?: string;
+  moovMoneyNumber?: string;
+  acceptsCash?: boolean;
+  acceptsCards?: boolean;
+  openingTime?: string;
+  closingTime?: string;
+  minStockAlertPercent?: number;
 }
 
 export interface Station {
   id: string;
   name: string;
+  code?: string;
   address: string;
   city: string;
   country: string;
   phone?: string;
+  email?: string;
+  managerName?: string;
   description?: string;
   distanceKm: number;
   isOpen24h: boolean;
@@ -63,8 +76,27 @@ export interface Station {
   secondaryColor?: string;
   logoUrl?: string;
   canopyTheme?: 'classic-blue' | 'night-edition' | 'eco-green' | 'neon-tech' | 'minimal-blue' | 'urban-orange';
+  layoutStyle?: 'standard' | 'compact' | 'dense';
+  bannerImage?: string;
   status?: 'active' | 'maintenance' | 'closed';
   advancedSettings?: StationAdvancedSettings;
+}
+
+export interface NetworkConfig {
+  platformName: string;
+  platformSlogan: string;
+  currency: string;
+  supportPhone: string;
+  supportEmail: string;
+  systemTheme: 'navy-pro' | 'slate-dark' | 'emerald-clean' | 'royal-blue';
+  fuelPrices: {
+    super: number;
+    gasoil: number;
+    petroleLampant: number;
+    gazButane: number;
+  };
+  enableNetworkAlerts: boolean;
+  enableGlobalMobileMoney: boolean;
 }
 
 export type ProductCategory =
@@ -191,7 +223,10 @@ export type AuditActionType =
   | 'CREATION_STATION'
   | 'MODIFICATION_STATION'
   | 'SUPPRESSION_STATION'
-  | 'PERSONNALISATION_STATION';
+  | 'PERSONNALISATION_STATION'
+  | 'LIVRAISON_CUVE'
+  | 'CONFIGURATION_POMPE'
+  | 'CONFIGURATION_RESEAU';
 
 export interface AuditLogEntry {
   id: string;

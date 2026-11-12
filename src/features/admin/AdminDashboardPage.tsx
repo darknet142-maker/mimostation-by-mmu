@@ -37,15 +37,24 @@ export const AdminDashboardPage: React.FC = () => {
 
   // Form editable states
   const [name, setName] = useState('Station Liberté');
+  const [code, setCode] = useState('ST-LBV-01');
   const [locationText, setLocationText] = useState('Libreville, Gabon');
   const [phone, setPhone] = useState('+241 011 12 34 56');
+  const [emergencyPhone, setEmergencyPhone] = useState('+241 077 00 11 22');
+  const [email, setEmail] = useState('contact.liberte@stationpro.ga');
+  const [managerName, setManagerName] = useState('Alain OBAME');
   const [description, setDescription] = useState('Votre station de confiance à Libreville.');
   const [primaryColor, setPrimaryColor] = useState('#0B4DB3');
   const [secondaryColor, setSecondaryColor] = useState('#FFC107');
   const [canopyTheme, setCanopyTheme] = useState<Station['canopyTheme']>('classic-blue');
+  const [bannerStyle, setBannerStyle] = useState<'canopy' | 'front' | 'city' | 'gradient'>('canopy');
+  const [layoutStyle, setLayoutStyle] = useState<'standard' | 'compact' | 'dense'>('standard');
   const [status, setStatus] = useState<Station['status']>('active');
+  const [isOpen24h, setIsOpen24h] = useState(true);
+  const [openingTime, setOpeningTime] = useState('06:00');
+  const [closingTime, setClosingTime] = useState('23:00');
 
-  // Offered services
+  // Offered services 360°
   const [services, setServices] = useState({
     carburants: true,
     gaz: true,
@@ -53,14 +62,23 @@ export const AdminDashboardPage: React.FC = () => {
     boutique: true,
     cafe: true,
     lavage: true,
+    pneumatiques: true,
+    mecanique: false,
   });
 
-  // Advanced settings switches
+  // Advanced settings switches 360°
   const [advancedSettings, setAdvancedSettings] = useState({
     enableReservations: true,
     enableMobileMoney: true,
     enableClientNotifications: true,
+    reservationDurationMin: 30,
+    airtelMoneyNumber: '+241 077 12 34 56',
+    moovMoneyNumber: '+241 066 98 76 54',
+    minStockAlertPercent: 20,
   });
+
+  // Expandable 360° details drawer
+  const [showDeep360Settings, setShowDeep360Settings] = useState(false);
 
   // Active theme tab on right panel
   const [activeThemeTab, setActiveThemeTab] = useState<'theme' | 'banner' | 'layout'>('theme');
@@ -70,13 +88,18 @@ export const AdminDashboardPage: React.FC = () => {
     const current = stations.find(s => s.id === selectedStationId) || stations[0];
     if (current) {
       setName(current.name);
+      setCode(current.code || `ST-${current.city.slice(0, 3).toUpperCase()}-01`);
       setLocationText(`${current.city}, ${current.country}`);
       setPhone(current.phone || '+241 011 12 34 56');
+      setEmail(current.email || `contact.${current.id}@stationpro.ga`);
+      setManagerName(current.managerName || 'Alain OBAME');
       setDescription(current.description || 'Votre station de confiance.');
       setPrimaryColor(current.primaryColor || '#0B4DB3');
       setSecondaryColor(current.secondaryColor || '#FFC107');
       setCanopyTheme(current.canopyTheme || 'classic-blue');
+      setLayoutStyle(current.layoutStyle || 'standard');
       setStatus(current.status || 'active');
+      setIsOpen24h(current.isOpen24h ?? true);
       setServices({
         carburants: true,
         gaz: current.services.hasGas !== false,
@@ -84,16 +107,22 @@ export const AdminDashboardPage: React.FC = () => {
         boutique: current.services.hasBoutique,
         cafe: current.services.hasCafe,
         lavage: current.services.hasCarWash,
+        pneumatiques: current.services.hasTyreService !== false,
+        mecanique: current.services.hasMechanic === true,
       });
       setAdvancedSettings({
         enableReservations: current.advancedSettings?.enableReservations ?? true,
         enableMobileMoney: current.advancedSettings?.enableMobileMoney ?? true,
         enableClientNotifications: current.advancedSettings?.enableClientNotifications ?? true,
+        reservationDurationMin: current.advancedSettings?.reservationDurationMin || 30,
+        airtelMoneyNumber: current.advancedSettings?.airtelMoneyNumber || '+241 077 12 34 56',
+        moovMoneyNumber: current.advancedSettings?.moovMoneyNumber || '+241 066 98 76 54',
+        minStockAlertPercent: current.advancedSettings?.minStockAlertPercent || 20,
       });
     }
   }, [selectedStationId, stations]);
 
-  // Handle Save
+  // Handle Save 360°
   const handleSaveStation = () => {
     const cityPart = locationText.split(',')[0]?.trim() || 'Libreville';
     const countryPart = locationText.split(',')[1]?.trim() || 'Gabon';
@@ -101,18 +130,22 @@ export const AdminDashboardPage: React.FC = () => {
     const updated: Station = {
       id: selectedStationId,
       name,
+      code,
       address: locationText,
       city: cityPart,
       country: countryPart,
       phone,
+      email,
+      managerName,
       description,
       distanceKm: 1.2,
-      isOpen24h: true,
+      isOpen24h,
       isOpen: status === 'active',
       status,
       primaryColor,
       secondaryColor,
       canopyTheme,
+      layoutStyle,
       services: {
         pumpsTotal: 6,
         pumpsAvailable: status === 'active' ? 6 : 0,
@@ -121,12 +154,18 @@ export const AdminDashboardPage: React.FC = () => {
         hasCarWash: services.lavage,
         hasLubricants: services.lubrifiants,
         hasGas: services.gaz,
+        hasTyreService: services.pneumatiques,
+        hasMechanic: services.mecanique,
       },
-      advancedSettings,
+      advancedSettings: {
+        ...advancedSettings,
+        openingTime,
+        closingTime,
+      },
     };
 
     store.saveStation(updated);
-    setSaveSuccessMsg(`Station "${name}" enregistrée avec succès !`);
+    setSaveSuccessMsg(`Station "${name}" et ses paramètres 360° enregistrés avec succès !`);
     setTimeout(() => setSaveSuccessMsg(null), 4000);
   };
 
@@ -653,6 +692,14 @@ export const AdminDashboardPage: React.FC = () => {
                   </span>
                 </label>
               </div>
+              {/* Toggle to Open Deep 360 Infrastructure Drawer */}
+              <button
+                type="button"
+                onClick={() => setShowDeep360Settings(!showDeep360Settings)}
+                className="mt-3 flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                <span>{showDeep360Settings ? '▲ Masquer les options 360°' : '▼ Plus d’options d’infrastructure & 360°'}</span>
+              </button>
             </div>
 
             {/* Bottom Form Action Buttons */}
@@ -676,6 +723,152 @@ export const AdminDashboardPage: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* EXPANDABLE DEEP 360° CONFIGURATION SECTION */}
+          {showDeep360Settings && (
+            <div className="p-4 bg-slate-50/90 rounded-2xl border border-blue-200/80 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                <h3 className="text-xs font-bold text-[#0A1D37] uppercase tracking-wider flex items-center gap-1.5">
+                  <span>Configuration Approfondie 360° de la Station</span>
+                </h3>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">
+                  Mode Administrateur Avancé
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                {/* Code Station */}
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Code Station</label>
+                  <input
+                    type="text"
+                    value={code}
+                    onChange={e => setCode(e.target.value)}
+                    className="w-full px-2.5 py-1.5 border rounded-lg bg-white font-mono"
+                    placeholder="ST-LBV-01"
+                  />
+                </div>
+
+                {/* Gérant responsable */}
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Gérant responsable</label>
+                  <input
+                    type="text"
+                    value={managerName}
+                    onChange={e => setManagerName(e.target.value)}
+                    className="w-full px-2.5 py-1.5 border rounded-lg bg-white"
+                    placeholder="Alain OBAME"
+                  />
+                </div>
+
+                {/* Email officiel */}
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Email officiel</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full px-2.5 py-1.5 border rounded-lg bg-white"
+                    placeholder="contact@stationpro.ga"
+                  />
+                </div>
+
+                {/* Téléphone urgence */}
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Téléphone urgence piste</label>
+                  <input
+                    type="text"
+                    value={emergencyPhone}
+                    onChange={e => setEmergencyPhone(e.target.value)}
+                    className="w-full px-2.5 py-1.5 border rounded-lg bg-white font-mono"
+                    placeholder="+241 077 00 11 22"
+                  />
+                </div>
+              </div>
+
+              {/* Horaires et services annexes */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-200 text-xs">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Horaires d'ouverture</label>
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isOpen24h}
+                        onChange={e => setIsOpen24h(e.target.checked)}
+                        className="rounded text-blue-600"
+                      />
+                      <span className="font-bold text-slate-800">24h / 24</span>
+                    </label>
+                    {!isOpen24h && (
+                      <div className="flex items-center gap-1 font-mono text-[11px]">
+                        <input
+                          type="time"
+                          value={openingTime}
+                          onChange={e => setOpeningTime(e.target.value)}
+                          className="border px-1.5 py-0.5 rounded bg-white"
+                        />
+                        <span>à</span>
+                        <input
+                          type="time"
+                          value={closingTime}
+                          onChange={e => setClosingTime(e.target.value)}
+                          className="border px-1.5 py-0.5 rounded bg-white"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Marchand Airtel Money</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.airtelMoneyNumber}
+                    onChange={e => setAdvancedSettings(prev => ({ ...prev, airtelMoneyNumber: e.target.value }))}
+                    className="w-full px-2.5 py-1.5 border rounded-lg bg-white font-mono text-[11px]"
+                    placeholder="+241 077 12 34 56"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Marchand Moov Money</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.moovMoneyNumber}
+                    onChange={e => setAdvancedSettings(prev => ({ ...prev, moovMoneyNumber: e.target.value }))}
+                    className="w-full px-2.5 py-1.5 border rounded-lg bg-white font-mono text-[11px]"
+                    placeholder="+241 066 98 76 54"
+                  />
+                </div>
+              </div>
+
+              {/* Services supplémentaires 360° */}
+              <div className="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-700">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={services.pneumatiques}
+                    onChange={e => setServices(prev => ({ ...prev, pneumatiques: e.target.checked }))}
+                    className="rounded text-blue-600"
+                  />
+                  <img src={ASSETS.official.services.pneumatiques} alt="" className="w-4 h-4 object-contain" />
+                  <span>Atelier Pneumatiques & Pression</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={services.mecanique}
+                    onChange={e => setServices(prev => ({ ...prev, mecanique: e.target.checked }))}
+                    className="rounded text-blue-600"
+                  />
+                  <img src={ASSETS.official.services.entretienAuto} alt="" className="w-4 h-4 object-contain" />
+                  <span>Vidange Rapide & Mécanique</span>
+                </label>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* ================= RIGHT COLUMN: 2 STACKED PANELS ================= */}
@@ -725,53 +918,125 @@ export const AdminDashboardPage: React.FC = () => {
               </button>
             </div>
 
-            {/* 6 Theme Canopy Miniature Cards (2x3 Grid from screenshot) */}
-            <div className="grid grid-cols-2 gap-2.5">
-              {CANOPY_THEMES.map(theme => (
-                <StationCanopyPreview
-                  key={theme.id}
-                  stationName={name}
-                  canopyTheme={theme.id}
-                  primaryColor={theme.primary}
-                  secondaryColor={theme.secondary}
-                  mode="mini"
-                  isSelected={canopyTheme === theme.id}
-                  onClick={() => {
-                    setCanopyTheme(theme.id);
-                    setPrimaryColor(theme.primary);
-                    setSecondaryColor(theme.secondary);
-                  }}
-                />
-              ))}
-            </div>
+            {/* TAB 1: THEME CANOPY & COLORS */}
+            {activeThemeTab === 'theme' && (
+              <>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {CANOPY_THEMES.map(theme => (
+                    <StationCanopyPreview
+                      key={theme.id}
+                      stationName={name}
+                      canopyTheme={theme.id}
+                      primaryColor={theme.primary}
+                      secondaryColor={theme.secondary}
+                      mode="mini"
+                      isSelected={canopyTheme === theme.id}
+                      onClick={() => {
+                        setCanopyTheme(theme.id);
+                        setPrimaryColor(theme.primary);
+                        setSecondaryColor(theme.secondary);
+                      }}
+                    />
+                  ))}
+                </div>
 
-            {/* Couleurs principales: 5 dot swatches */}
-            <div className="pt-3 border-t border-slate-100">
-              <label className="block text-xs font-bold text-slate-800 mb-2">
-                Couleurs principales
-              </label>
-              <div className="flex items-center gap-3">
-                {PRESET_COLORS.map(c => {
-                  const isCurrent = primaryColor.toLowerCase() === c.hex.toLowerCase();
-                  return (
-                    <button
-                      key={c.hex}
-                      type="button"
-                      title={c.label}
-                      onClick={() => setPrimaryColor(c.hex)}
-                      className={`w-7 h-7 rounded-full shadow-sm transition-all duration-150 relative flex items-center justify-center ${
-                        isCurrent
-                          ? 'ring-2 ring-offset-2 ring-blue-600 scale-110'
-                          : 'hover:scale-105'
+                {/* Couleurs principales: 5 dot swatches */}
+                <div className="pt-3 border-t border-slate-100">
+                  <label className="block text-xs font-bold text-slate-800 mb-2">
+                    Couleurs principales
+                  </label>
+                  <div className="flex items-center gap-3">
+                    {PRESET_COLORS.map(c => {
+                      const isCurrent = primaryColor.toLowerCase() === c.hex.toLowerCase();
+                      return (
+                        <button
+                          key={c.hex}
+                          type="button"
+                          title={c.label}
+                          onClick={() => setPrimaryColor(c.hex)}
+                          className={`w-7 h-7 rounded-full shadow-sm transition-all duration-150 relative flex items-center justify-center ${
+                            isCurrent
+                              ? 'ring-2 ring-offset-2 ring-blue-600 scale-110'
+                              : 'hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: c.hex }}
+                        >
+                          {isCurrent && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* TAB 2: BANNER STYLES 360° */}
+            {activeThemeTab === 'banner' && (
+              <div className="space-y-3">
+                <p className="text-xs text-slate-500">
+                  Choisissez le style de bannière pour l'en-tête de la station côté client et personnel :
+                </p>
+                <div className="space-y-2">
+                  {[
+                    { id: 'canopy', title: 'Auvent 3D Isométrique', desc: 'Rendu temps réel dynamique', preview: ASSETS.scenes.stationFront },
+                    { id: 'front', title: 'Façade Architecturale', desc: 'Station complète avec boutique', preview: ASSETS.scenes.boutiqueFront },
+                    { id: 'city', title: 'Silhouette Skyline Ville', desc: 'Ambiance métropole moderne', preview: ASSETS.scenes.sidebarCity },
+                    { id: 'gradient', title: 'Dégradé Minimaliste', desc: 'Charte graphique épurée', preview: ASSETS.scenes.clientHero },
+                  ].map(b => (
+                    <div
+                      key={b.id}
+                      onClick={() => setBannerStyle(b.id as any)}
+                      className={`p-2.5 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
+                        bannerStyle === b.id
+                          ? 'border-blue-600 bg-blue-50/50 ring-1 ring-blue-500/20'
+                          : 'border-slate-200 hover:bg-slate-50'
                       }`}
-                      style={{ backgroundColor: c.hex }}
                     >
-                      {isCurrent && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
-                    </button>
-                  );
-                })}
+                      <div className="w-14 h-9 rounded-lg overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
+                        <img src={b.preview} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-800">{b.title}</p>
+                        <p className="text-[10px] text-slate-400 truncate">{b.desc}</p>
+                      </div>
+                      {bannerStyle === b.id && <Check className="w-4 h-4 text-blue-600 stroke-[3]" />}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* TAB 3: LAYOUT MODES 360° */}
+            {activeThemeTab === 'layout' && (
+              <div className="space-y-3">
+                <p className="text-xs text-slate-500">
+                  Définissez la densité spatiale de l'interface :
+                </p>
+                <div className="space-y-2">
+                  {[
+                    { id: 'standard', title: 'Standard Spacieux', desc: 'Grand confort visuel, espacements amples' },
+                    { id: 'compact', title: 'Compact Moderne', desc: 'Optimisé pour les écrans mobiles & tablettes' },
+                    { id: 'dense', title: 'Ultra Dense', desc: 'Densité maximale pour salle de contrôle' },
+                  ].map(l => (
+                    <div
+                      key={l.id}
+                      onClick={() => setLayoutStyle(l.id as any)}
+                      className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                        layoutStyle === l.id
+                          ? 'border-blue-600 bg-blue-50/50 ring-1 ring-blue-500/20'
+                          : 'border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div>
+                        <p className="text-xs font-bold text-slate-800">{l.title}</p>
+                        <p className="text-[10px] text-slate-400">{l.desc}</p>
+                      </div>
+                      {layoutStyle === l.id && <Check className="w-4 h-4 text-blue-600 stroke-[3]" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
 
           {/* ================= PANEL 2: GESTION DES STATIONS ================= */}

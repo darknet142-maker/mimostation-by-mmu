@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { Button } from '@/components/ui/Button';
 import { ASSETS } from '@/config/assets';
+import { StationCanopyPreview } from '@/components/admin/StationCanopyPreview';
+import { ProductStationAlternativesModal } from '@/components/client/ProductStationAlternativesModal';
+import { Product } from '@/types';
 import {
   MapPin,
   Heart,
@@ -16,10 +19,13 @@ import {
 export const StationDetailPage: React.FC = () => {
   const { stationId } = useParams<{ stationId: string }>();
   const navigate = useNavigate();
-  const { stations, selectedStationId } = useAppStore(s => ({
+  const { stations, selectedStationId, products } = useAppStore(s => ({
     stations: s.stations,
     selectedStationId: s.selectedStationId,
+    products: s.products || [],
   }));
+
+  const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null);
 
   const station =
     stations.find(s => s.id === stationId) ||
@@ -41,20 +47,43 @@ export const StationDetailPage: React.FC = () => {
     { id: 'lave-glace-5l', name: 'Lave-Glace', subtitle: '5L', image: ASSETS.products.laveGlace },
   ];
 
+  const handleProductClick = (item: { id: string; name: string; subtitle: string; image: string }) => {
+    const fullProduct = products.find(p => p.id === item.id) || {
+      id: item.id,
+      name: item.name,
+      subtitle: item.subtitle,
+      priceFCFA: item.id.includes('super') ? 700 : item.id.includes('gazoil') ? 650 : 6000,
+      unit: item.id.includes('gaz') ? 'bouteille(s)' : 'Litre',
+      image: item.image,
+      category: 'carburant' as const,
+      isAvailable: true,
+      stockQuantity: 100,
+      minStockThreshold: 10,
+    };
+    setSelectedProductForModal(fullProduct);
+  };
+
   return (
     <div className="flex flex-col bg-white min-h-full pb-20">
-      {/* Station 3D Canopy Banner with Favorite Button */}
-      <div className="relative w-full h-48 sm:h-56 bg-slate-800 overflow-hidden">
-        <img
-          src={ASSETS.scenes.stationFront}
-          alt={station.name}
-          className="w-full h-full object-cover"
+      {/* Station 3D Canopy Banner with Dynamic Branding */}
+      <div className="relative w-full overflow-hidden bg-slate-900">
+        <StationCanopyPreview
+          stationName={station.name}
+          locationText={`${station.city}, ${station.country}`}
+          primaryColor={station.primaryColor || '#0B4DB3'}
+          secondaryColor={station.secondaryColor || '#FFC107'}
+          canopyTheme={station.canopyTheme || 'classic-blue'}
+          isOpen={station.isOpen}
+          isOpen24h={station.isOpen24h}
+          status={station.status || 'active'}
+          mode="full"
         />
-        {/* Heart Favorite Icon (Screen 05B top right) */}
+
+        {/* Heart Favorite Icon */}
         <button
           type="button"
           onClick={toggleFavorite}
-          className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-xs flex items-center justify-center text-white transition-all active:scale-90"
+          className="absolute top-3 right-12 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-xs flex items-center justify-center text-white transition-all active:scale-90 shadow-md"
           aria-label={station.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
         >
           <Heart
@@ -128,7 +157,7 @@ export const StationDetailPage: React.FC = () => {
             {mainProducts.map(prod => (
               <div
                 key={prod.id}
-                onClick={() => navigate(`/stations/${station.id}/reserver/${prod.id}`)}
+                onClick={() => handleProductClick(prod)}
                 className="flex items-center justify-between p-3 bg-white rounded-xl border border-[#DCE4F0] hover:border-blue-400 cursor-pointer transition-all"
               >
                 <div className="flex items-center gap-3">
@@ -157,7 +186,7 @@ export const StationDetailPage: React.FC = () => {
             {otherProducts.map(prod => (
               <div
                 key={prod.id}
-                onClick={() => navigate(`/stations/${station.id}/reserver/${prod.id}`)}
+                onClick={() => handleProductClick(prod)}
                 className="flex items-center justify-between p-3 bg-white rounded-xl border border-[#DCE4F0] hover:border-blue-400 cursor-pointer transition-all"
               >
                 <div className="flex items-center gap-3">
@@ -192,6 +221,13 @@ export const StationDetailPage: React.FC = () => {
           Réserver maintenant
         </Button>
       </div>
+
+      {/* Alternative Stations Modal when clicking any product */}
+      <ProductStationAlternativesModal
+        product={selectedProductForModal}
+        isOpen={Boolean(selectedProductForModal)}
+        onClose={() => setSelectedProductForModal(null)}
+      />
     </div>
   );
 };
