@@ -174,10 +174,26 @@ export const ClientLayout: React.FC = () => {
         </div>
 
         {/* Staff & Security Bottom Banner */}
-        <div className="pt-6 border-t border-white/10 space-y-3">
+        <div className="pt-6 border-t border-white/10 space-y-2.5">
           <Link
-            to="/staff"
-            className="flex items-center justify-between p-3.5 rounded-xl bg-gradient-to-r from-[#F7B928] to-amber-500 text-slate-900 font-bold hover:shadow-lg transition-all active:scale-[0.98]"
+            to="/admin"
+            className="flex items-center justify-between p-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold transition-all border border-white/10"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-500/30 flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4 text-amber-400" />
+              </div>
+              <div className="text-left">
+                <div className="text-xs font-bold leading-tight">Espace Admin Réseau</div>
+                <div className="text-[10px] text-blue-200">Habillage & supervision globale</div>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-amber-400" />
+          </Link>
+
+          <Link
+            to="/personnel"
+            className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-[#F7B928] to-amber-500 text-slate-900 font-bold hover:shadow-lg transition-all active:scale-[0.98]"
           >
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg bg-black/10 flex items-center justify-center">
@@ -231,9 +247,18 @@ export const ClientLayout: React.FC = () => {
               )}
             </Link>
 
+            {/* Direct Admin Access */}
+            <Link
+              to="/admin"
+              className="px-3 py-1.5 rounded-xl bg-[#0A1D37] text-amber-400 text-xs font-bold hover:bg-[#123668] transition-colors flex items-center gap-1.5 border border-amber-400/30"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>Admin</span>
+            </Link>
+
             {/* Direct Staff Access */}
             <Link
-              to="/staff"
+              to="/personnel"
               className="px-3.5 py-1.5 rounded-xl bg-[#0B3A82] text-white text-xs font-bold hover:bg-[#1668E3] transition-colors flex items-center gap-1.5"
             >
               <Lock className="w-3.5 h-3.5" />

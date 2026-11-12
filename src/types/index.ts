@@ -36,6 +36,14 @@ export interface StationServiceOverview {
   hasBoutique: boolean;
   hasCafe: boolean;
   hasCarWash: boolean;
+  hasLubricants?: boolean;
+  hasGas?: boolean;
+}
+
+export interface StationAdvancedSettings {
+  enableReservations: boolean;
+  enableMobileMoney: boolean;
+  enableClientNotifications: boolean;
 }
 
 export interface Station {
@@ -44,11 +52,19 @@ export interface Station {
   address: string;
   city: string;
   country: string;
+  phone?: string;
+  description?: string;
   distanceKm: number;
   isOpen24h: boolean;
   isOpen: boolean;
   services: StationServiceOverview;
   isFavorite?: boolean;
+  primaryColor?: string;
+  secondaryColor?: string;
+  logoUrl?: string;
+  canopyTheme?: 'classic-blue' | 'night-edition' | 'eco-green' | 'neon-tech' | 'minimal-blue' | 'urban-orange';
+  status?: 'active' | 'maintenance' | 'closed';
+  advancedSettings?: StationAdvancedSettings;
 }
 
 export type ProductCategory =
@@ -171,7 +187,11 @@ export type AuditActionType =
   | 'SUPPRESSION_PRODUIT'
   | 'AJOUT_EMPLOYE'
   | 'MODIFICATION_EMPLOYE'
-  | 'SUPPRESSION_EMPLOYE';
+  | 'SUPPRESSION_EMPLOYE'
+  | 'CREATION_STATION'
+  | 'MODIFICATION_STATION'
+  | 'SUPPRESSION_STATION'
+  | 'PERSONNALISATION_STATION';
 
 export interface AuditLogEntry {
   id: string;

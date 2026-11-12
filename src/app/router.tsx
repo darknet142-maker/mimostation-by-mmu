@@ -36,6 +36,19 @@ import { StaffReportsPage } from '@/features/staff/shared/reports/StaffReportsPa
 import { StaffAlertsPage } from '@/features/staff/shared/alerts/StaffAlertsPage';
 import { StaffSettingsPage } from '@/features/staff/shared/settings/StaffSettingsPage';
 
+// Admin Layout & Pages
+import { AdminLayout } from '@/components/layout/AdminLayout';
+import { AdminDashboardPage } from '@/features/admin/AdminDashboardPage';
+import { AdminStationsPage } from '@/features/admin/AdminStationsPage';
+import { AdminUsersPage } from '@/features/admin/AdminUsersPage';
+import { AdminStocksPage } from '@/features/admin/AdminStocksPage';
+import { AdminTransactionsPage } from '@/features/admin/AdminTransactionsPage';
+import { AdminReportsPage } from '@/features/admin/AdminReportsPage';
+import { AdminCustomizationPage } from '@/features/admin/AdminCustomizationPage';
+import { AdminNotificationsPage } from '@/features/admin/AdminNotificationsPage';
+import { AdminSettingsPage } from '@/features/admin/AdminSettingsPage';
+import { AdminSupportPage } from '@/features/admin/AdminSupportPage';
+
 export const router = createBrowserRouter([
   // ================= CLIENT ROUTES =================
   {
@@ -153,6 +166,25 @@ export const router = createBrowserRouter([
       { path: 'rapports', element: <StaffReportsPage /> },
       { path: 'incidents', element: <StaffAlertsPage /> },
       { path: 'parametres', element: <StaffSettingsPage /> },
+    ],
+  },
+
+  // ================= ADMIN CONSOLE (GLOBAL NETWORK MANAGEMENT) =================
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminDashboardPage /> },
+      { path: 'dashboard', element: <AdminDashboardPage /> },
+      { path: 'stations', element: <AdminStationsPage /> },
+      { path: 'utilisateurs', element: <AdminUsersPage /> },
+      { path: 'stocks', element: <AdminStocksPage /> },
+      { path: 'transactions', element: <AdminTransactionsPage /> },
+      { path: 'rapports', element: <AdminReportsPage /> },
+      { path: 'personnalisation', element: <AdminCustomizationPage /> },
+      { path: 'notifications', element: <AdminNotificationsPage /> },
+      { path: 'parametres', element: <AdminSettingsPage /> },
+      { path: 'support', element: <AdminSupportPage /> },
     ],
   },
 

@@ -29,6 +29,7 @@ import {
   LucideIcon,
   ChevronDown,
   ShoppingBag,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface NavItem {
@@ -232,6 +233,13 @@ export const StaffLayout: React.FC = () => {
             alt=""
             className="absolute bottom-16 left-0 right-0 w-full object-cover pointer-events-none opacity-80"
           />
+          <Link
+            to="/admin"
+            className="relative z-10 w-full flex items-center gap-2.5 px-3.5 py-2.5 mb-2.5 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/20 to-amber-600/10 hover:bg-amber-500/25 text-amber-300 font-bold text-xs backdrop-blur-xs transition-all shadow-sm"
+          >
+            <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Console Admin Réseau</span>
+          </Link>
           <button
             type="button"
             onClick={() => setShowLogoutConfirm(true)}

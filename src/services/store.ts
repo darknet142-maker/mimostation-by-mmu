@@ -58,10 +58,34 @@ function loadInitialState(): AppState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      const mergedStations = seed.stations.map(seedStation => {
+        const existing = Array.isArray(parsed.stations)
+          ? parsed.stations.find((s: Station) => s.id === seedStation.id)
+          : null;
+        return existing
+          ? {
+              ...seedStation,
+              ...existing,
+              primaryColor: existing.primaryColor || seedStation.primaryColor,
+              secondaryColor: existing.secondaryColor || seedStation.secondaryColor,
+              canopyTheme: existing.canopyTheme || seedStation.canopyTheme,
+              phone: existing.phone || seedStation.phone,
+              description: existing.description || seedStation.description,
+              status: existing.status || seedStation.status,
+              services: { ...seedStation.services, ...(existing.services || {}) },
+              advancedSettings: { ...seedStation.advancedSettings, ...(existing.advancedSettings || {}) },
+            }
+          : seedStation;
+      });
+      const extraStations = Array.isArray(parsed.stations)
+        ? parsed.stations.filter((s: Station) => !seed.stations.some(seedSt => seedSt.id === s.id))
+        : [];
+      const finalStations = [...mergedStations, ...extraStations];
+
       return {
         ...seed,
         ...parsed,
-        stations: Array.isArray(parsed.stations) && parsed.stations.length > 0 ? parsed.stations : seed.stations,
+        stations: finalStations,
         selectedStationId: parsed.selectedStationId || seed.selectedStationId,
         employees: Array.isArray(parsed.employees) && parsed.employees.length > 0 ? parsed.employees : seed.employees,
         currentEmployee: parsed.currentEmployee || seed.currentEmployee,
@@ -696,6 +720,124 @@ export const store = {
           ? { ...p, assignedEmployeeId: undefined, assignedEmployeeName: undefined }
           : p
       ),
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+  },
+
+  // --- ADMIN STATION MANAGEMENT & BRANDING ---
+  saveStation(station: Station, authorName = 'Admin Global') {
+    const exists = state.stations.some(s => s.id === station.id);
+    let updatedStations: Station[];
+    let auditEntry: AuditLogEntry;
+
+    if (exists) {
+      updatedStations = state.stations.map(s => (s.id === station.id ? station : s));
+      auditEntry = createAuditLog(
+        'MODIFICATION_STATION',
+        'station',
+        station.id,
+        station.name,
+        `Mise à jour configuration et habillage de la station ${station.name} (${station.city})`,
+        'Config précédente',
+        JSON.stringify({ primary: station.primaryColor, secondary: station.secondaryColor, theme: station.canopyTheme }),
+        authorName,
+        'Super Administrateur'
+      );
+    } else {
+      updatedStations = [...state.stations, station];
+      auditEntry = createAuditLog(
+        'CREATION_STATION',
+        'station',
+        station.id,
+        station.name,
+        `Création de la nouvelle station ${station.name} à ${station.city}`,
+        'Inexistant',
+        `Station créée (${station.city})`,
+        authorName,
+        'Super Administrateur'
+      );
+    }
+
+    state = {
+      ...state,
+      stations: updatedStations,
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return station;
+  },
+
+  updateStationCustomization(
+    stationId: string,
+    updates: Partial<Station>,
+    authorName = 'Admin Global'
+  ) {
+    const current = state.stations.find(s => s.id === stationId);
+    if (!current) return;
+
+    const updated: Station = {
+      ...current,
+      ...updates,
+      services: {
+        ...current.services,
+        ...(updates.services || {}),
+      },
+      advancedSettings: {
+        ...(current.advancedSettings || {
+          enableReservations: true,
+          enableMobileMoney: true,
+          enableClientNotifications: true,
+        }),
+        ...(updates.advancedSettings || {}),
+      },
+    };
+
+    const auditEntry = createAuditLog(
+      'PERSONNALISATION_STATION',
+      'station',
+      stationId,
+      updated.name,
+      `Habillage et personnalisation modifiés pour ${updated.name}`,
+      `Thème: ${current.canopyTheme || 'classic-blue'}, Coul: ${current.primaryColor || '#0B4DB3'}`,
+      `Thème: ${updated.canopyTheme || 'classic-blue'}, Coul: ${updated.primaryColor || '#0B4DB3'}`,
+      authorName,
+      'Super Administrateur'
+    );
+
+    state = {
+      ...state,
+      stations: state.stations.map(s => (s.id === stationId ? updated : s)),
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return updated;
+  },
+
+  deleteStation(stationId: string, authorName = 'Admin Global') {
+    const current = state.stations.find(s => s.id === stationId);
+    if (!current) return;
+
+    const auditEntry = createAuditLog(
+      'SUPPRESSION_STATION',
+      'station',
+      stationId,
+      current.name,
+      `Suppression de la station ${current.name} du réseau StationPro`,
+      current.name,
+      'Station supprimée',
+      authorName,
+      'Super Administrateur'
+    );
+
+    const remaining = state.stations.filter(s => s.id !== stationId);
+    state = {
+      ...state,
+      stations: remaining,
+      selectedStationId:
+        state.selectedStationId === stationId
+          ? (remaining[0]?.id || 'station-liberte')
+          : state.selectedStationId,
       auditLogs: [auditEntry, ...state.auditLogs],
     };
     notify();

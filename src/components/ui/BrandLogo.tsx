@@ -3,7 +3,7 @@ import { ASSETS } from '@/config/assets';
 
 export interface BrandLogoProps {
   theme?: 'dark' | 'light';
-  mode?: 'staff' | 'client';
+  mode?: 'staff' | 'client' | 'admin';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   sloganOverride?: string;
@@ -34,7 +34,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   const slogan =
     sloganOverride ||
-    (mode === 'client' ? 'Vérifiez • Réservez • Payez' : 'Gérer • Servir • Performer');
+    (mode === 'admin'
+      ? "Console d'administration"
+      : mode === 'client'
+      ? 'Vérifiez • Réservez • Payez'
+      : 'Gérer • Servir • Performer');
 
   return (
     <div

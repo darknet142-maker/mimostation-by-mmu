@@ -78,6 +78,32 @@ export const StaffRoleSelectPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Admin Console Shortcut Card */}
+          <div
+            onClick={() => navigate('/admin')}
+            className="p-3.5 bg-gradient-to-r from-[#0A1D37] to-[#123668] text-white rounded-2xl border border-blue-500/30 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-amber-400/50 transition-all duration-150 active:scale-[0.99] group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center border border-amber-400/30">
+                <Shield className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">
+                    Console d'administration Réseau
+                  </h3>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-400 text-slate-950">
+                    Admin
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-300">
+                  Créer, habiller et piloter toutes les stations
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
+          </div>
+
           {/* Bottom Info Banner (Screen 01A) */}
           <div className="mt-4 pt-2">
             <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#EEF4FD] rounded-xl text-[#1668E3] text-xs font-semibold">
