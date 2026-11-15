@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 100" fill="none">
+  <defs>
+    <linearGradient id="pg-green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#008751" />
+      <stop offset="100%" stop-color="#005B36" />
+    </linearGradient>
+    <linearGradient id="pg-gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFC107" />
+      <stop offset="100%" stop-color="#FF9800" />
+    </linearGradient>
+    <filter id="pg-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <!-- PetroGabon Flame/Drop Icon -->
+  <g transform="translate(10, 10)" filter="url(#pg-shadow)">
+    <!-- Outer green teardrop leaf -->
+    <path d="M 40 4 C 40 4 68 32 68 52 C 68 68 55 80 40 80 C 25 80 12 68 12 52 C 12 32 40 4 40 4 Z" fill="url(#pg-green-grad)" />
+    <!-- Yellow inner flame accent -->
+    <path d="M 40 22 C 40 22 56 42 56 55 C 56 64 49 71 40 71 C 31 71 24 64 24 55 C 24 42 40 22 40 22 Z" fill="url(#pg-gold-grad)" />
+    <!-- Core white highlight droplet -->
+    <path d="M 40 38 C 40 38 48 50 48 58 C 48 63 44 66 40 66 C 36 66 32 63 32 58 C 32 50 40 38 40 38 Z" fill="#FFFFFF" />
+  </g>
+
+  <!-- Typography: PetroGabon -->
+  <g transform="translate(94, 20)">
+    <text x="0" y="38" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="900" letter-spacing="-0.5">
+      <tspan fill="#008751">Petro</tspan><tspan fill="#005B36">Gabon</tspan>
+    </text>
+  </g>
+
+  <!-- Subtext: ÉNERGIE & DISTRIBUTION • GABON -->
+  <text x="96" y="82" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="800" letter-spacing="2" fill="#E65100">ÉNERGIE &amp; DISTRIBUTION</text>
+  <text x="242" y="82" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="8.5" font-weight="700" letter-spacing="1.5" fill="#008751">• GABON</text>
+</svg>
+

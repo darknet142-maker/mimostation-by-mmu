@@ -1,38 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
+import { store } from '@/services/store';
 import { Button } from '@/components/ui/Button';
 import { QRCodeCanvas } from '@/components/ui/QRCodeCanvas';
-import { Clock } from 'lucide-react';
+import { Clock, CheckCircle2, Smartphone } from 'lucide-react';
 import { ASSETS } from '@/config/assets';
+
+function computeRemainingSeconds(expiresAt?: string): number {
+  if (!expiresAt) return 0;
+  return Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
+}
 
 export const PaymentMobileMoneyPage: React.FC = () => {
   const { reservationId } = useParams<{ reservationId: string }>();
   const navigate = useNavigate();
 
-  const { reservations } = useAppStore(s => ({
+  const { reservations, stations } = useAppStore(s => ({
     reservations: s.reservations,
+    stations: s.stations,
   }));
 
   const reservation =
     reservations.find(r => r.id === reservationId) ||
     reservations[0];
 
-  // 30 minute countdown ticking every second
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(29 * 60 + 45);
+  const station = stations.find(s => s.id === reservation?.stationId) || stations[0];
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(() =>
+    computeRemainingSeconds(reservation?.expiresAt)
+  );
 
   useEffect(() => {
+    setSecondsRemaining(computeRemainingSeconds(reservation?.expiresAt));
     const timer = setInterval(() => {
-      setSecondsRemaining(prev => (prev > 0 ? prev - 1 : 0));
+      const rem = computeRemainingSeconds(reservation?.expiresAt);
+      setSecondsRemaining(rem);
+      if (rem === 0) {
+        store.sweepExpiredReservations();
+      }
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [reservation?.expiresAt]);
 
   const formatCountdown = (totalSeconds: number) => {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
+
+  const airtelNum = station?.advancedSettings?.airtelMoneyNumber || '+241 074 00 00 00';
+  const moovNum = station?.advancedSettings?.moovMoneyNumber || '+241 066 00 00 00';
 
   return (
     <div className="flex flex-col items-center justify-between p-5 sm:p-8 bg-white min-h-full space-y-6 text-center max-w-lg mx-auto lg:my-6 lg:rounded-3xl lg:border lg:border-slate-200 lg:shadow-md">
@@ -46,10 +63,12 @@ export const PaymentMobileMoneyPage: React.FC = () => {
           />
         </div>
         <h2 className="text-xl font-extrabold text-[#0F172A]">
-          Réservation confirmée !
+          {reservation?.status === 'paid' ? 'Paiement Mobile Money confirmé !' : 'Réservation confirmée !'}
         </h2>
         <p className="text-xs text-slate-500 mt-1 max-w-xs">
-          Veuillez effectuer votre paiement via Mobile Money.
+          {reservation?.status === 'paid'
+            ? 'Votre QR code est validé. Présentez-le directement à la station pour retirer votre commande.'
+            : 'Veuillez effectuer votre paiement via Airtel Money ou Moov Money vers le compte marchand de la station.'}
         </p>
       </div>
 
@@ -57,23 +76,48 @@ export const PaymentMobileMoneyPage: React.FC = () => {
       <div className="flex flex-col items-center">
         <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm">
           <QRCodeCanvas
-            value={reservation ? reservation.code : 'STP-20261110-458'}
+            value={reservation ? reservation.code : 'STP-AUCUNE-RESERVATION'}
             size={180}
           />
         </div>
 
-        {/* Blue Countdown Box */}
-        <div className="mt-4 flex items-center gap-2 px-5 py-2.5 bg-[#EEF4FD] text-[#0B3A82] rounded-full border border-[#DCE8FB]">
-          <Clock className="w-4 h-4 text-[#1668E3]" />
-          <span className="text-xs font-semibold">Temps restant :</span>
-          <span className="font-mono text-sm font-extrabold text-[#1668E3]">
-            {formatCountdown(secondsRemaining)}
-          </span>
-        </div>
+        {/* Status or Countdown Box */}
+        {reservation?.status === 'paid' ? (
+          <div className="mt-4 flex items-center gap-2 px-5 py-2.5 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-200">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="text-xs font-bold">Paiement Mobile Money confirmé</span>
+          </div>
+        ) : (
+          <div className="mt-4 flex items-center gap-2 px-5 py-2.5 bg-[#EEF4FD] text-[#0B3A82] rounded-full border border-[#DCE8FB]">
+            <Clock className="w-4 h-4 text-[#1668E3]" />
+            <span className="text-xs font-semibold">Temps restant :</span>
+            <span className="font-mono text-sm font-extrabold text-[#1668E3]">
+              {formatCountdown(secondsRemaining)}
+            </span>
+          </div>
+        )}
 
         <p className="text-[11px] text-slate-500 mt-3 max-w-xs leading-relaxed">
-          Présentez ce QR Code à la station pour confirmer votre paiement.
+          Présentez ce QR Code à la station pour confirmer votre paiement et retirer votre commande.
         </p>
+      </div>
+
+      {/* Numéros marchands de la station */}
+      <div className="w-full bg-blue-50/70 rounded-2xl border border-blue-100 p-3.5 text-left space-y-2">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#0B3A82]">
+          <Smartphone className="w-4 h-4 text-[#1668E3]" />
+          <span>Comptes marchands Mobile Money ({station?.name || 'Station'})</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="bg-white rounded-xl p-2.5 border border-blue-100 flex items-center justify-between">
+            <span className="text-slate-500 font-medium">Airtel Money</span>
+            <span className="font-mono font-bold text-slate-900">{airtelNum}</span>
+          </div>
+          <div className="bg-white rounded-xl p-2.5 border border-blue-100 flex items-center justify-between">
+            <span className="text-slate-500 font-medium">Moov Money</span>
+            <span className="font-mono font-bold text-slate-900">{moovNum}</span>
+          </div>
+        </div>
       </div>
 
       {/* Détails de votre réservation Card */}
@@ -115,8 +159,19 @@ export const PaymentMobileMoneyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Button Navy (Screen 04C) */}
-      <div className="w-full pt-2">
+      {/* Actions */}
+      <div className="w-full pt-2 space-y-2.5">
+        {reservation && reservation.status !== 'paid' && secondsRemaining > 0 && (
+          <Button
+            variant="yellow"
+            size="lg"
+            fullWidth
+            icon={<CheckCircle2 className="w-5 h-5" />}
+            onClick={() => store.confirmReservationPayment(reservation.id)}
+          >
+            Confirmer le paiement Mobile Money
+          </Button>
+        )}
         <Button
           variant="navy"
           size="lg"

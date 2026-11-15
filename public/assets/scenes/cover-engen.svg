@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="en-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5B8DC9" />
+      <stop offset="50%" stop-color="#9CC3E8" />
+      <stop offset="100%" stop-color="#EAF3FB" />
+    </linearGradient>
+    <linearGradient id="en-asphalt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8B98AA" />
+      <stop offset="35%" stop-color="#5F6B7D" />
+      <stop offset="100%" stop-color="#2E3644" />
+    </linearGradient>
+    <linearGradient id="en-blue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#001F54" />
+      <stop offset="60%" stop-color="#002D72" />
+      <stop offset="100%" stop-color="#003896" />
+    </linearGradient>
+    <linearGradient id="en-red" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C01018" />
+      <stop offset="100%" stop-color="#E31B23" />
+    </linearGradient>
+    <radialGradient id="en-spot" cx="50%" cy="0%" r="90%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85" />
+      <stop offset="50%" stop-color="#F1F5F9" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+    <filter id="en-shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-opacity="0.25" />
+    </filter>
+    <!-- Reusable Engen star badge -->
+    <g id="en-badge">
+      <circle cx="0" cy="0" r="30" fill="#002D72" />
+      <circle cx="0" cy="0" r="27" stroke="#FFFFFF" stroke-width="2" fill="none" />
+      <path d="M -18 2 C -10 -5 6 -9 20 -9 C 11 -4 0 0 -10 6 Z" fill="#E31B23" />
+      <path d="M -14 9 C -6 4 8 1 18 1 C 8 6 -2 10 -9 13 Z" fill="#E31B23" />
+      <polygon points="0,-16 3.6,-6.8 13.6,-6 6,0.4 8.4,10.4 0,5.2 -8.4,10.4 -6,0.4 -13.6,-6 -3.6,-6.8" fill="#FFFFFF" />
+    </g>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="1200" height="385" fill="url(#en-sky)" />
+  <g fill="#1F5130" opacity="0.4">
+    <path d="M 0 350 Q 90 320 180 350 T 360 340 T 540 352 T 720 335 T 900 350 T 1080 338 T 1200 348 L 1200 385 L 0 385 Z" />
+  </g>
+
+  <!-- Forecourt -->
+  <polygon points="0,375 1200,375 1200,600 0,600" fill="url(#en-asphalt)" />
+  <polygon points="120,600 280,375 920,375 1080,600" fill="#CBD5E1" opacity="0.35" />
+
+  <!-- Shop building: Engen Quickshop -->
+  <g transform="translate(600, 262)" filter="url(#en-shadow)">
+    <rect x="0" y="28" width="460" height="95" rx="4" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" />
+    <rect x="0" y="28" width="460" height="18" fill="#002D72" />
+    <rect x="0" y="46" width="460" height="4" fill="#E31B23" />
+    <text x="120" y="41" font-family="system-ui, sans-serif" font-size="12" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1.5">QUICKSHOP</text>
+    <text x="360" y="41" font-family="system-ui, sans-serif" font-size="11" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">LUBRIFIANTS • VIDANGE</text>
+    <rect x="30" y="58" width="150" height="65" fill="#BFDBFE" opacity="0.5" stroke="#94A3B8" stroke-width="1.5" />
+    <rect x="200" y="58" width="70" height="65" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1.5" />
+    <rect x="290" y="58" width="150" height="65" fill="#BFDBFE" opacity="0.5" stroke="#94A3B8" stroke-width="1.5" />
+  </g>
+
+  <!-- Spotlights -->
+  <polygon points="300,180 190,505 410,505" fill="url(#en-spot)" />
+  <polygon points="560,180 450,505 670,505" fill="url(#en-spot)" />
+  <polygon points="820,180 710,505 930,505" fill="url(#en-spot)" />
+
+  <!-- Islands -->
+  <g transform="translate(240, 395)">
+    <path d="M 0 45 L 35 12 L 205 12 L 170 45 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <polygon points="0,45 18,28 42,28 24,45" fill="#E31B23" />
+    <polygon points="24,45 42,28 66,28 48,45" fill="#FFFFFF" />
+    <polygon points="48,45 66,28 90,28 72,45" fill="#E31B23" />
+    <polygon points="72,45 90,28 114,28 96,45" fill="#FFFFFF" />
+    <polygon points="96,45 114,28 138,28 120,45" fill="#E31B23" />
+    <polygon points="120,45 138,28 170,28 152,45" fill="#FFFFFF" />
+    <g transform="translate(60, -130)" filter="url(#en-shadow)">
+      <rect x="0" y="0" width="66" height="132" rx="5" fill="#FFFFFF" stroke="#002D72" stroke-width="2" />
+      <rect x="0" y="0" width="66" height="22" rx="4" fill="#002D72" />
+      <text x="33" y="15" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#FFFFFF" text-anchor="middle">ENGEN</text>
+      <rect x="8" y="30" width="50" height="24" rx="3" fill="#0F172A" />
+      <text x="33" y="46" font-family="monospace" font-size="10" font-weight="bold" fill="#22C55E" text-anchor="middle">700 FCFA</text>
+      <rect x="0" y="62" width="66" height="8" fill="#E31B23" />
+      <use href="#en-badge" transform="translate(33, 102) scale(0.6)" />
+    </g>
+  </g>
+
+  <g transform="translate(680, 395)">
+    <path d="M 0 45 L 35 12 L 205 12 L 170 45 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <polygon points="0,45 18,28 42,28 24,45" fill="#E31B23" />
+    <polygon points="24,45 42,28 66,28 48,45" fill="#FFFFFF" />
+    <polygon points="48,45 66,28 90,28 72,45" fill="#E31B23" />
+    <polygon points="72,45 90,28 114,28 96,45" fill="#FFFFFF" />
+    <polygon points="96,45 114,28 138,28 120,45" fill="#E31B23" />
+    <polygon points="120,45 138,28 170,28 152,45" fill="#FFFFFF" />
+    <g transform="translate(60, -130)" filter="url(#en-shadow)">
+      <rect x="0" y="0" width="66" height="132" rx="5" fill="#FFFFFF" stroke="#002D72" stroke-width="2" />
+      <rect x="0" y="0" width="66" height="22" rx="4" fill="#002D72" />
+      <text x="33" y="15" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#FFFFFF" text-anchor="middle">ENGEN</text>
+      <rect x="8" y="30" width="50" height="24" rx="3" fill="#0F172A" />
+      <text x="33" y="46" font-family="monospace" font-size="10" font-weight="bold" fill="#22C55E" text-anchor="middle">650 FCFA</text>
+      <rect x="0" y="62" width="66" height="8" fill="#E31B23" />
+      <use href="#en-badge" transform="translate(33, 102) scale(0.6)" />
+    </g>
+  </g>
+
+  <!-- Pillars -->
+  <rect x="380" y="165" width="36" height="245" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="408" y="165" width="8" height="245" fill="#E2E8F0" />
+  <rect x="800" y="165" width="36" height="245" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="828" y="165" width="8" height="245" fill="#E2E8F0" />
+
+  <!-- Canopy -->
+  <g filter="url(#en-shadow)">
+    <polygon points="160,170 1100,170 1010,200 220,200" fill="#F1F5F9" stroke="#E2E8F0" />
+    <ellipse cx="300" cy="186" rx="18" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+    <ellipse cx="560" cy="186" rx="18" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+    <ellipse cx="820" cy="186" rx="18" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+    <polygon points="150,100 1110,100 1100,170 160,170" fill="url(#en-blue)" />
+    <polygon points="150,150 1110,150 1106,162 154,162" fill="url(#en-red)" />
+    <use href="#en-badge" transform="translate(560, 125) scale(0.75)" />
+    <text x="600" y="137" font-family="system-ui, -apple-system, sans-serif" font-size="34" font-weight="900" fill="#FFFFFF" letter-spacing="2">ENGEN</text>
+    <text x="215" y="134" font-family="system-ui, sans-serif" font-size="11" font-weight="800" fill="#CBD5E1" letter-spacing="2">VIVO ENERGY GABON</text>
+  </g>
+
+  <!-- Totem -->
+  <g transform="translate(50, 120)" filter="url(#en-shadow)">
+    <rect x="0" y="0" width="100" height="430" rx="8" fill="#FFFFFF" stroke="#002D72" stroke-width="2.5" />
+    <rect x="4" y="4" width="92" height="88" rx="6" fill="#002D72" />
+    <use href="#en-badge" transform="translate(50, 40) scale(0.85)" />
+    <text x="50" y="84" font-family="system-ui, sans-serif" font-size="12" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">ENGEN</text>
+    <rect x="8" y="100" width="84" height="150" rx="4" fill="#090D16" />
+    <text x="14" y="122" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">SUPER</text>
+    <text x="84" y="122" font-family="monospace" font-size="13" font-weight="bold" fill="#22C55E" text-anchor="end">700</text>
+    <text x="14" y="152" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">GASOIL</text>
+    <text x="84" y="152" font-family="monospace" font-size="13" font-weight="bold" fill="#22C55E" text-anchor="end">650</text>
+    <text x="14" y="182" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">PETROLE</text>
+    <text x="84" y="182" font-family="monospace" font-size="13" font-weight="bold" fill="#EAB308" text-anchor="end">450</text>
+    <text x="14" y="212" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">GAZ 6KG</text>
+    <text x="84" y="212" font-family="monospace" font-size="13" font-weight="bold" fill="#38BDF8" text-anchor="end">6 000</text>
+    <g transform="translate(8, 260)" font-family="system-ui, sans-serif" font-weight="bold" text-anchor="middle">
+      <rect x="0" y="0" width="84" height="24" rx="3" fill="#E31B23" />
+      <text x="42" y="16" font-size="9" fill="#FFFFFF">QUICKSHOP</text>
+      <rect x="0" y="30" width="84" height="24" rx="3" fill="#F1F5F9" />
+      <text x="42" y="46" font-size="8.5" fill="#334155">VIDANGE</text>
+      <rect x="0" y="60" width="84" height="24" rx="3" fill="#F1F5F9" />
+      <text x="42" y="76" font-size="8.5" fill="#334155">LAVAGE AUTO</text>
+      <rect x="0" y="90" width="84" height="24" rx="3" fill="#002D72" />
+      <text x="42" y="106" font-size="9" fill="#FFFFFF">OUVERT 24H</text>
+    </g>
+  </g>
+</svg>
+

@@ -8,6 +8,8 @@ export const NotificationsPage: React.FC = () => {
     alerts: s.alerts,
   }));
 
+  const clientAlerts = (alerts || []).filter(a => a.audience === 'client');
+
   const handleMarkAllRead = () => {
     store.markAlertsAsRead();
   };
@@ -41,7 +43,7 @@ export const NotificationsPage: React.FC = () => {
       </div>
 
       <div className="space-y-2.5">
-        {alerts.map(a => (
+        {clientAlerts.map(a => (
           <div
             key={a.id}
             className={`p-3.5 rounded-2xl border transition-all flex items-start gap-3 ${
@@ -58,6 +60,12 @@ export const NotificationsPage: React.FC = () => {
             </div>
           </div>
         ))}
+
+        {clientAlerts.length === 0 && (
+          <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-xs text-slate-500">
+            Aucune notification client pour le moment.
+          </div>
+        )}
       </div>
     </div>
   );

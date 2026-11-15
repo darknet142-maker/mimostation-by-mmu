@@ -15,24 +15,31 @@ import {
 } from 'lucide-react';
 
 export const PompisteDashboardPage: React.FC = () => {
-  const { pumps, currentEmployee, tanks, products } = useAppStore(s => ({
+  const { pumps, currentEmployee, tanks, products, selectedStationId, networkConfig } = useAppStore(s => ({
     pumps: s.pumps,
     currentEmployee: s.currentEmployee,
     tanks: s.tanks,
     products: s.products,
+    selectedStationId: s.selectedStationId,
+    networkConfig: s.networkConfig,
   }));
+
+  const activeStationId = currentEmployee?.stationId || selectedStationId;
+  const stationPumps = pumps.filter(p => p.stationId === activeStationId);
+  const stationTanks = tanks.filter(t => t.stationId === activeStationId);
 
   // Pompiste's assigned pump (defaults to Pompe #1 or first assigned pump)
   const assignedPumpNumbers =
     currentEmployee?.assignedPumps && currentEmployee.assignedPumps.length > 0
       ? currentEmployee.assignedPumps
-      : [1];
+      : [stationPumps[0]?.number || 1];
 
   const [selectedPumpNumber, setSelectedPumpNumber] = useState<number>(assignedPumpNumbers[0] || 1);
-  const activePump = pumps.find(p => p.number === selectedPumpNumber) || pumps[0];
-  const associatedTank = tanks.find(t => t.fuelType === activePump.fuelType) || tanks[0];
+  const activePump = stationPumps.find(p => p.number === selectedPumpNumber) || stationPumps[0] || pumps[0];
+  const associatedTank =
+    stationTanks.find(t => t.fuelType === activePump.fuelType) || stationTanks[0] || tanks[0];
 
-  // Mobile sub-view toggle: 'overview' (Capture 01C / Screen 03) vs 'station_piste' (Capture 04 / Image 6)
+  // Mobile sub-view toggle: 'overview' vs 'station_piste'
   const [mobileSubView, setMobileSubView] = useState<'overview' | 'station_piste'>('station_piste');
 
   // Modals for Mobile Quick Actions
@@ -43,8 +50,13 @@ export const PompisteDashboardPage: React.FC = () => {
   const [incidentDescription, setIncidentDescription] = useState('');
   const [incidentSent, setIncidentSent] = useState(false);
 
-  // Official fixed tariff (non-editable by pompiste)
-  const pricePerLiter = activePump.fuelType === 'Super' ? 700 : 650;
+  // Official fixed tariff from networkConfig (non-editable by pompiste)
+  const pricePerLiter =
+    activePump.fuelType === 'Super'
+      ? networkConfig?.fuelPrices?.super ?? 700
+      : activePump.fuelType === 'Gasoil'
+      ? networkConfig?.fuelPrices?.gasoil ?? 650
+      : networkConfig?.fuelPrices?.petroleLampant ?? 450;
 
   // Distribution configuration states
   const [inputMode, setInputMode] = useState<'liters' | 'amount'>('liters');
@@ -62,6 +74,8 @@ export const PompisteDashboardPage: React.FC = () => {
 
   // Payment mode state ('Mobile Money' | 'Espèces' | 'Carte bancaire')
   const [paymentMethod, setPaymentMethod] = useState<'Mobile Money' | 'Espèces' | 'Carte bancaire'>('Mobile Money');
+  const [txNonce, setTxNonce] = useState<number>(() => Date.now());
+  const [txError, setTxError] = useState<string | null>(null);
 
   // Success toast state
   const [successToast, setSuccessToast] = useState<{
@@ -75,8 +89,8 @@ export const PompisteDashboardPage: React.FC = () => {
   const projectedRemainingLiters = Math.max(0, associatedTank.currentLiters - currentVolumeLiters);
   const projectedPercent = Math.round((projectedRemainingLiters / associatedTank.capacityLiters) * 100);
 
-  // Dynamic QR Code content representing the live transaction
-  const qrPayload = `STATIONPRO-P${activePump.number}-${currentVolumeLiters.toFixed(2)}L-${currentTotalAmount}FCFA-${paymentMethod}-${Date.now()}`;
+  // Stable QR Code payload during active configuration; rotated cleanly after each validation
+  const qrPayload = `STATIONPRO-${activeStationId}-P${activePump.number}-${currentVolumeLiters.toFixed(2)}L-${currentTotalAmount}FCFA-${paymentMethod}-${txNonce}`;
 
   // Handle preset selection in Liters mode
   const handleSelectLitersPreset = (liters: number) => {
@@ -98,15 +112,23 @@ export const PompisteDashboardPage: React.FC = () => {
   // Handle transaction validation
   const handleValidateTransaction = () => {
     if (currentVolumeLiters <= 0) return;
+    setTxError(null);
 
-    store.recordFuelTransaction({
+    const res = store.recordFuelTransaction({
       pumpNumber: activePump.number,
       product: activePump.fuelType,
       quantityLiters: currentVolumeLiters,
       amountFCFA: currentTotalAmount,
       paymentMethod: paymentMethod === 'Carte bancaire' ? 'Carte' : paymentMethod,
+      stationId: activeStationId,
     });
 
+    if (!res.success) {
+      setTxError(res.message || 'Impossible de valider cette distribution.');
+      return;
+    }
+
+    setTxNonce(Date.now());
     setSuccessToast({
       show: true,
       liters: currentVolumeLiters,
@@ -114,7 +136,6 @@ export const PompisteDashboardPage: React.FC = () => {
       method: paymentMethod,
     });
 
-    // Auto-dismiss toast after 4 seconds
     setTimeout(() => {
       setSuccessToast(null);
     }, 4000);
@@ -168,7 +189,26 @@ export const PompisteDashboardPage: React.FC = () => {
         </button>
       </div>
 
-      {/* ================= SUCCESS BANNER NOTIFICATION ================= */}
+      {/* ================= ERROR / SUCCESS BANNER NOTIFICATION ================= */}
+      {txError && (
+        <div
+          role="alert"
+          className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 shadow-sm flex items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-2.5 text-xs font-bold">
+            <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
+            <span>{txError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setTxError(null)}
+            className="text-xs px-2.5 py-1 rounded-lg bg-red-100 hover:bg-red-200 font-bold"
+          >
+            Fermer
+          </button>
+        </div>
+      )}
+
       {successToast && (
         <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center gap-3">
@@ -710,7 +750,7 @@ export const PompisteDashboardPage: React.FC = () => {
           maxWidth="md"
         >
           <div className="space-y-4">
-            {tanks.map(tank => (
+            {stationTanks.map(tank => (
               <div key={tank.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">

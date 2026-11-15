@@ -25,9 +25,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
   private handleReset = () => {
     try {
-      localStorage.clear();
+      localStorage.removeItem('stationpro_state_v5');
+      localStorage.removeItem('stationpro_state_v4');
     } catch (e) {
-      console.warn('Could not clear localStorage', e);
+      console.warn('Could not clear StationPro storage', e);
     }
     window.location.href = '/';
   };
@@ -38,13 +39,13 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen bg-[#F0F4FB] flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white rounded-3xl p-6 shadow-xl border border-slate-200 text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto text-2xl font-bold">
-              ⚠️
+              !
             </div>
-            <h2 className="text-lg font-bold text-slate-900">Une erreur d'affichage est survenue</h2>
+            <h2 className="text-lg font-bold text-slate-900">Une erreur d&apos;affichage est survenue</h2>
             <p className="text-xs text-slate-500 leading-relaxed">
-              L'application a détecté une anomalie locale. Vous pouvez réinitialiser l'état local pour restaurer immédiatement l'interface.
+              L&apos;application a détecté une anomalie locale. Vous pouvez réinitialiser les données de session locales pour restaurer immédiatement l&apos;interface.
             </p>
-            {this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <pre className="p-3 bg-slate-50 rounded-xl text-[10px] text-left text-red-600 overflow-x-auto border border-slate-200">
                 {this.state.error.message}
               </pre>

@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <!-- Sky & Warm Gabonese Sun -->
+    <linearGradient id="pg-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#7DD3FC" />
+      <stop offset="85%" stop-color="#BAE6FD" />
+      <stop offset="100%" stop-color="#F0F9FF" />
+    </linearGradient>
+
+    <!-- Asphalt & Concrete Pavements -->
+    <linearGradient id="pg-asphalt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#64748B" />
+      <stop offset="30%" stop-color="#475569" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+
+    <!-- PetroGabon Iconic Green Canopy Gradients -->
+    <linearGradient id="pg-green-roof" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00663B" />
+      <stop offset="50%" stop-color="#008751" />
+      <stop offset="100%" stop-color="#00A86B" />
+    </linearGradient>
+
+    <linearGradient id="pg-green-bevel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00995D" />
+      <stop offset="100%" stop-color="#005B36" />
+    </linearGradient>
+
+    <!-- Warm Spotlight Cone -->
+    <radialGradient id="pg-spotlight" cx="50%" cy="0%" r="90%">
+      <stop offset="0%" stop-color="#FFFBEB" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#FEF3C7" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Shadows -->
+    <filter id="pg-drop-shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-opacity="0.22" />
+    </filter>
+  </defs>
+
+  <!-- 1. Sky & Horizon -->
+  <rect width="1200" height="390" fill="url(#pg-sky)" />
+
+  <!-- Tropical Trees in Distance -->
+  <g fill="#166534" opacity="0.35">
+    <path d="M 0 350 Q 80 320 160 350 T 320 340 T 480 355 T 640 330 T 800 350 T 960 335 T 1120 350 T 1200 340 L 1200 390 L 0 390 Z" />
+  </g>
+
+  <!-- 2. Forecourt Ground -->
+  <polygon points="0,380 1200,380 1200,600 0,600" fill="url(#pg-asphalt)" />
+  <!-- Concrete refuelling pads -->
+  <polygon points="100,600 240,380 960,380 1100,600" fill="#CBD5E1" opacity="0.45" />
+
+  <!-- 3. Background Service Building: PG Lavage & PG Shop (Direct match photo) -->
+  <g transform="translate(620, 275)" filter="url(#pg-drop-shadow)">
+    <!-- White wall with tiled texture -->
+    <rect x="0" y="25" width="480" height="95" rx="3" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" />
+    <!-- Green fascia on building -->
+    <rect x="0" y="25" width="480" height="18" fill="#008751" />
+
+    <!-- "PG Lavage" signage on building banner -->
+    <g transform="translate(20, 26)">
+      <!-- PG square emblem -->
+      <rect x="0" y="2" width="22" height="14" rx="2" fill="#FFFFFF" />
+      <text x="11" y="13" font-family="system-ui, sans-serif" font-size="10" font-weight="900" fill="#008751" text-anchor="middle">PG</text>
+      <!-- "Lavage" Text -->
+      <text x="30" y="14" font-family="system-ui, sans-serif" font-size="13" font-weight="900" fill="#FFFFFF">Lavage</text>
+    </g>
+
+    <!-- "Boutique & Café" signage -->
+    <text x="240" y="40" font-family="system-ui, sans-serif" font-size="11" font-weight="800" fill="#FFFFFF" letter-spacing="1">BOUTIQUE &amp; LUBRIFIANTS</text>
+
+    <!-- Glass bay doors & windows -->
+    <rect x="25" y="48" width="120" height="72" fill="#BAE6FD" opacity="0.4" stroke="#94A3B8" stroke-width="1.5" />
+    <rect x="180" y="48" width="80" height="72" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1.5" />
+    <rect x="290" y="48" width="160" height="72" fill="#BAE6FD" opacity="0.4" stroke="#94A3B8" stroke-width="1.5" />
+  </g>
+
+  <!-- 4. Spotlights on the Ground -->
+  <polygon points="260,175 160,490 360,490" fill="url(#pg-spotlight)" />
+  <polygon points="500,175 400,490 600,490" fill="url(#pg-spotlight)" />
+  <polygon points="740,175 640,490 840,490" fill="url(#pg-spotlight)" />
+  <polygon points="980,175 880,490 1080,490" fill="url(#pg-spotlight)" />
+
+  <!-- 5. Raised Concrete Fuel Islands & Green/Yellow Pumps (Matches Photo) -->
+  <!-- Left Island -->
+  <g transform="translate(180, 400)">
+    <!-- Base concrete slab -->
+    <path d="M 0 45 L 35 12 L 205 12 L 170 45 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <!-- Red and white perimeter safety barriers -->
+    <polygon points="0,45 18,28 42,28 24,45" fill="#DC2626" />
+    <polygon points="24,45 42,28 66,28 48,45" fill="#FFFFFF" />
+    <polygon points="48,45 66,28 90,28 72,45" fill="#DC2626" />
+    <polygon points="72,45 90,28 114,28 96,45" fill="#FFFFFF" />
+    <polygon points="96,45 114,28 138,28 120,45" fill="#DC2626" />
+    <polygon points="120,45 138,28 170,28 152,45" fill="#FFFFFF" />
+
+    <!-- PetroGabon Dispenser Pump (Green with Yellow accents) -->
+    <g transform="translate(60, -125)" filter="url(#pg-drop-shadow)">
+      <rect x="0" y="0" width="65" height="130" rx="5" fill="#FFFFFF" stroke="#008751" stroke-width="2" />
+      <rect x="0" y="0" width="65" height="24" rx="4" fill="#008751" />
+      <text x="32" y="16" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#FFFFFF" text-anchor="middle">PETROGABON</text>
+      <!-- Yellow grade stripe -->
+      <rect x="0" y="45" width="65" height="12" fill="#FACC15" />
+      <text x="32" y="54" font-family="system-ui, sans-serif" font-size="8" font-weight="bold" fill="#000000" text-anchor="middle">SUPER • GASOIL</text>
+      <!-- LCD Screen -->
+      <rect x="8" y="65" width="49" height="22" rx="3" fill="#0F172A" />
+      <text x="32" y="79" font-family="monospace" font-size="10" font-weight="bold" fill="#22C55E" text-anchor="middle">700 FCFA</text>
+      <!-- Pump lower base -->
+      <rect x="0" y="95" width="65" height="35" rx="3" fill="#008751" />
+    </g>
+  </g>
+
+  <!-- Center-Right Island -->
+  <g transform="translate(580, 400)">
+    <path d="M 0 45 L 35 12 L 205 12 L 170 45 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <polygon points="0,45 18,28 42,28 24,45" fill="#DC2626" />
+    <polygon points="24,45 42,28 66,28 48,45" fill="#FFFFFF" />
+    <polygon points="48,45 66,28 90,28 72,45" fill="#DC2626" />
+    <polygon points="72,45 90,28 114,28 96,45" fill="#FFFFFF" />
+    <polygon points="96,45 114,28 138,28 120,45" fill="#DC2626" />
+    <polygon points="120,45 138,28 170,28 152,45" fill="#FFFFFF" />
+
+    <g transform="translate(60, -125)" filter="url(#pg-drop-shadow)">
+      <rect x="0" y="0" width="65" height="130" rx="5" fill="#FFFFFF" stroke="#008751" stroke-width="2" />
+      <rect x="0" y="0" width="65" height="24" rx="4" fill="#008751" />
+      <text x="32" y="16" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#FFFFFF" text-anchor="middle">PETROGABON</text>
+      <rect x="0" y="45" width="65" height="12" fill="#FACC15" />
+      <text x="32" y="54" font-family="system-ui, sans-serif" font-size="8" font-weight="bold" fill="#000000" text-anchor="middle">SUPER • GASOIL</text>
+      <rect x="8" y="65" width="49" height="22" rx="3" fill="#0F172A" />
+      <text x="32" y="79" font-family="monospace" font-size="10" font-weight="bold" fill="#22C55E" text-anchor="middle">650 FCFA</text>
+      <rect x="0" y="95" width="65" height="35" rx="3" fill="#008751" />
+    </g>
+  </g>
+
+  <!-- 6. 4 Supporting Cylindrical Pillars (Matches Photo) -->
+  <rect x="290" y="155" width="30" height="255" rx="3" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="314" y="155" width="6" height="255" fill="#E2E8F0" />
+
+  <rect x="580" y="155" width="30" height="255" rx="3" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="604" y="155" width="6" height="255" fill="#E2E8F0" />
+
+  <rect x="860" y="155" width="30" height="255" rx="3" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="884" y="155" width="6" height="255" fill="#E2E8F0" />
+
+  <!-- 7. Massive Green Beveled Canopy with 3D "PetroGabon" Text -->
+  <g filter="url(#pg-drop-shadow)">
+    <!-- Underside ceiling with lighting -->
+    <polygon points="100,165 1100,165 1020,195 180,195" fill="#FFFDF5" stroke="#E2E8F0" />
+    <ellipse cx="260" cy="180" rx="16" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+    <ellipse cx="500" cy="180" rx="16" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+    <ellipse cx="740" cy="180" rx="16" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+    <ellipse cx="980" cy="180" rx="16" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+
+    <!-- Top sloped canopy surface (biseau) -->
+    <polygon points="140,85 1060,85 1120,135 80,135" fill="url(#pg-green-bevel)" />
+    <!-- Front vertical fascia panel -->
+    <polygon points="80,135 1120,135 1100,165 100,165" fill="url(#pg-green-roof)" />
+
+    <!-- Bold 3D White Lettrage "PetroGabon" Standing on Canopy -->
+    <g transform="translate(420, 75)">
+      <!-- 3D Shadow letters -->
+      <text x="2" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="900" fill="#004D28" letter-spacing="-1">PetroGabon</text>
+      <!-- Pure White Front letters -->
+      <text x="0" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="900" fill="#FFFFFF" letter-spacing="-1">PetroGabon</text>
+    </g>
+  </g>
+
+  <!-- 8. PetroGabon Totem (Left Foreground) -->
+  <g transform="translate(45, 130)" filter="url(#pg-drop-shadow)">
+    <rect x="0" y="0" width="95" height="420" rx="8" fill="#FFFFFF" stroke="#008751" stroke-width="2.5" />
+    <!-- Green Top Header with PG Flame -->
+    <rect x="4" y="4" width="87" height="85" rx="6" fill="#008751" />
+    <!-- Flame / Drop Icon inside Totem -->
+    <path d="M 47 16 C 47 16 64 36 64 48 C 64 58 56 66 47 66 C 38 66 30 58 30 48 C 30 36 47 16 47 16 Z" fill="#FFC107" />
+    <path d="M 47 28 C 47 28 58 42 58 50 C 58 56 53 60 47 60 C 41 60 36 56 36 50 C 36 42 47 28 47 28 Z" fill="#DC2626" />
+    <text x="47" y="78" font-family="system-ui, sans-serif" font-size="10" font-weight="900" fill="#FFFFFF" text-anchor="middle">PetroGabon</text>
+
+    <!-- Digital Prices Screen -->
+    <rect x="8" y="98" width="79" height="145" rx="4" fill="#090D16" />
+    <text x="14" y="118" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">SUPER</text>
+    <text x="80" y="118" font-family="monospace" font-size="13" font-weight="bold" fill="#FACC15" text-anchor="end">700</text>
+
+    <text x="14" y="145" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">GASOIL</text>
+    <text x="80" y="145" font-family="monospace" font-size="13" font-weight="bold" fill="#22C55E" text-anchor="end">650</text>
+
+    <text x="14" y="172" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">PETROLE</text>
+    <text x="80" y="172" font-family="monospace" font-size="13" font-weight="bold" fill="#FACC15" text-anchor="end">450</text>
+
+    <text x="14" y="199" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">GAZ 6KG</text>
+    <text x="80" y="199" font-family="monospace" font-size="13" font-weight="bold" fill="#38BDF8" text-anchor="end">6 000</text>
+
+    <!-- Badges -->
+    <g transform="translate(8, 255)">
+      <rect x="0" y="0" width="79" height="24" rx="3" fill="#008751" />
+      <text x="39" y="16" font-family="system-ui, sans-serif" font-size="9" font-weight="bold" fill="#FFFFFF" text-anchor="middle">PG LAVAGE</text>
+      <rect x="0" y="30" width="79" height="24" rx="3" fill="#F1F5F9" />
+      <text x="39" y="46" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#334155" text-anchor="middle">BOUTIQUE PG</text>
+      <rect x="0" y="60" width="79" height="24" rx="3" fill="#F1F5F9" />
+      <text x="39" y="76" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#334155" text-anchor="middle">VIDANGE PRO</text>
+      <rect x="0" y="90" width="79" height="24" rx="3" fill="#FFC107" />
+      <text x="39" y="106" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#000000" text-anchor="middle">24H / 24</text>
+    </g>
+  </g>
+</svg>
+

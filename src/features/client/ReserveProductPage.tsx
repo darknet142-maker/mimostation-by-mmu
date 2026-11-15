@@ -41,11 +41,19 @@ export const ReserveProductPage: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<'place' | 'mobile_money'>('place');
   const [confirmedReservation, setConfirmedReservation] = useState<Reservation | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
-  // Alternative stations offering this same product
-  const alternativeStations = stations.filter(s => s.id !== currentStation.id);
+  // Alternative stations active & open offering reservations
+  const alternativeStations = stations.filter(
+    s =>
+      s.id !== currentStation.id &&
+      s.status === 'active' &&
+      s.isOpen &&
+      s.advancedSettings?.enableReservations !== false
+  );
 
   const handleConfirmReservation = () => {
+    setBookingError(null);
     setIsSubmitting(true);
     setTimeout(() => {
       const res = store.createReservation({
@@ -57,12 +65,17 @@ export const ReserveProductPage: React.FC = () => {
 
       setIsSubmitting(false);
 
-      if (paymentMethod === 'mobile_money') {
-        navigate(`/reservations/${res.id}/paiement`);
-      } else {
-        setConfirmedReservation(res);
+      if (!res.success) {
+        setBookingError(res.error);
+        return;
       }
-    }, 400);
+
+      if (paymentMethod === 'mobile_money') {
+        navigate(`/reservations/${res.reservation.id}/paiement`);
+      } else {
+        setConfirmedReservation(res.reservation);
+      }
+    }, 350);
   };
 
   const handleSwitchStation = (newStationId: string) => {
@@ -253,12 +266,21 @@ export const ReserveProductPage: React.FC = () => {
                 <div>
                   <div className="text-xs font-bold text-[#0F172A] mt-2">Mobile Money</div>
                   <div className="text-[10px] text-slate-500 leading-tight mt-0.5">
-                    Payez via MTN ou Airtel Money
+                    Payez via Airtel Money ou Moov Money
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {bookingError && (
+            <div
+              role="alert"
+              className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold"
+            >
+              {bookingError}
+            </div>
+          )}
 
           {/* Yellow Confirm Button (Screen 04B / 05C) */}
           <Button

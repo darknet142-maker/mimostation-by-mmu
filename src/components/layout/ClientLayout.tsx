@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { SmartSearchBar } from '@/components/client/SmartSearchBar';
 import { useAppStore } from '@/hooks/useAppStore';
+import { store } from '@/services/store';
 import {
   Home,
   MapPin,
@@ -42,10 +43,21 @@ export const ClientLayout: React.FC = () => {
     }
   ];
 
+  useEffect(() => {
+    store.sweepExpiredReservations();
+    const timer = setInterval(() => {
+      store.sweepExpiredReservations();
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
   const currentStation = safeStations.find(s => s.id === selectedStationId) || safeStations[0];
   const safeAlerts = Array.isArray(alerts) ? alerts : [];
   const safeReservations = Array.isArray(reservations) ? reservations : [];
-  const unreadAlertsCount = safeAlerts.filter(a => !a.isRead).length;
+  const unreadAlertsCount = safeAlerts.filter(a => !a.isRead && a.audience === 'client').length;
+
+  const isClosed = currentStation.status === 'closed' || !currentStation.isOpen;
+  const isMaintenance = currentStation.status === 'maintenance';
 
   // Determine if on subpage needing back arrow
   const isSubPage =
@@ -95,10 +107,22 @@ export const ClientLayout: React.FC = () => {
                 <MapPin className="w-3.5 h-3.5 text-[#F7B928]" />
                 Station en cours
               </span>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Ouverte 24/7
-              </span>
+              {isClosed ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-200 bg-red-500/25 px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                  Fermée
+                </span>
+              ) : isMaintenance ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-200 bg-amber-500/25 px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  Maintenance
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {currentStation.isOpen24h ? 'Ouverte 24/7' : 'Ouverte'}
+                </span>
+              )}
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-white">{currentStation.name}</h4>
@@ -173,24 +197,8 @@ export const ClientLayout: React.FC = () => {
           </nav>
         </div>
 
-        {/* Staff & Security Bottom Banner */}
+        {/* Staff Bottom Banner */}
         <div className="pt-6 border-t border-white/10 space-y-2.5">
-          <Link
-            to="/admin"
-            className="flex items-center justify-between p-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold transition-all border border-white/10"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-blue-500/30 flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-              </div>
-              <div className="text-left">
-                <div className="text-xs font-bold leading-tight">Espace Admin Réseau</div>
-                <div className="text-[10px] text-blue-200">Habillage & supervision globale</div>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-amber-400" />
-          </Link>
-
           <Link
             to="/personnel"
             className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-[#F7B928] to-amber-500 text-slate-900 font-bold hover:shadow-lg transition-all active:scale-[0.98]"
@@ -247,22 +255,13 @@ export const ClientLayout: React.FC = () => {
               )}
             </Link>
 
-            {/* Direct Admin Access */}
-            <Link
-              to="/admin"
-              className="px-3 py-1.5 rounded-xl bg-[#0A1D37] text-amber-400 text-xs font-bold hover:bg-[#123668] transition-colors flex items-center gap-1.5 border border-amber-400/30"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-              <span>Admin</span>
-            </Link>
-
             {/* Direct Staff Access */}
             <Link
               to="/personnel"
               className="px-3.5 py-1.5 rounded-xl bg-[#0B3A82] text-white text-xs font-bold hover:bg-[#1668E3] transition-colors flex items-center gap-1.5"
             >
               <Lock className="w-3.5 h-3.5" />
-              <span>Personnel</span>
+              <span>Espace Personnel</span>
             </Link>
           </div>
         </header>
@@ -289,7 +288,7 @@ export const ClientLayout: React.FC = () => {
               <BrandLogo mode="client" theme="dark" size="sm" onClick={() => navigate('/')} />
               <div className="flex items-center gap-2">
                 <Link
-                  to="/staff"
+                  to="/personnel"
                   className="px-2.5 py-1 rounded-lg bg-white/15 text-white text-[11px] font-bold flex items-center gap-1"
                 >
                   <Lock className="w-3 h-3 text-[#F7B928]" />

@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
-import { Station } from '@/types';
+import { OperatorId, Station } from '@/types';
+import { OPERATORS, getOperator, resolveStationBranding } from '@/config/operators';
+import { StationCover } from '@/components/station/StationCover';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   Building2,
   Plus,
@@ -11,7 +14,6 @@ import {
   ExternalLink,
   Edit3,
   Trash2,
-  MapPin,
   Phone,
   Fuel,
 } from 'lucide-react';
@@ -29,12 +31,14 @@ export const AdminStationsPage: React.FC = () => {
 
   // New Station modal form
   const [newStationName, setNewStationName] = useState('');
+  const [newStationOperatorId, setNewStationOperatorId] = useState<OperatorId>('totalenergies');
   const [newStationCity, setNewStationCity] = useState('Libreville');
   const [newStationAddress, setNewStationAddress] = useState('');
   const [newStationPhone, setNewStationPhone] = useState('+241 011 00 00 00');
   const [newStationPumps, setNewStationPumps] = useState(6);
-  const [newStationPrimaryColor, setNewStationPrimaryColor] = useState('#0B4DB3');
-  const [newStationSecondaryColor, setNewStationSecondaryColor] = useState('#FFC107');
+  const [newStationPrimaryColor, setNewStationPrimaryColor] = useState('#ED1C24');
+  const [newStationSecondaryColor, setNewStationSecondaryColor] = useState('#242933');
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
 
   const filtered = stations.filter(st => {
     const matchesSearch =
@@ -49,26 +53,39 @@ export const AdminStationsPage: React.FC = () => {
     return matchesSearch && matchesCity && matchesStatus;
   });
 
+  const handleSelectOperator = (opId: OperatorId) => {
+    setNewStationOperatorId(opId);
+    const op = getOperator(opId);
+    if (op) {
+      setNewStationPrimaryColor(op.primaryColor);
+      setNewStationSecondaryColor(op.secondaryColor);
+    }
+  };
+
   const handleCreateStation = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStationName.trim()) return;
 
+    const op = getOperator(newStationOperatorId);
     const newId = `station-${Date.now().toString(36)}`;
     const newStation: Station = {
       id: newId,
       name: newStationName.trim(),
+      operatorId: newStationOperatorId,
       city: newStationCity,
       country: 'Gabon',
       address: newStationAddress || `${newStationCity}, Gabon`,
       phone: newStationPhone,
-      description: `Station-service moderne ${newStationName} à ${newStationCity}.`,
+      description: `Station-service ${op?.legalName || ''} — ${newStationName} à ${newStationCity}.`,
       distanceKm: 2.5,
       isOpen24h: true,
       isOpen: true,
       status: 'active',
       primaryColor: newStationPrimaryColor,
       secondaryColor: newStationSecondaryColor,
-      canopyTheme: 'classic-blue',
+      canopyTheme: op?.canopyTheme || 'classic-blue',
+      bannerStyle: 'image',
+      layoutStyle: 'standard',
       services: {
         pumpsTotal: newStationPumps,
         pumpsAvailable: newStationPumps,
@@ -82,6 +99,8 @@ export const AdminStationsPage: React.FC = () => {
         enableReservations: true,
         enableMobileMoney: true,
         enableClientNotifications: true,
+        airtelMoneyNumber: '+241 074 00 00 00',
+        moovMoneyNumber: '+241 066 00 00 00',
       },
     };
 
@@ -92,9 +111,7 @@ export const AdminStationsPage: React.FC = () => {
   };
 
   const handleDeleteStation = (id: string, name: string) => {
-    if (window.confirm(`Supprimer définitivement la station "${name}" ?`)) {
-      store.deleteStation(id);
-    }
+    setPendingDelete({ id, name });
   };
 
   return (
@@ -156,7 +173,7 @@ export const AdminStationsPage: React.FC = () => {
 
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value as any)}
+            onChange={e => setStatusFilter(e.target.value as 'all' | 'active' | 'maintenance' | 'closed')}
             className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-800 focus:outline-none"
           >
             <option value="all">Tous les statuts</option>
@@ -170,54 +187,37 @@ export const AdminStationsPage: React.FC = () => {
       {/* Grid of Station Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filtered.map(st => {
-          const isMaint = st.status === 'maintenance';
-          const isClosed = st.status === 'closed';
+          const branding = resolveStationBranding(st);
 
           return (
             <div
               key={st.id}
-              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between p-2"
             >
-              {/* Card Header with Color Banner */}
-              <div
-                className="h-28 relative p-3 flex flex-col justify-between text-white"
-                style={{
-                  background: `linear-gradient(135deg, ${st.primaryColor || '#0B4DB3'} 0%, ${
-                    st.secondaryColor || '#FFC107'
-                  } 120%)`,
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-[11px] font-bold">
-                    {st.city}
-                  </span>
-
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 ${
-                      isMaint
-                        ? 'bg-amber-400 text-amber-950'
-                        : isClosed
-                        ? 'bg-red-500 text-white'
-                        : 'bg-emerald-400 text-emerald-950'
-                    }`}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                    <span>{isMaint ? 'Maintenance' : isClosed ? 'Fermée' : 'Active'}</span>
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-base font-extrabold drop-shadow-sm">{st.name}</h3>
-                  <p className="text-xs text-white/90 flex items-center gap-1 drop-shadow-xs">
-                    <MapPin className="w-3 h-3" />
-                    <span className="truncate">{st.address}</span>
-                  </p>
-                </div>
-              </div>
+              <StationCover
+                coverSrc={branding.cover}
+                logoSrc={branding.logo}
+                stationName={st.name}
+                operatorName={branding.operator?.name}
+                locationText={`${st.city} • ${st.address}`}
+                status={st.status}
+                isOpen={st.isOpen}
+                isOpen24h={st.isOpen24h}
+                variant="card"
+              />
 
               {/* Card Body */}
-              <div className="p-4 space-y-3 flex-1 flex flex-col justify-between text-xs">
+              <div className="p-3 space-y-3 flex-1 flex flex-col justify-between text-xs">
                 <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-sm font-extrabold text-slate-900">{st.name}</h3>
+                    {branding.operator && (
+                      <span className="shrink-0 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[10px]">
+                        {branding.operator.name}
+                      </span>
+                    )}
+                  </div>
+
                   <div className="flex items-center justify-between text-slate-600">
                     <span className="flex items-center gap-1 text-slate-500">
                       <Fuel className="w-3.5 h-3.5 text-blue-600" />
@@ -264,9 +264,10 @@ export const AdminStationsPage: React.FC = () => {
                 {/* Card Actions */}
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                   <button
+                    type="button"
                     onClick={() => {
                       store.setSelectedStation(st.id);
-                      navigate('/admin');
+                      navigate('/admin/personnalisation');
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold transition-all text-xs"
                   >
@@ -276,18 +277,22 @@ export const AdminStationsPage: React.FC = () => {
 
                   <div className="flex items-center gap-1">
                     <button
+                      type="button"
                       onClick={() => {
                         store.setSelectedStation(st.id);
                         navigate(`/stations/${st.id}`);
                       }}
                       title="Voir côté Client"
+                      aria-label={`Voir ${st.name} côté Client`}
                       className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleDeleteStation(st.id, st.name)}
                       title="Supprimer la station"
+                      aria-label={`Supprimer ${st.name}`}
                       className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -315,6 +320,21 @@ export const AdminStationsPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreateStation} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Enseigne / Opérateur *</label>
+                <select
+                  value={newStationOperatorId}
+                  onChange={e => handleSelectOperator(e.target.value as OperatorId)}
+                  className="w-full px-3 py-2 border rounded-xl bg-slate-50 font-semibold text-slate-800"
+                >
+                  {OPERATORS.map(op => (
+                    <option key={op.id} value={op.id}>
+                      {op.legalName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="block font-bold text-slate-700 mb-1">Nom de la station *</label>
                 <input
@@ -425,6 +445,24 @@ export const AdminStationsPage: React.FC = () => {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={Boolean(pendingDelete)}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (pendingDelete) {
+            store.deleteStation(pendingDelete.id);
+            setPendingDelete(null);
+          }
+        }}
+        title="Supprimer la station"
+        message={
+          pendingDelete
+            ? `Supprimer définitivement la station "${pendingDelete.name}" du réseau ?`
+            : ''
+        }
+        confirmLabel="Supprimer définitivement"
+        variant="danger"
+      />
     </div>
   );
 };

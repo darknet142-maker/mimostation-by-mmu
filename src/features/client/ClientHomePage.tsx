@@ -5,7 +5,10 @@ import { store } from '@/services/store';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { Button } from '@/components/ui/Button';
 import { ProductStationAlternativesModal } from '@/components/client/ProductStationAlternativesModal';
+import { StationCover } from '@/components/station/StationCover';
 import { ASSETS } from '@/config/assets';
+import { resolveStationBranding } from '@/config/operators';
+import { getLayoutDensity } from '@/config/themes';
 import { Product } from '@/types';
 import {
   MapPin,
@@ -43,6 +46,15 @@ export const ClientHomePage: React.FC = () => {
   ];
 
   const activeStation = safeStations.find(s => s.id === selectedStationId) || safeStations[0];
+  const branding = resolveStationBranding(activeStation);
+  const density = getLayoutDensity(activeStation.layoutStyle);
+
+  const getProductAvailability = (productId: string): 'disponible' | 'stock-faible' | 'rupture' => {
+    const prod = products.find(p => p.id === productId);
+    if (!prod || !prod.isAvailable || prod.stockQuantity <= 0) return 'rupture';
+    if (prod.stockQuantity <= prod.minStockThreshold) return 'stock-faible';
+    return 'disponible';
+  };
 
   const handleProductClick = (productId: string) => {
     const prod = products.find(p => p.id === productId) || products[0];
@@ -98,45 +110,50 @@ export const ClientHomePage: React.FC = () => {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* 3D Gas Station Hero Banner */}
-      <div className="relative w-full h-44 sm:h-52 bg-gradient-to-b from-blue-300 to-blue-100 overflow-hidden">
-        <img
-          src={ASSETS.scenes.clientHero}
-          alt="StationPro Service"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      {/* Couverture officielle de la station sélectionnée */}
+      <StationCover
+        coverSrc={branding.cover}
+        logoSrc={branding.logo}
+        stationName={activeStation.name}
+        operatorName={branding.operator?.name}
+        locationText={`${activeStation.city}, ${activeStation.country}`}
+        status={activeStation.status || 'active'}
+        isOpen={activeStation.isOpen}
+        isOpen24h={activeStation.isOpen24h}
+        variant="hero"
+        className="rounded-none"
+      />
 
-      {/* Main White Content Card overlapping hero */}
-      <div className="px-4 py-4 -mt-6 bg-white rounded-t-3xl relative z-10 space-y-4">
+      {/* Main White Content Card */}
+      <div className={`px-4 py-4 bg-white relative z-10 ${density.sectionGap}`}>
         {/* Location selector card */}
         <div className="relative">
-          <div
-            onClick={() => setStationDropdownOpen(!stationDropdownOpen)}
-            className="w-full flex items-center justify-between p-3.5 bg-white rounded-2xl border border-[#DCE4F0] shadow-station-card cursor-pointer hover:border-blue-300 transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#EBF3FE] flex items-center justify-center text-[#1668E3]">
+          <div className="w-full flex items-center justify-between p-2 bg-white rounded-2xl border border-[#DCE4F0] shadow-station-card">
+            <button
+              type="button"
+              onClick={() => setStationDropdownOpen(!stationDropdownOpen)}
+              aria-expanded={stationDropdownOpen}
+              className="flex-1 flex items-center gap-3 p-1.5 text-left rounded-xl hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3]"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#EBF3FE] flex items-center justify-center text-[#1668E3] shrink-0">
                 <MapPin className="w-5 h-5 fill-[#1668E3] text-[#1668E3]" />
               </div>
-              <div className="text-left">
+              <div className="text-left min-w-0">
                 <div className="flex items-center gap-1.5 text-sm font-bold text-[#0F172A]">
-                  <span>{viewMode === 'station' ? activeStation.name : 'Ma position'}</span>
-                  <ChevronDown className="w-4 h-4 text-slate-500" />
+                  <span className="truncate">{viewMode === 'station' ? activeStation.name : 'Ma position'}</span>
+                  <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
                 </div>
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-slate-500 truncate">
                   {activeStation.city}, {activeStation.country}
                 </div>
               </div>
-            </div>
+            </button>
 
             <button
               type="button"
-              onClick={e => {
-                e.stopPropagation();
-                setViewMode(viewMode === 'station' ? 'position' : 'station');
-              }}
-              className="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600"
+              onClick={() => setViewMode(viewMode === 'station' ? 'position' : 'station')}
+              aria-label="Basculer vue station ou ma position"
+              className="w-11 h-11 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3]"
               title="Basculer vue station / ma position"
             >
               <Crosshair className="w-4 h-4 text-[#1668E3]" />
@@ -209,12 +226,13 @@ export const ClientHomePage: React.FC = () => {
             </h2>
 
             {/* 3x3 Grid */}
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+            <div className={`grid grid-cols-3 ${density.gridGap}`}>
               {categoryGridItems.map(item => (
-                <div
+                <button
                   key={item.id}
+                  type="button"
                   onClick={() => handleProductClick(item.id)}
-                  className="bg-white rounded-2xl border border-[#E2E8F0] p-3 flex flex-col items-center justify-between text-center hover:border-blue-400 hover:shadow-md cursor-pointer transition-all duration-150 min-h-[118px]"
+                  className={`bg-white rounded-2xl border border-[#E2E8F0] ${density.cardPadding} flex flex-col items-center justify-between text-center hover:border-blue-400 hover:shadow-md cursor-pointer transition-all duration-150 min-h-[118px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3]`}
                 >
                   <div className="w-12 h-12 flex items-center justify-center mb-1">
                     <img
@@ -226,8 +244,8 @@ export const ClientHomePage: React.FC = () => {
                   <span className="text-xs font-bold text-[#0F172A] leading-tight mb-1.5">
                     {item.label}
                   </span>
-                  <StatusPill type="disponible" size="sm" />
-                </div>
+                  <StatusPill type={getProductAvailability(item.id)} size="sm" />
+                </button>
               ))}
             </div>
 
@@ -263,10 +281,11 @@ export const ClientHomePage: React.FC = () => {
             {/* Vertical list of products with chevron */}
             <div className="space-y-2.5">
               {availableProductsList.map(prod => (
-                <div
+                <button
                   key={prod.id}
+                  type="button"
                   onClick={() => handleProductClick(prod.id)}
-                  className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-[#DCE4F0] hover:border-blue-400 hover:shadow-md cursor-pointer transition-all duration-150"
+                  className={`w-full text-left flex items-center justify-between ${density.cardPadding} bg-white rounded-2xl border border-[#DCE4F0] hover:border-blue-400 hover:shadow-md cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3]`}
                 >
                   <div className="flex items-center gap-3.5">
                     <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center p-1 border border-slate-100">
@@ -283,10 +302,10 @@ export const ClientHomePage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <StatusPill type="disponible" size="sm" />
+                    <StatusPill type={getProductAvailability(prod.id)} size="sm" />
                     <ChevronRight className="w-5 h-5 text-slate-400" />
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>

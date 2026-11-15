@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
-import { Station } from '@/types';
+import { Station, StationBannerStyle, OperatorId } from '@/types';
 import { ASSETS } from '@/config/assets';
+import { OPERATORS, getOperator, resolveStationBranding, readSvgFile } from '@/config/operators';
+import { StationCover } from '@/components/station/StationCover';
 import {
   StationCanopyPreview,
   CANOPY_THEMES,
@@ -47,7 +49,14 @@ export const AdminDashboardPage: React.FC = () => {
   const [primaryColor, setPrimaryColor] = useState('#0B4DB3');
   const [secondaryColor, setSecondaryColor] = useState('#FFC107');
   const [canopyTheme, setCanopyTheme] = useState<Station['canopyTheme']>('classic-blue');
-  const [bannerStyle, setBannerStyle] = useState<'canopy' | 'front' | 'city' | 'gradient'>('canopy');
+  const [bannerStyle, setBannerStyle] = useState<StationBannerStyle>('cover');
+  // Enseigne & visuels SVG 360°
+  const [operatorId, setOperatorId] = useState<OperatorId | undefined>('totalenergies');
+  const [logoUrl, setLogoUrl] = useState<string>('');
+  const [coverImage, setCoverImage] = useState<string>('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const [layoutStyle, setLayoutStyle] = useState<'standard' | 'compact' | 'dense'>('standard');
   const [status, setStatus] = useState<Station['status']>('active');
   const [isOpen24h, setIsOpen24h] = useState(true);
@@ -94,8 +103,14 @@ export const AdminDashboardPage: React.FC = () => {
       setEmail(current.email || `contact.${current.id}@stationpro.ga`);
       setManagerName(current.managerName || 'Alain OBAME');
       setDescription(current.description || 'Votre station de confiance.');
-      setPrimaryColor(current.primaryColor || '#0B4DB3');
-      setSecondaryColor(current.secondaryColor || '#FFC107');
+      const branding = resolveStationBranding(current);
+      setOperatorId(branding.operator?.id);
+      setLogoUrl(current.logoUrl || '');
+      setCoverImage(current.coverImage || '');
+      setBannerStyle(current.bannerStyle || 'cover');
+      setUploadError(null);
+      setPrimaryColor(branding.primaryColor);
+      setSecondaryColor(branding.secondaryColor);
       setCanopyTheme(current.canopyTheme || 'classic-blue');
       setLayoutStyle(current.layoutStyle || 'standard');
       setStatus(current.status || 'active');
@@ -146,6 +161,10 @@ export const AdminDashboardPage: React.FC = () => {
       secondaryColor,
       canopyTheme,
       layoutStyle,
+      operatorId,
+      logoUrl: logoUrl || undefined,
+      coverImage: coverImage || undefined,
+      bannerStyle,
       services: {
         pumpsTotal: 6,
         pumpsAvailable: status === 'active' ? 6 : 0,
@@ -177,14 +196,53 @@ export const AdminDashboardPage: React.FC = () => {
       setLocationText(`${original.city}, ${original.country}`);
       setPhone(original.phone || '+241 011 12 34 56');
       setDescription(original.description || '');
-      setPrimaryColor(original.primaryColor || '#0B4DB3');
-      setSecondaryColor(original.secondaryColor || '#FFC107');
+      const branding = resolveStationBranding(original);
+      setOperatorId(branding.operator?.id);
+      setLogoUrl(original.logoUrl || '');
+      setCoverImage(original.coverImage || '');
+      setBannerStyle(original.bannerStyle || 'cover');
+      setUploadError(null);
+      setPrimaryColor(branding.primaryColor);
+      setSecondaryColor(branding.secondaryColor);
       setCanopyTheme(original.canopyTheme || 'classic-blue');
       setStatus(original.status || 'active');
       setSaveSuccessMsg('Paramètres réinitialisés.');
       setTimeout(() => setSaveSuccessMsg(null), 3000);
     }
   };
+
+  // Applique la charte complète d'une enseigne (logo, couverture, couleurs, thème)
+  const handleSelectOperator = (id: OperatorId) => {
+    const op = getOperator(id);
+    if (!op) return;
+    setOperatorId(op.id);
+    setLogoUrl('');
+    setCoverImage('');
+    setPrimaryColor(op.primaryColor);
+    setSecondaryColor(op.secondaryColor);
+    setCanopyTheme(op.canopyTheme);
+    setBannerStyle('cover');
+    setUploadError(null);
+  };
+
+  const handleSvgUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    apply: (dataUrl: string) => void
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      apply(await readSvgFile(file));
+      setUploadError(null);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Téléversement impossible.');
+    }
+  };
+
+  const currentOperator = getOperator(operatorId);
+  const effectiveLogo = logoUrl || currentOperator?.logo || ASSETS.brand.logoMark;
+  const effectiveCover = coverImage || currentOperator?.cover || ASSETS.scenes.stationFront;
 
   // Filtered stations for right panel
   const filteredStations = stations.filter(st => {
@@ -417,21 +475,112 @@ export const AdminDashboardPage: React.FC = () => {
                 Logo & Couleurs de la station
               </h2>
 
-              {/* Logo Upload Box (from screenshot) */}
-              <div className="border border-dashed border-slate-300 rounded-2xl p-4 bg-slate-50/70 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50/50 hover:border-blue-300 transition-all group">
-                <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-200/80 flex items-center justify-center mb-2 p-2">
-                  <img
-                    src={ASSETS.brand.logoMark}
-                    alt="Logo Station"
-                    className="w-12 h-12 object-contain"
-                  />
+              {/* Enseigne (opérateur) : applique logo, couverture et charte */}
+              <div>
+                <label htmlFor="operator-select" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Enseigne <span className="text-rose-500">*</span>
+                </label>
+                <div id="operator-select" role="radiogroup" aria-label="Enseigne de la station" className="grid grid-cols-2 gap-2">
+                  {OPERATORS.map(op => {
+                    const active = op.id === operatorId;
+                    return (
+                      <button
+                        key={op.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        title={op.legalName}
+                        onClick={() => handleSelectOperator(op.id)}
+                        className={`h-12 rounded-xl border bg-white px-2 flex items-center justify-center transition-[border-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                          active ? 'border-blue-600 ring-2 ring-blue-500/20' : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <img src={op.logo} alt={op.name} className="max-h-8 w-auto object-contain" />
+                      </button>
+                    );
+                  })}
                 </div>
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 group-hover:text-blue-700">
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Télécharger le logo</span>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-0.5">SVG, PNG ou JPG (max 2 Mo)</p>
+                {currentOperator && (
+                  <p className="text-[11px] text-slate-500 mt-1">{currentOperator.legalName}</p>
+                )}
               </div>
+
+              {/* Logo SVG personnalisé */}
+              <div className="flex items-center gap-3 p-2.5 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70">
+                <div className="w-20 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 shrink-0">
+                  <img src={effectiveLogo} alt="Logo actuel de la station" className="max-h-full max-w-full object-contain" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    className="min-h-[44px] flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                  >
+                    <Upload className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>{logoUrl ? 'Remplacer le logo' : 'Téléverser un logo'}</span>
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] text-slate-400">SVG uniquement · 512 Ko max</p>
+                    {logoUrl && (
+                      <button type="button" onClick={() => setLogoUrl('')} className="text-[10px] font-semibold text-slate-500 underline hover:text-slate-800">
+                        Logo de l'enseigne
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept=".svg,image/svg+xml"
+                  className="sr-only"
+                  aria-label="Téléverser un logo SVG"
+                  onChange={e => handleSvgUpload(e, setLogoUrl)}
+                />
+              </div>
+
+              {/* Couverture SVG personnalisée */}
+              <div className="flex items-center gap-3 p-2.5 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70">
+                <div className="w-20 shrink-0">
+                  <StationCover variant="thumb" coverSrc={effectiveCover} logoSrc={effectiveLogo} stationName={name} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => coverInputRef.current?.click()}
+                    className="min-h-[44px] flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                  >
+                    <Upload className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>{coverImage ? 'Remplacer la couverture' : 'Téléverser une couverture'}</span>
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] text-slate-400">SVG · format 2:1</p>
+                    {coverImage && (
+                      <button type="button" onClick={() => setCoverImage('')} className="text-[10px] font-semibold text-slate-500 underline hover:text-slate-800">
+                        Couverture de l'enseigne
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept=".svg,image/svg+xml"
+                  className="sr-only"
+                  aria-label="Téléverser une couverture SVG"
+                  onChange={e =>
+                    handleSvgUpload(e, url => {
+                      setCoverImage(url);
+                      setBannerStyle('cover');
+                    })
+                  }
+                />
+              </div>
+
+              {uploadError && (
+                <p role="alert" className="text-[11px] font-semibold text-rose-600">
+                  {uploadError}
+                </p>
+              )}
 
               {/* Couleur principale */}
               <div>
@@ -482,17 +631,36 @@ export const AdminDashboardPage: React.FC = () => {
                 Aperçu en temps réel
               </h2>
 
-              <StationCanopyPreview
-                stationName={name}
-                locationText={locationText}
-                primaryColor={primaryColor}
-                secondaryColor={secondaryColor}
-                canopyTheme={canopyTheme}
-                isOpen={status === 'active'}
-                isOpen24h={true}
-                status={status}
-                mode="full"
-              />
+              {bannerStyle === 'cover' ? (
+                <StationCover
+                  coverSrc={effectiveCover}
+                  logoSrc={effectiveLogo}
+                  stationName={name}
+                  operatorName={currentOperator?.name}
+                  locationText={locationText}
+                  status={status}
+                  isOpen={status === 'active'}
+                  isOpen24h={isOpen24h}
+                  className="border border-slate-200 shadow-md"
+                />
+              ) : (
+                <StationCanopyPreview
+                  stationName={name}
+                  locationText={locationText}
+                  primaryColor={primaryColor}
+                  secondaryColor={secondaryColor}
+                  canopyTheme={canopyTheme}
+                  isOpen={status === 'active'}
+                  isOpen24h={isOpen24h}
+                  status={status}
+                  mode="full"
+                />
+              )}
+              <p className="text-[11px] text-slate-500">
+                {bannerStyle === 'cover'
+                  ? 'Couverture officielle de l’enseigne (modifiable dans l’onglet Bannière).'
+                  : 'Rendu 3D aux couleurs de la station.'}
+              </p>
             </div>
           </div>
 
@@ -977,15 +1145,16 @@ export const AdminDashboardPage: React.FC = () => {
                   Choisissez le style de bannière pour l'en-tête de la station côté client et personnel :
                 </p>
                 <div className="space-y-2">
-                  {[
+                  {([
+                    { id: 'cover', title: 'Couverture officielle', desc: currentOperator ? `Visuel ${currentOperator.name}` : 'Visuel SVG de l’enseigne', preview: effectiveCover },
                     { id: 'canopy', title: 'Auvent 3D Isométrique', desc: 'Rendu temps réel dynamique', preview: ASSETS.scenes.stationFront },
                     { id: 'front', title: 'Façade Architecturale', desc: 'Station complète avec boutique', preview: ASSETS.scenes.boutiqueFront },
                     { id: 'city', title: 'Silhouette Skyline Ville', desc: 'Ambiance métropole moderne', preview: ASSETS.scenes.sidebarCity },
                     { id: 'gradient', title: 'Dégradé Minimaliste', desc: 'Charte graphique épurée', preview: ASSETS.scenes.clientHero },
-                  ].map(b => (
+                  ] satisfies { id: StationBannerStyle; title: string; desc: string; preview: string }[]).map(b => (
                     <div
                       key={b.id}
-                      onClick={() => setBannerStyle(b.id as any)}
+                      onClick={() => setBannerStyle(b.id)}
                       className={`p-2.5 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
                         bannerStyle === b.id
                           ? 'border-blue-600 bg-blue-50/50 ring-1 ring-blue-500/20'
@@ -1013,14 +1182,14 @@ export const AdminDashboardPage: React.FC = () => {
                   Définissez la densité spatiale de l'interface :
                 </p>
                 <div className="space-y-2">
-                  {[
+                  {([
                     { id: 'standard', title: 'Standard Spacieux', desc: 'Grand confort visuel, espacements amples' },
                     { id: 'compact', title: 'Compact Moderne', desc: 'Optimisé pour les écrans mobiles & tablettes' },
                     { id: 'dense', title: 'Ultra Dense', desc: 'Densité maximale pour salle de contrôle' },
-                  ].map(l => (
+                  ] satisfies { id: NonNullable<Station['layoutStyle']>; title: string; desc: string }[]).map(l => (
                     <div
                       key={l.id}
-                      onClick={() => setLayoutStyle(l.id as any)}
+                      onClick={() => setLayoutStyle(l.id)}
                       className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                         layoutStyle === l.id
                           ? 'border-blue-600 bg-blue-50/50 ring-1 ring-blue-500/20'
@@ -1069,6 +1238,7 @@ export const AdminDashboardPage: React.FC = () => {
               {filteredStations.map(st => {
                 const isSelected = st.id === selectedStationId;
                 const isMaint = st.status === 'maintenance';
+                const stBranding = resolveStationBranding(st);
 
                 return (
                   <div
@@ -1084,14 +1254,16 @@ export const AdminDashboardPage: React.FC = () => {
                       {/* Mini Thumbnail */}
                       <div className="w-12 h-9 rounded-lg overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                         <img
-                          src={ASSETS.scenes.stationFront}
-                          alt={st.name}
+                          src={stBranding.cover}
+                          alt=""
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="leading-tight">
-                        <p className="text-xs font-bold text-slate-900">{st.name}</p>
-                        <p className="text-[11px] text-slate-500">{st.city}</p>
+                      <div className="leading-tight min-w-0">
+                        <p className="text-xs font-bold text-slate-900 truncate">{st.name}</p>
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {stBranding.operator?.name ? `${stBranding.operator.name} · ` : ''}{st.city}
+                        </p>
                       </div>
                     </div>
 

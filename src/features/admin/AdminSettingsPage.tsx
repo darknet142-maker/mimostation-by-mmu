@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Settings, ShieldCheck, RotateCcw, Calendar, Search, Download } from 'lucide-react';
 
 export const AdminSettingsPage: React.FC = () => {
@@ -9,6 +10,7 @@ export const AdminSettingsPage: React.FC = () => {
   }));
 
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDateFilter, setSelectedDateFilter] = useState('');
 
@@ -23,11 +25,13 @@ export const AdminSettingsPage: React.FC = () => {
   });
 
   const handleResetSystem = () => {
-    if (window.confirm('Attention : réinitialiser toutes les données de test à leur état initial ?')) {
-      store.resetAll();
-      setResetSuccess(true);
-      setTimeout(() => setResetSuccess(false), 3000);
-    }
+    setShowResetConfirm(true);
+  };
+
+  const confirmResetSystem = () => {
+    store.resetAll();
+    setResetSuccess(true);
+    setTimeout(() => setResetSuccess(false), 3000);
   };
 
   const handleExportAudit = () => {
@@ -147,9 +151,12 @@ export const AdminSettingsPage: React.FC = () => {
                 <p className="text-[11px] text-slate-500">
                   Par {log.authorName} ({log.authorRole}) • Cible : {log.targetName}
                 </p>
-                <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-400 font-mono">
                   <span>Hash : {log.hash}</span>
-                  <span className="text-emerald-600 font-bold">● Vérifié intègre</span>
+                  {log.previousHash && (
+                    <span>Préc. : {log.previousHash.slice(0, 12)}…</span>
+                  )}
+                  <span className="text-emerald-600 font-bold">● Scellé SHA-256 chaîné</span>
                 </div>
               </div>
               <div className="text-right shrink-0 font-mono text-[11px] text-slate-500">
@@ -176,6 +183,7 @@ export const AdminSettingsPage: React.FC = () => {
           </p>
         </div>
         <button
+          type="button"
           onClick={handleResetSystem}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs transition-colors"
         >
@@ -183,6 +191,16 @@ export const AdminSettingsPage: React.FC = () => {
           <span>Réinitialiser la base</span>
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={confirmResetSystem}
+        title="Réinitialiser toutes les données locales"
+        message="Attention : cette opération restaure les stations, stocks, transactions et paramètres à l'état de démonstration initial."
+        confirmLabel="Réinitialiser la base"
+        variant="danger"
+      />
     </div>
   );
 };

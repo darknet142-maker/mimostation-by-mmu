@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { Button } from '@/components/ui/Button';
 import { ASSETS } from '@/config/assets';
 import { StationCanopyPreview } from '@/components/admin/StationCanopyPreview';
+import { StationCover } from '@/components/station/StationCover';
+import { resolveStationBranding } from '@/config/operators';
+import { getLayoutDensity } from '@/config/themes';
 import { ProductStationAlternativesModal } from '@/components/client/ProductStationAlternativesModal';
+import {
+  StationServicesInteractiveHub,
+  StationInteractiveSection,
+} from '@/components/client/StationServicesInteractiveHub';
 import { Product } from '@/types';
 import {
   MapPin,
@@ -19,18 +26,42 @@ import {
 export const StationDetailPage: React.FC = () => {
   const { stationId } = useParams<{ stationId: string }>();
   const navigate = useNavigate();
-  const { stations, selectedStationId, products } = useAppStore(s => ({
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { stations, selectedStationId, products, networkConfig } = useAppStore(s => ({
     stations: s.stations,
     selectedStationId: s.selectedStationId,
     products: s.products || [],
+    networkConfig: s.networkConfig,
   }));
 
   const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null);
+
+  const rawSection = searchParams.get('section');
+  const activeSection: StationInteractiveSection =
+    rawSection === 'pompes' ||
+    rawSection === 'boutique' ||
+    rawSection === 'cafe' ||
+    rawSection === 'lavage'
+      ? rawSection
+      : 'overview';
+
+  const handleSelectSection = (next: StationInteractiveSection) => {
+    const target = activeSection === next ? 'overview' : next;
+    if (target === 'overview') {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete('section');
+      setSearchParams(nextParams, { replace: true });
+    } else {
+      setSearchParams({ section: target }, { replace: true });
+    }
+  };
 
   const station =
     stations.find(s => s.id === stationId) ||
     stations.find(s => s.id === selectedStationId) ||
     stations[0];
+  const branding = resolveStationBranding(station);
+  const density = getLayoutDensity(station.layoutStyle);
 
   const toggleFavorite = () => {
     store.toggleFavoriteStation(station.id);
@@ -47,12 +78,25 @@ export const StationDetailPage: React.FC = () => {
     { id: 'lave-glace-5l', name: 'Lave-Glace', subtitle: '5L', image: ASSETS.products.laveGlace },
   ];
 
+  const getProductAvailability = (productId: string): 'disponible' | 'stock-faible' | 'rupture' => {
+    const prod = products.find(p => p.id === productId);
+    if (!prod || !prod.isAvailable || prod.stockQuantity <= 0) return 'rupture';
+    if (prod.stockQuantity <= prod.minStockThreshold) return 'stock-faible';
+    return 'disponible';
+  };
+
   const handleProductClick = (item: { id: string; name: string; subtitle: string; image: string }) => {
+    const fallbackPrice = item.id.includes('super')
+      ? (networkConfig?.fuelPrices?.super ?? 700)
+      : item.id.includes('gazoil')
+      ? (networkConfig?.fuelPrices?.gasoil ?? 650)
+      : (networkConfig?.fuelPrices?.gazButane ?? 6000);
+
     const fullProduct = products.find(p => p.id === item.id) || {
       id: item.id,
       name: item.name,
       subtitle: item.subtitle,
-      priceFCFA: item.id.includes('super') ? 700 : item.id.includes('gazoil') ? 650 : 6000,
+      priceFCFA: fallbackPrice,
       unit: item.id.includes('gaz') ? 'bouteille(s)' : 'Litre',
       image: item.image,
       category: 'carburant' as const,
@@ -63,28 +107,54 @@ export const StationDetailPage: React.FC = () => {
     setSelectedProductForModal(fullProduct);
   };
 
+  const showCoverBanner = (station.bannerStyle ?? 'cover') === 'cover' || station.bannerStyle === 'image';
+  const stationOpenStatus = (station.status || 'active') === 'active' && station.isOpen;
+  const stationOpenLabel =
+    station.status === 'maintenance'
+      ? 'En maintenance'
+      : stationOpenStatus
+      ? station.isOpen24h
+        ? 'Ouverte • 24h/24'
+        : 'Ouverte'
+      : 'Fermée';
+
   return (
     <div className="flex flex-col bg-white min-h-full pb-20">
-      {/* Station 3D Canopy Banner with Dynamic Branding */}
-      <div className="relative w-full overflow-hidden bg-slate-900">
-        <StationCanopyPreview
-          stationName={station.name}
-          locationText={`${station.city}, ${station.country}`}
-          primaryColor={station.primaryColor || '#0B4DB3'}
-          secondaryColor={station.secondaryColor || '#FFC107'}
-          canopyTheme={station.canopyTheme || 'classic-blue'}
-          isOpen={station.isOpen}
-          isOpen24h={station.isOpen24h}
-          status={station.status || 'active'}
-          mode="full"
-        />
+      {/* Bannière : couverture officielle de l'enseigne ou rendu 3D aux couleurs de la station */}
+      <div className="relative w-full overflow-hidden bg-slate-900 lg:rounded-2xl">
+        {showCoverBanner ? (
+          <StationCover
+            coverSrc={branding.cover}
+            logoSrc={branding.logo}
+            stationName={station.name}
+            operatorName={branding.operator?.name}
+            locationText={`${station.city}, ${station.country}`}
+            status={station.status || 'active'}
+            isOpen={station.isOpen}
+            isOpen24h={station.isOpen24h}
+            className="rounded-none lg:rounded-2xl"
+          />
+        ) : (
+          <StationCanopyPreview
+            stationName={station.name}
+            locationText={`${station.city}, ${station.country}`}
+            primaryColor={branding.primaryColor}
+            secondaryColor={branding.secondaryColor}
+            canopyTheme={station.canopyTheme || 'classic-blue'}
+            isOpen={station.isOpen}
+            isOpen24h={station.isOpen24h}
+            status={station.status || 'active'}
+            mode="full"
+          />
+        )}
 
         {/* Heart Favorite Icon */}
         <button
           type="button"
           onClick={toggleFavorite}
-          className="absolute top-3 right-12 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-xs flex items-center justify-center text-white transition-all active:scale-90 shadow-md"
+          className="absolute top-3 right-3 w-11 h-11 rounded-full bg-slate-900/40 hover:bg-slate-900/55 flex items-center justify-center text-white transition-[background-color,transform] duration-150 active:scale-95 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           aria-label={station.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          aria-pressed={Boolean(station.isFavorite)}
         >
           <Heart
             className={`w-5 h-5 ${
@@ -94,8 +164,8 @@ export const StationDetailPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Station Info Card (overlapping) */}
-      <div className="px-4 py-4 -mt-6 bg-white rounded-t-3xl relative z-10 space-y-5">
+      {/* Station Info Card */}
+      <div className="px-4 py-4 bg-white relative z-10 space-y-5">
         <div>
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-2.5">
@@ -117,48 +187,164 @@ export const StationDetailPage: React.FC = () => {
           </div>
 
           <div className="mt-3">
-            <StatusPill type="ouvert" label="Ouverte • 24h/24" size="sm" />
+            <StatusPill
+              type={stationOpenStatus ? 'ouvert' : 'ferme'}
+              label={stationOpenLabel}
+              size="sm"
+            />
           </div>
         </div>
 
-        {/* 4 Services in a Row (Screen 05B) with Official SVG icons */}
-        <div className="grid grid-cols-4 gap-2 py-1">
-          <div className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#F0F5FD] border border-[#DCE8FB] text-center">
-            <img src={ASSETS.official.carburantsGaz.super} alt="" className="w-7 h-7 object-contain mb-1" />
-            <span className="text-[11px] font-bold text-[#0F172A]">
-              {station.services.pumpsAvailable}/{station.services.pumpsTotal}
+        {/* 4 Interactive Services in a Row (Screen 05B) with Official SVG icons */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between px-0.5">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Services de la station (cliquez pour explorer)
             </span>
-            <span className="text-[10px] text-slate-500">Pompes</span>
+            {activeSection !== 'overview' && (
+              <button
+                type="button"
+                onClick={() => handleSelectSection('overview')}
+                className="text-[11px] font-bold text-[#1668E3] hover:underline"
+              >
+                Tout réduire
+              </button>
+            )}
           </div>
 
-          <div className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#F0F5FD] border border-[#DCE8FB] text-center">
-            <img src={ASSETS.official.services.panierBoutique} alt="" className="w-7 h-7 object-contain mb-1" />
-            <span className="text-[11px] font-bold text-[#0F172A]">Boutique</span>
-            <span className="text-[10px] text-slate-500">Ouverte</span>
-          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-1">
+            <button
+              type="button"
+              aria-pressed={activeSection === 'pompes'}
+              onClick={() => handleSelectSection('pompes')}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border text-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3] ${
+                activeSection === 'pompes'
+                  ? 'bg-[#1668E3] text-white border-[#1668E3] shadow-md scale-[1.01]'
+                  : 'bg-[#F0F5FD] hover:bg-blue-100/70 border-[#DCE8FB] text-[#0F172A]'
+              }`}
+            >
+              <img
+                src={ASSETS.official.carburantsGaz.super}
+                alt=""
+                className="w-7 h-7 object-contain mb-1"
+              />
+              <span className="text-[11px] font-extrabold">
+                {station.services.pumpsAvailable}/{station.services.pumpsTotal} Pompes
+              </span>
+              <span
+                className={`text-[10px] font-semibold ${
+                  activeSection === 'pompes' ? 'text-blue-100' : 'text-[#1668E3]'
+                }`}
+              >
+                {activeSection === 'pompes' ? 'Affiché ▼' : 'Voir pistes & cuves →'}
+              </span>
+            </button>
 
-          <div className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#F0F5FD] border border-[#DCE8FB] text-center">
-            <img src={ASSETS.official.boutiqueSnack.cafe} alt="" className="w-7 h-7 object-contain mb-1" />
-            <span className="text-[11px] font-bold text-[#0F172A]">Café</span>
-            <span className="text-[10px] text-slate-500">Service</span>
-          </div>
+            <button
+              type="button"
+              aria-pressed={activeSection === 'boutique'}
+              onClick={() => handleSelectSection('boutique')}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border text-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3] ${
+                activeSection === 'boutique'
+                  ? 'bg-[#1668E3] text-white border-[#1668E3] shadow-md scale-[1.01]'
+                  : 'bg-[#F0F5FD] hover:bg-blue-100/70 border-[#DCE8FB] text-[#0F172A]'
+              }`}
+            >
+              <img
+                src={ASSETS.official.services.panierBoutique}
+                alt=""
+                className="w-7 h-7 object-contain mb-1"
+              />
+              <span className="text-[11px] font-extrabold">Boutique</span>
+              <span
+                className={`text-[10px] font-semibold ${
+                  activeSection === 'boutique' ? 'text-blue-100' : 'text-[#1668E3]'
+                }`}
+              >
+                {activeSection === 'boutique'
+                  ? 'Inventaire ouvert ▼'
+                  : `${products.filter(p => p.category !== 'carburant' && p.stockQuantity > 0).length} réf. en stock →`}
+              </span>
+            </button>
 
-          <div className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#F0F5FD] border border-[#DCE8FB] text-center">
-            <img src={ASSETS.official.services.lavageAuto} alt="" className="w-7 h-7 object-contain mb-1" />
-            <span className="text-[11px] font-bold text-[#0F172A]">Lavage</span>
-            <span className="text-[10px] text-slate-500">Auto</span>
+            <button
+              type="button"
+              aria-pressed={activeSection === 'cafe'}
+              onClick={() => handleSelectSection('cafe')}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border text-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3] ${
+                activeSection === 'cafe'
+                  ? 'bg-[#1668E3] text-white border-[#1668E3] shadow-md scale-[1.01]'
+                  : 'bg-[#F0F5FD] hover:bg-blue-100/70 border-[#DCE8FB] text-[#0F172A]'
+              }`}
+            >
+              <img
+                src={ASSETS.official.boutiqueSnack.cafe}
+                alt=""
+                className="w-7 h-7 object-contain mb-1"
+              />
+              <span className="text-[11px] font-extrabold">Café & Snack</span>
+              <span
+                className={`text-[10px] font-semibold ${
+                  activeSection === 'cafe' ? 'text-blue-100' : 'text-[#1668E3]'
+                }`}
+              >
+                {activeSection === 'cafe'
+                  ? 'Carte ouverte ▼'
+                  : station.services.hasCafe
+                  ? 'Carte & Click →'
+                  : 'Voir carte →'}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              aria-pressed={activeSection === 'lavage'}
+              onClick={() => handleSelectSection('lavage')}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border text-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3] ${
+                activeSection === 'lavage'
+                  ? 'bg-[#1668E3] text-white border-[#1668E3] shadow-md scale-[1.01]'
+                  : 'bg-[#F0F5FD] hover:bg-blue-100/70 border-[#DCE8FB] text-[#0F172A]'
+              }`}
+            >
+              <img
+                src={ASSETS.official.services.lavageAuto}
+                alt=""
+                className="w-7 h-7 object-contain mb-1"
+              />
+              <span className="text-[11px] font-extrabold">Lavage Auto</span>
+              <span
+                className={`text-[10px] font-semibold ${
+                  activeSection === 'lavage' ? 'text-blue-100' : 'text-[#1668E3]'
+                }`}
+              >
+                {activeSection === 'lavage'
+                  ? 'Formules affichées ▼'
+                  : station.services.hasCarWash
+                  ? 'Tarifs & Créneaux →'
+                  : 'Entretien Auto →'}
+              </span>
+            </button>
           </div>
         </div>
+
+        {/* Interactive Hub for Pompes / Boutique / Café / Lavage */}
+        <StationServicesInteractiveHub
+          station={station}
+          activeSection={activeSection}
+          onChangeSection={handleSelectSection}
+          onSelectProductForAlternatives={prod => setSelectedProductForModal(prod)}
+        />
 
         {/* Section: Produits disponibles */}
         <div className="space-y-2.5">
           <h3 className="text-sm font-bold text-[#0F172A]">Produits disponibles</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${density.gridGap}`}>
             {mainProducts.map(prod => (
-              <div
+              <button
                 key={prod.id}
+                type="button"
                 onClick={() => handleProductClick(prod)}
-                className="flex items-center justify-between p-3 bg-white rounded-xl border border-[#DCE4F0] hover:border-blue-400 cursor-pointer transition-all"
+                className={`w-full text-left flex items-center justify-between ${density.cardPadding} bg-white rounded-xl border border-[#DCE4F0] hover:border-blue-400 cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3]`}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center p-1">
@@ -171,10 +357,10 @@ export const StationDetailPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <StatusPill type="disponible" size="sm" />
+                  <StatusPill type={getProductAvailability(prod.id)} size="sm" />
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -182,12 +368,13 @@ export const StationDetailPage: React.FC = () => {
         {/* Section: Autres produits */}
         <div className="space-y-2.5">
           <h3 className="text-sm font-bold text-[#0F172A]">Autres produits</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${density.gridGap}`}>
             {otherProducts.map(prod => (
-              <div
+              <button
                 key={prod.id}
+                type="button"
                 onClick={() => handleProductClick(prod)}
-                className="flex items-center justify-between p-3 bg-white rounded-xl border border-[#DCE4F0] hover:border-blue-400 cursor-pointer transition-all"
+                className={`w-full text-left flex items-center justify-between ${density.cardPadding} bg-white rounded-xl border border-[#DCE4F0] hover:border-blue-400 cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3]`}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center p-1">
@@ -200,10 +387,10 @@ export const StationDetailPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <StatusPill type="disponible" size="sm" />
+                  <StatusPill type={getProductAvailability(prod.id)} size="sm" />
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 100" fill="none">
+  <defs>
+    <linearGradient id="gaboil-red-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E52320" />
+      <stop offset="100%" stop-color="#B71C1C" />
+    </linearGradient>
+    <filter id="gaboil-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <!-- GAB'OIL Drop & Globe Icon -->
+  <g transform="translate(14, 12)" filter="url(#gaboil-shadow)">
+    <circle cx="38" cy="38" r="34" fill="url(#gaboil-red-grad)" />
+    <!-- White oil droplet outline & petroleum lines -->
+    <path d="M 38 12 C 38 12 56 36 56 46 C 56 56 48 64 38 64 C 28 64 20 56 20 46 C 20 36 38 12 38 12 Z" stroke="#FFFFFF" stroke-width="3" fill="none" />
+    <path d="M 24 46 H 52" stroke="#FFFFFF" stroke-width="2.5" />
+    <path d="M 28 36 H 48" stroke="#FFFFFF" stroke-width="2" />
+    <path d="M 28 56 H 48" stroke="#FFFFFF" stroke-width="2" />
+  </g>
+
+  <!-- Typography: GAB'OIL -->
+  <g transform="translate(100, 22)">
+    <text x="0" y="36" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="900" letter-spacing="1">
+      <tspan fill="#334155">GAB</tspan><tspan fill="#E52320">'</tspan><tspan fill="#E52320">OIL</tspan>
+    </text>
+  </g>
+
+  <!-- Subtext: SOCIÉTÉ NATIONALE DES HYDROCARBURES DU GABON -->
+  <text x="102" y="78" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="8" font-weight="800" letter-spacing="1" fill="#64748B">SOCIÉTÉ NATIONALE • GABON</text>
+</svg>
+

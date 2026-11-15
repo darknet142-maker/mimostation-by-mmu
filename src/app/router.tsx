@@ -1,190 +1,224 @@
+import React, { Suspense, lazy, ComponentType } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { StaffAuthGuard, AdminAuthGuard } from '@/components/auth/RouteGuards';
+
+const RouteLoader: React.FC = () => (
+  <div className="min-h-[260px] flex flex-col items-center justify-center gap-3 p-8" role="status" aria-live="polite">
+    <div className="w-8 h-8 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+    <span className="text-xs font-semibold text-slate-500">Chargement de l&apos;interface...</span>
+  </div>
+);
+
+function lazyNamed<TModule extends Record<string, unknown>, TKey extends keyof TModule>(
+  importer: () => Promise<TModule>,
+  exportName: TKey
+): React.ReactElement {
+  const LazyComponent = lazy(async () => {
+    const mod = await importer();
+    return { default: mod[exportName] as ComponentType<Record<string, never>> };
+  });
+
+  return (
+    <Suspense fallback={<RouteLoader />}>
+      <LazyComponent />
+    </Suspense>
+  );
+}
 
 // Layouts
-import { ClientLayout } from '@/components/layout/ClientLayout';
-import { StaffLayout } from '@/components/layout/StaffLayout';
-
-// Client Pages
-import { ClientHomePage } from '@/features/client/ClientHomePage';
-import { StationsListPage } from '@/features/client/StationsListPage';
-import { StationDetailPage } from '@/features/client/StationDetailPage';
-import { ReserveProductPage } from '@/features/client/ReserveProductPage';
-import { PaymentMobileMoneyPage } from '@/features/client/PaymentMobileMoneyPage';
-import { ReservationsListPage } from '@/features/client/ReservationsListPage';
-import { QrPage } from '@/features/client/QrPage';
-import { NotificationsPage } from '@/features/client/NotificationsPage';
-import { ClientProfilePage } from '@/features/client/ClientProfilePage';
-
-// Staff Auth Pages
-import { StaffRoleSelectPage } from '@/features/staff/auth/StaffRoleSelectPage';
-import { StaffPinLoginPage } from '@/features/staff/auth/StaffPinLoginPage';
-
-// Staff Role Dashboards
-import { PompisteDashboardPage } from '@/features/staff/pompiste/PompisteDashboardPage';
-import { ChefDePisteDashboardPage } from '@/features/staff/chef-de-piste/ChefDePisteDashboardPage';
-import { CaissiereDashboardPage } from '@/features/staff/caissiere/CaissiereDashboardPage';
-import { ChefDePosteDashboardPage } from '@/features/staff/chef-de-poste/ChefDePosteDashboardPage';
-import { RayonnisteDashboardPage } from '@/features/staff/rayonniste/RayonnisteDashboardPage';
-import { AgentComptoirDashboardPage } from '@/features/staff/agent-comptoir/AgentComptoirDashboardPage';
-import { GerantDashboardPage } from '@/features/staff/gerant/GerantDashboardPage';
-
-// Staff Shared Sub-pages
-import { StaffPumpsPage } from '@/features/staff/shared/pumps/StaffPumpsPage';
-import { StaffTeamPage } from '@/features/staff/shared/team/StaffTeamPage';
-import { StaffStocksPage } from '@/features/staff/shared/stocks/StaffStocksPage';
-import { StaffReportsPage } from '@/features/staff/shared/reports/StaffReportsPage';
-import { StaffAlertsPage } from '@/features/staff/shared/alerts/StaffAlertsPage';
-import { StaffSettingsPage } from '@/features/staff/shared/settings/StaffSettingsPage';
-
-// Admin Layout & Pages
-import { AdminLayout } from '@/components/layout/AdminLayout';
-import { AdminDashboardPage } from '@/features/admin/AdminDashboardPage';
-import { AdminStationsPage } from '@/features/admin/AdminStationsPage';
-import { AdminUsersPage } from '@/features/admin/AdminUsersPage';
-import { AdminStocksPage } from '@/features/admin/AdminStocksPage';
-import { AdminTransactionsPage } from '@/features/admin/AdminTransactionsPage';
-import { AdminReportsPage } from '@/features/admin/AdminReportsPage';
-import { AdminCustomizationPage } from '@/features/admin/AdminCustomizationPage';
-import { AdminNotificationsPage } from '@/features/admin/AdminNotificationsPage';
-import { AdminSettingsPage } from '@/features/admin/AdminSettingsPage';
-import { AdminSupportPage } from '@/features/admin/AdminSupportPage';
+const ClientLayout = lazyNamed(() => import('@/components/layout/ClientLayout'), 'ClientLayout');
+const StaffLayout = lazyNamed(() => import('@/components/layout/StaffLayout'), 'StaffLayout');
+const AdminLayout = lazyNamed(() => import('@/components/layout/AdminLayout'), 'AdminLayout');
 
 export const router = createBrowserRouter([
   // ================= CLIENT ROUTES =================
   {
     path: '/',
-    element: <ClientLayout />,
+    element: ClientLayout,
     children: [
-      { index: true, element: <ClientHomePage /> },
-      { path: 'stations', element: <StationsListPage /> },
-      { path: 'stations/:stationId', element: <StationDetailPage /> },
-      { path: 'stations/:stationId/reserver/:productId', element: <ReserveProductPage /> },
-      { path: 'reservations', element: <ReservationsListPage /> },
-      { path: 'reservations/:reservationId/paiement', element: <PaymentMobileMoneyPage /> },
-      { path: 'qr', element: <QrPage /> },
-      { path: 'notifications', element: <NotificationsPage /> },
-      { path: 'profil', element: <ClientProfilePage /> },
+      { index: true, element: lazyNamed(() => import('@/features/client/ClientHomePage'), 'ClientHomePage') },
+      { path: 'stations', element: lazyNamed(() => import('@/features/client/StationsListPage'), 'StationsListPage') },
+      { path: 'stations/:stationId', element: lazyNamed(() => import('@/features/client/StationDetailPage'), 'StationDetailPage') },
+      { path: 'stations/:stationId/reserver/:productId', element: lazyNamed(() => import('@/features/client/ReserveProductPage'), 'ReserveProductPage') },
+      { path: 'reservations', element: lazyNamed(() => import('@/features/client/ReservationsListPage'), 'ReservationsListPage') },
+      { path: 'reservations/:reservationId/paiement', element: lazyNamed(() => import('@/features/client/PaymentMobileMoneyPage'), 'PaymentMobileMoneyPage') },
+      { path: 'qr', element: lazyNamed(() => import('@/features/client/QrPage'), 'QrPage') },
+      { path: 'notifications', element: lazyNamed(() => import('@/features/client/NotificationsPage'), 'NotificationsPage') },
+      { path: 'profil', element: lazyNamed(() => import('@/features/client/ClientProfilePage'), 'ClientProfilePage') },
     ],
+  },
+
+  // Compatibilité ancien lien /staff
+  {
+    path: '/staff',
+    element: <Navigate to="/personnel" replace />,
   },
 
   // ================= STAFF AUTH (FULLSCREEN) =================
   {
     path: '/personnel',
-    element: <StaffRoleSelectPage />,
+    element: lazyNamed(() => import('@/features/staff/auth/StaffRoleSelectPage'), 'StaffRoleSelectPage'),
   },
   {
     path: '/personnel/connexion/:role',
-    element: <StaffPinLoginPage />,
+    element: lazyNamed(() => import('@/features/staff/auth/StaffPinLoginPage'), 'StaffPinLoginPage'),
   },
 
-  // ================= STAFF WORKSPACE BY ROLE =================
+  // ================= STAFF WORKSPACE BY ROLE (PROTÉGÉ PAR GARDE) =================
   {
     path: '/personnel/pompiste',
-    element: <StaffLayout />,
+    element: <StaffAuthGuard expectedRole="pompiste" />,
     children: [
-      { index: true, element: <PompisteDashboardPage /> },
-      { path: 'piste', element: <PompisteDashboardPage /> },
-      { path: 'boutique', element: <StaffStocksPage /> },
-      { path: 'encaissement', element: <StaffPumpsPage /> },
-      { path: 'transactions', element: <StaffReportsPage /> },
-      { path: 'stocks', element: <StaffStocksPage /> },
-      { path: 'rapports', element: <StaffReportsPage /> },
-      { path: 'alertes', element: <StaffAlertsPage /> },
-      { path: 'parametres', element: <StaffSettingsPage /> },
+      {
+        element: StaffLayout,
+        children: [
+          { index: true, element: lazyNamed(() => import('@/features/staff/pompiste/PompisteDashboardPage'), 'PompisteDashboardPage') },
+          { path: 'piste', element: lazyNamed(() => import('@/features/staff/pompiste/PompisteDashboardPage'), 'PompisteDashboardPage') },
+          { path: 'boutique', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'encaissement', element: lazyNamed(() => import('@/features/staff/shared/pumps/StaffPumpsPage'), 'StaffPumpsPage') },
+          { path: 'transactions', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'stocks', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'rapports', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'alertes', element: lazyNamed(() => import('@/features/staff/shared/alerts/StaffAlertsPage'), 'StaffAlertsPage') },
+          { path: 'parametres', element: lazyNamed(() => import('@/features/staff/shared/settings/StaffSettingsPage'), 'StaffSettingsPage') },
+        ],
+      },
     ],
   },
   {
     path: '/personnel/chef-de-piste',
-    element: <StaffLayout />,
+    element: <StaffAuthGuard expectedRole="chef-de-piste" />,
     children: [
-      { index: true, element: <ChefDePisteDashboardPage /> },
-      { path: 'pompes', element: <StaffPumpsPage /> },
-      { path: 'equipe', element: <StaffTeamPage /> },
-      { path: 'stocks', element: <StaffStocksPage /> },
-      { path: 'rapports', element: <StaffReportsPage /> },
-      { path: 'alertes', element: <StaffAlertsPage /> },
-      { path: 'parametres', element: <StaffSettingsPage /> },
+      {
+        element: StaffLayout,
+        children: [
+          { index: true, element: lazyNamed(() => import('@/features/staff/chef-de-piste/ChefDePisteDashboardPage'), 'ChefDePisteDashboardPage') },
+          { path: 'pompes', element: lazyNamed(() => import('@/features/staff/shared/pumps/StaffPumpsPage'), 'StaffPumpsPage') },
+          { path: 'equipe', element: lazyNamed(() => import('@/features/staff/shared/team/StaffTeamPage'), 'StaffTeamPage') },
+          { path: 'stocks', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'transactions', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'rapports', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'alertes', element: lazyNamed(() => import('@/features/staff/shared/alerts/StaffAlertsPage'), 'StaffAlertsPage') },
+          { path: 'parametres', element: lazyNamed(() => import('@/features/staff/shared/settings/StaffSettingsPage'), 'StaffSettingsPage') },
+        ],
+      },
     ],
   },
   {
     path: '/personnel/caissiere',
-    element: <StaffLayout />,
+    element: <StaffAuthGuard expectedRole="caissiere" />,
     children: [
-      { index: true, element: <CaissiereDashboardPage /> },
-      { path: 'produits', element: <StaffStocksPage /> },
-      { path: 'stocks', element: <StaffStocksPage /> },
-      { path: 'rapports', element: <StaffReportsPage /> },
-      { path: 'alertes', element: <StaffAlertsPage /> },
-      { path: 'parametres', element: <StaffSettingsPage /> },
+      {
+        element: StaffLayout,
+        children: [
+          { index: true, element: lazyNamed(() => import('@/features/staff/caissiere/CaissiereDashboardPage'), 'CaissiereDashboardPage') },
+          { path: 'produits', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'stocks', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'transactions', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'rapports', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'alertes', element: lazyNamed(() => import('@/features/staff/shared/alerts/StaffAlertsPage'), 'StaffAlertsPage') },
+          { path: 'parametres', element: lazyNamed(() => import('@/features/staff/shared/settings/StaffSettingsPage'), 'StaffSettingsPage') },
+        ],
+      },
     ],
   },
   {
     path: '/personnel/chef-de-poste',
-    element: <StaffLayout />,
+    element: <StaffAuthGuard expectedRole="chef-de-poste" />,
     children: [
-      { index: true, element: <ChefDePosteDashboardPage /> },
-      { path: 'equipe', element: <StaffTeamPage /> },
-      { path: 'pompes', element: <StaffPumpsPage /> },
-      { path: 'stocks', element: <StaffStocksPage /> },
-      { path: 'rapports', element: <StaffReportsPage /> },
-      { path: 'incidents', element: <StaffAlertsPage /> },
-      { path: 'parametres', element: <StaffSettingsPage /> },
+      {
+        element: StaffLayout,
+        children: [
+          { index: true, element: lazyNamed(() => import('@/features/staff/chef-de-poste/ChefDePosteDashboardPage'), 'ChefDePosteDashboardPage') },
+          { path: 'equipe', element: lazyNamed(() => import('@/features/staff/shared/team/StaffTeamPage'), 'StaffTeamPage') },
+          { path: 'pompes', element: lazyNamed(() => import('@/features/staff/shared/pumps/StaffPumpsPage'), 'StaffPumpsPage') },
+          { path: 'stocks', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'transactions', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'rapports', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'incidents', element: lazyNamed(() => import('@/features/staff/shared/alerts/StaffAlertsPage'), 'StaffAlertsPage') },
+          { path: 'parametres', element: lazyNamed(() => import('@/features/staff/shared/settings/StaffSettingsPage'), 'StaffSettingsPage') },
+        ],
+      },
     ],
   },
   {
     path: '/personnel/rayonniste',
-    element: <StaffLayout />,
+    element: <StaffAuthGuard expectedRole="rayonniste" />,
     children: [
-      { index: true, element: <RayonnisteDashboardPage /> },
-      { path: 'rayons', element: <StaffStocksPage /> },
-      { path: 'stocks', element: <StaffStocksPage /> },
-      { path: 'reassort', element: <StaffStocksPage /> },
-      { path: 'alertes', element: <StaffAlertsPage /> },
-      { path: 'parametres', element: <StaffSettingsPage /> },
+      {
+        element: StaffLayout,
+        children: [
+          { index: true, element: lazyNamed(() => import('@/features/staff/rayonniste/RayonnisteDashboardPage'), 'RayonnisteDashboardPage') },
+          { path: 'rayons', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'stocks', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'reassort', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'transactions', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'rapports', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'alertes', element: lazyNamed(() => import('@/features/staff/shared/alerts/StaffAlertsPage'), 'StaffAlertsPage') },
+          { path: 'parametres', element: lazyNamed(() => import('@/features/staff/shared/settings/StaffSettingsPage'), 'StaffSettingsPage') },
+        ],
+      },
     ],
   },
   {
     path: '/personnel/agent-comptoir',
-    element: <StaffLayout />,
+    element: <StaffAuthGuard expectedRole="agent-comptoir" />,
     children: [
-      { index: true, element: <AgentComptoirDashboardPage /> },
-      { path: 'commandes', element: <AgentComptoirDashboardPage /> },
-      { path: 'produits', element: <StaffStocksPage /> },
-      { path: 'rapports', element: <StaffReportsPage /> },
-      { path: 'parametres', element: <StaffSettingsPage /> },
+      {
+        element: StaffLayout,
+        children: [
+          { index: true, element: lazyNamed(() => import('@/features/staff/agent-comptoir/AgentComptoirDashboardPage'), 'AgentComptoirDashboardPage') },
+          { path: 'commandes', element: lazyNamed(() => import('@/features/staff/agent-comptoir/AgentComptoirDashboardPage'), 'AgentComptoirDashboardPage') },
+          { path: 'produits', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'transactions', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'rapports', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'parametres', element: lazyNamed(() => import('@/features/staff/shared/settings/StaffSettingsPage'), 'StaffSettingsPage') },
+        ],
+      },
     ],
   },
   {
     path: '/personnel/gerant',
-    element: <StaffLayout />,
+    element: <StaffAuthGuard expectedRole="gerant" />,
     children: [
-      { index: true, element: <GerantDashboardPage /> },
-      { path: 'equipe', element: <StaffTeamPage /> },
-      { path: 'pompes', element: <StaffPumpsPage /> },
-      { path: 'stocks', element: <StaffStocksPage /> },
-      { path: 'finances', element: <StaffReportsPage /> },
-      { path: 'rapports', element: <StaffReportsPage /> },
-      { path: 'incidents', element: <StaffAlertsPage /> },
-      { path: 'parametres', element: <StaffSettingsPage /> },
+      {
+        element: StaffLayout,
+        children: [
+          { index: true, element: lazyNamed(() => import('@/features/staff/gerant/GerantDashboardPage'), 'GerantDashboardPage') },
+          { path: 'equipe', element: lazyNamed(() => import('@/features/staff/shared/team/StaffTeamPage'), 'StaffTeamPage') },
+          { path: 'pompes', element: lazyNamed(() => import('@/features/staff/shared/pumps/StaffPumpsPage'), 'StaffPumpsPage') },
+          { path: 'stocks', element: lazyNamed(() => import('@/features/staff/shared/stocks/StaffStocksPage'), 'StaffStocksPage') },
+          { path: 'finances', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'transactions', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'rapports', element: lazyNamed(() => import('@/features/staff/shared/reports/StaffReportsPage'), 'StaffReportsPage') },
+          { path: 'incidents', element: lazyNamed(() => import('@/features/staff/shared/alerts/StaffAlertsPage'), 'StaffAlertsPage') },
+          { path: 'parametres', element: lazyNamed(() => import('@/features/staff/shared/settings/StaffSettingsPage'), 'StaffSettingsPage') },
+        ],
+      },
     ],
   },
 
-  // ================= ADMIN CONSOLE (GLOBAL NETWORK MANAGEMENT) =================
+  // ================= ADMIN CONSOLE (PROTÉGÉ PAR GARDE SUPER ADMIN) =================
   {
     path: '/admin',
-    element: <AdminLayout />,
+    element: <AdminAuthGuard />,
     children: [
-      { index: true, element: <AdminDashboardPage /> },
-      { path: 'dashboard', element: <AdminDashboardPage /> },
-      { path: 'stations', element: <AdminStationsPage /> },
-      { path: 'utilisateurs', element: <AdminUsersPage /> },
-      { path: 'stocks', element: <AdminStocksPage /> },
-      { path: 'transactions', element: <AdminTransactionsPage /> },
-      { path: 'rapports', element: <AdminReportsPage /> },
-      { path: 'personnalisation', element: <AdminCustomizationPage /> },
-      { path: 'notifications', element: <AdminNotificationsPage /> },
-      { path: 'parametres', element: <AdminSettingsPage /> },
-      { path: 'support', element: <AdminSupportPage /> },
+      {
+        element: AdminLayout,
+        children: [
+          { index: true, element: lazyNamed(() => import('@/features/admin/AdminDashboardPage'), 'AdminDashboardPage') },
+          { path: 'dashboard', element: lazyNamed(() => import('@/features/admin/AdminDashboardPage'), 'AdminDashboardPage') },
+          { path: 'stations', element: lazyNamed(() => import('@/features/admin/AdminStationsPage'), 'AdminStationsPage') },
+          { path: 'utilisateurs', element: lazyNamed(() => import('@/features/admin/AdminUsersPage'), 'AdminUsersPage') },
+          { path: 'stocks', element: lazyNamed(() => import('@/features/admin/AdminStocksPage'), 'AdminStocksPage') },
+          { path: 'transactions', element: lazyNamed(() => import('@/features/admin/AdminTransactionsPage'), 'AdminTransactionsPage') },
+          { path: 'rapports', element: lazyNamed(() => import('@/features/admin/AdminReportsPage'), 'AdminReportsPage') },
+          { path: 'personnalisation', element: lazyNamed(() => import('@/features/admin/AdminCustomizationPage'), 'AdminCustomizationPage') },
+          { path: 'notifications', element: lazyNamed(() => import('@/features/admin/AdminNotificationsPage'), 'AdminNotificationsPage') },
+          { path: 'parametres', element: lazyNamed(() => import('@/features/admin/AdminSettingsPage'), 'AdminSettingsPage') },
+          { path: 'support', element: lazyNamed(() => import('@/features/admin/AdminSupportPage'), 'AdminSupportPage') },
+        ],
+      },
     ],
   },
 

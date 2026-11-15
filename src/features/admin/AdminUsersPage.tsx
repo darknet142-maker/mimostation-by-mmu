@@ -3,6 +3,7 @@ import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
 import { ROLE_DEFINITIONS } from '@/data/fixtures';
 import { Employee, StaffRole } from '@/types';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   Users,
   Search,
@@ -13,6 +14,8 @@ import {
   CheckCircle2,
   Trash2,
   Edit2,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 export const AdminUsersPage: React.FC = () => {
@@ -37,12 +40,13 @@ export const AdminUsersPage: React.FC = () => {
   // Quick PIN Edit Modal
   const [editingEmpPin, setEditingEmpPin] = useState<Employee | null>(null);
   const [customPinInput, setCustomPinInput] = useState('');
+  const [revealedPins, setRevealedPins] = useState<Record<string, boolean>>({});
+  const [pendingDeleteEmp, setPendingDeleteEmp] = useState<{ id: string; name: string } | null>(null);
 
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch =
       emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.pin.includes(searchTerm);
+      emp.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || emp.role === roleFilter;
     const matchesStation = stationFilter === 'all' || emp.stationId === stationFilter;
     return matchesSearch && matchesRole && matchesStation;
@@ -83,11 +87,15 @@ export const AdminUsersPage: React.FC = () => {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (window.confirm(`Révoquer et désactiver le compte de ${name} ?`)) {
-      store.deleteEmployee(id, 'Révocation administrative');
-      setSuccessToast(`Compte de ${name} supprimé avec succès.`);
-      setTimeout(() => setSuccessToast(null), 3000);
-    }
+    setPendingDeleteEmp({ id, name });
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDeleteEmp) return;
+    store.deleteEmployee(pendingDeleteEmp.id, 'Révocation administrative');
+    setSuccessToast(`Compte de ${pendingDeleteEmp.name} supprimé avec succès.`);
+    setPendingDeleteEmp(null);
+    setTimeout(() => setSuccessToast(null), 3000);
   };
 
   return (
@@ -231,19 +239,32 @@ export const AdminUsersPage: React.FC = () => {
                       </span>
                     </td>
 
-                    {/* PIN */}
+                    {/* PIN (masqué par défaut) */}
                     <td className="py-3 px-4">
-                      <div
-                        onClick={() => {
-                          setEditingEmpPin(emp);
-                          setCustomPinInput(emp.pin);
-                        }}
-                        className="flex items-center gap-1.5 font-mono font-bold text-slate-800 bg-slate-100 hover:bg-amber-100 px-2 py-1 rounded-md w-max cursor-pointer transition-colors"
-                        title="Cliquer pour changer le code PIN"
-                      >
-                        <KeyRound className="w-3 h-3 text-amber-500" />
-                        <span>{emp.pin}</span>
-                        <Edit2 className="w-3 h-3 text-slate-400 ml-1" />
+                      <div className="flex items-center gap-1.5 w-max">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingEmpPin(emp);
+                            setCustomPinInput(emp.pin);
+                          }}
+                          className="flex items-center gap-1.5 font-mono font-bold text-slate-800 bg-slate-100 hover:bg-amber-100 px-2 py-1 rounded-md cursor-pointer transition-colors"
+                          aria-label={`Modifier le code PIN de ${emp.name}`}
+                        >
+                          <KeyRound className="w-3 h-3 text-amber-500" />
+                          <span>{revealedPins[emp.id] ? emp.pin : '••••'}</span>
+                          <Edit2 className="w-3 h-3 text-slate-400 ml-1" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setRevealedPins(prev => ({ ...prev, [emp.id]: !prev[emp.id] }))
+                          }
+                          className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                          aria-label={revealedPins[emp.id] ? `Masquer le PIN de ${emp.name}` : `Afficher le PIN de ${emp.name}`}
+                        >
+                          {revealedPins[emp.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
                       </div>
                     </td>
 
@@ -430,6 +451,20 @@ export const AdminUsersPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(pendingDeleteEmp)}
+        onClose={() => setPendingDeleteEmp(null)}
+        onConfirm={confirmDelete}
+        title="Révoquer l'accès collaborateur"
+        message={
+          pendingDeleteEmp
+            ? `Révoquer et supprimer définitivement le compte de ${pendingDeleteEmp.name} ?`
+            : ''
+        }
+        confirmLabel="Révoquer le compte"
+        variant="danger"
+      />
     </div>
   );
 };

@@ -56,9 +56,15 @@ export interface StationAdvancedSettings {
   minStockAlertPercent?: number;
 }
 
+/** Enseignes pétrolières disponibles sur le réseau. */
+export type OperatorId = 'ola-energy' | 'engen' | 'petrogabon' | 'totalenergies' | 'gab-oil';
+
+export type StationBannerStyle = 'cover' | 'canopy' | 'front' | 'city' | 'gradient' | 'image' | 'minimal';
+
 export interface Station {
   id: string;
   name: string;
+  operatorId?: OperatorId;
   code?: string;
   address: string;
   city: string;
@@ -78,6 +84,9 @@ export interface Station {
   canopyTheme?: 'classic-blue' | 'night-edition' | 'eco-green' | 'neon-tech' | 'minimal-blue' | 'urban-orange';
   layoutStyle?: 'standard' | 'compact' | 'dense';
   bannerImage?: string;
+  /** Couverture SVG personnalisée (data-URL ou chemin) ; sinon couverture de l'enseigne. */
+  coverImage?: string;
+  bannerStyle?: StationBannerStyle;
   status?: 'active' | 'maintenance' | 'closed';
   advancedSettings?: StationAdvancedSettings;
 }
@@ -124,8 +133,9 @@ export type PumpStatus = 'available' | 'busy' | 'maintenance' | 'offline';
 
 export interface Pump {
   id: string;
+  stationId: string;
   number: number;
-  fuelType: 'Super' | 'Gasoil';
+  fuelType: 'Super' | 'Gasoil' | 'Pétrole Lampant';
   status: PumpStatus;
   litersToday: number;
   assignedEmployeeId?: string;
@@ -134,7 +144,8 @@ export interface Pump {
 
 export interface TankLevel {
   id: string;
-  fuelType: 'Super' | 'Gasoil' | 'Gaz Butane';
+  stationId: string;
+  fuelType: 'Super' | 'Gasoil' | 'Pétrole Lampant' | 'Gaz Butane';
   currentLiters: number;
   capacityLiters: number;
   levelPercent: number;
@@ -143,6 +154,7 @@ export interface TankLevel {
 
 export interface FuelTransaction {
   id: string;
+  stationId: string;
   time: string;
   pumpNumber: number;
   product: string;
@@ -159,6 +171,7 @@ export interface CartItem {
 
 export interface BoutiqueSale {
   id: string;
+  stationId: string;
   saleNumber: string; // e.g. "VTE-20261110-048"
   ticketNumber: string; // e.g. "TKT-20261110-048"
   time: string;
@@ -173,6 +186,16 @@ export interface BoutiqueSale {
   paymentMethod: 'Mobile Money' | 'Espèces';
   cashierName: string;
   status: 'confirmed' | 'refunded';
+}
+
+export interface CounterOrder {
+  id: string;
+  stationId: string;
+  time: string;
+  item: string;
+  customer: string;
+  totalFCFA: number;
+  status: 'pending' | 'ready' | 'served';
 }
 
 export type ReservationStatus =
@@ -204,6 +227,8 @@ export interface Reservation {
 
 export interface AlertNotification {
   id: string;
+  stationId?: string;
+  audience?: 'staff' | 'client';
   type: 'danger' | 'info' | 'success';
   title: string;
   subtitle: string;
@@ -226,7 +251,10 @@ export type AuditActionType =
   | 'PERSONNALISATION_STATION'
   | 'LIVRAISON_CUVE'
   | 'CONFIGURATION_POMPE'
-  | 'CONFIGURATION_RESEAU';
+  | 'CONFIGURATION_RESEAU'
+  | 'PAIEMENT_CONFIRME'
+  | 'REASSORT_DEMANDE'
+  | 'ADMIN_CONNEXION';
 
 export interface AuditLogEntry {
   id: string;
@@ -236,13 +264,21 @@ export interface AuditLogEntry {
   authorName: string;
   authorRole: string;
   actionType: AuditActionType;
-  targetType: 'product' | 'employee' | 'station';
+  targetType: 'product' | 'employee' | 'station' | 'reservation' | 'admin';
   targetId: string;
   targetName: string;
   oldValue?: string;
   newValue?: string;
   details: string;
-  hash: string; // Empreinte de contrôle infalsifiable
+  previousHash?: string;
+  hash: string; // Empreinte SHA-256 chaînée
+}
+
+export interface AdminSession {
+  isAuthenticated: boolean;
+  name: string;
+  email: string;
+  loginAt: string;
 }
 
 export interface DailyMetrics {

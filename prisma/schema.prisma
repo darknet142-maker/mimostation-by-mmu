@@ -1,0 +1,269 @@
+// Schéma Prisma Production — StationPro Réseau Multi-Stations (PostgreSQL / Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model NetworkConfig {
+  id                      String   @id @default("network-global")
+  platformName            String   @default("StationPro")
+  platformSlogan          String   @default("Console d'administration des stations-services")
+  currency                String   @default("FCFA")
+  supportPhone            String   @default("+241 011 88 99 00")
+  supportEmail            String   @default("support@stationpro.ga")
+  systemTheme             String   @default("navy-pro")
+  superPriceFcfa          Int      @default(700)
+  gasoilPriceFcfa         Int      @default(650)
+  petroleLampantPriceFcfa Int      @default(450)
+  gazButanePriceFcfa      Int      @default(6000)
+  enableNetworkAlerts     Boolean  @default(true)
+  enableGlobalMobileMoney Boolean  @default(true)
+  updatedAt               DateTime @updatedAt
+}
+
+model Station {
+  id                        String   @id
+  name                      String
+  operatorId                String   @default("totalenergies")
+  code                      String?  @unique
+  address                   String
+  city                      String
+  country                   String   @default("Gabon")
+  phone                     String?
+  email                     String?
+  managerName               String?
+  description               String?
+  distanceKm                Float    @default(0)
+  isOpen24h                 Boolean  @default(true)
+  isOpen                    Boolean  @default(true)
+  status                    String   @default("active")
+  primaryColor              String   @default("#0B4DB3")
+  secondaryColor            String   @default("#FFC107")
+  logoUrl                   String?
+  coverImage                String?
+  canopyTheme               String   @default("classic-blue")
+  layoutStyle               String   @default("standard")
+  bannerStyle               String   @default("cover")
+  pumpsTotal                Int      @default(6)
+  pumpsAvailable            Int      @default(6)
+  hasBoutique               Boolean  @default(true)
+  hasCafe                   Boolean  @default(true)
+  hasCarWash                Boolean  @default(true)
+  hasLubricants             Boolean  @default(true)
+  hasGas                    Boolean  @default(true)
+  hasTyreService            Boolean  @default(false)
+  hasMechanic               Boolean  @default(false)
+  enableReservations        Boolean  @default(true)
+  enableMobileMoney         Boolean  @default(true)
+  enableClientNotifications Boolean  @default(true)
+  reservationDurationMin    Int      @default(30)
+  airtelMoneyNumber         String?
+  moovMoneyNumber           String?
+  acceptsCash               Boolean  @default(true)
+  acceptsCards              Boolean  @default(true)
+  openingTime               String   @default("06:00")
+  closingTime               String   @default("23:00")
+  minStockAlertPercent      Int      @default(20)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  pumps            Pump[]
+  tanks            TankLevel[]
+  stocks           StationStock[]
+  employees        Employee[]
+  reservations     Reservation[]
+  fuelTransactions FuelTransaction[]
+  boutiqueSales    BoutiqueSale[]
+  counterOrders    CounterOrder[]
+  alerts           AlertNotification[]
+
+  @@index([city, status])
+  @@index([operatorId])
+}
+
+model Pump {
+  id                 String    @id
+  stationId          String
+  number             Int
+  fuelType           String
+  status             String    @default("available")
+  litersToday        Float     @default(0)
+  assignedEmployeeId String?
+  station            Station   @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  assignedEmployee   Employee? @relation("PumpAssignee", fields: [assignedEmployeeId], references: [id], onDelete: SetNull)
+
+  @@unique([stationId, number])
+  @@index([stationId, status])
+}
+
+model TankLevel {
+  id             String   @id
+  stationId      String
+  fuelType       String
+  currentLiters  Float
+  capacityLiters Float
+  levelPercent   Int
+  status         String   @default("ok")
+  updatedAt      DateTime @updatedAt
+  station        Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@unique([stationId, fuelType])
+  @@index([stationId, status])
+}
+
+model Product {
+  id             String         @id
+  name           String
+  category       String
+  subtitle       String
+  defaultPrice   Int
+  unit           String
+  image          String
+  createdAt      DateTime       @default(now())
+  stationStocks  StationStock[]
+  reservations   Reservation[]
+}
+
+model StationStock {
+  id                String   @id
+  stationId         String
+  productId         String
+  priceFcfa         Int
+  isAvailable       Boolean  @default(true)
+  stockQuantity     Int      @default(0)
+  minStockThreshold Int      @default(10)
+  updatedAt         DateTime @updatedAt
+  station           Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([stationId, productId])
+  @@index([stationId, isAvailable])
+}
+
+model Employee {
+  id            String   @id
+  name          String
+  role          String
+  title         String
+  subtitle      String
+  avatar        String
+  status        String   @default("active")
+  stationId     String
+  pinHash       String
+  assignedScope String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  station       Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  assignedPumps Pump[]   @relation("PumpAssignee")
+
+  @@index([stationId, role, status])
+}
+
+model Reservation {
+  id              String   @id
+  code            String   @unique
+  productId       String
+  productName     String
+  productSubtitle String
+  productImage    String
+  quantity        Int
+  unit            String
+  unitPriceFcfa   Int
+  totalFcfa       Int
+  stationId       String
+  stationName     String
+  paymentMethod   String
+  status          String   @default("pending")
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime
+  station         Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([stationId, status, expiresAt])
+  @@index([createdAt])
+}
+
+model FuelTransaction {
+  id             String   @id
+  stationId      String
+  pumpNumber     Int
+  product        String
+  quantityLiters Float
+  amountFcfa     Int
+  paymentMethod  String
+  status         String   @default("OK")
+  createdAt      DateTime @default(now())
+  station        Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@index([stationId, createdAt])
+}
+
+model BoutiqueSale {
+  id            String   @id
+  stationId     String
+  saleNumber    String   @unique
+  ticketNumber  String   @unique
+  itemsJson     Json
+  totalFcfa     Int
+  paymentMethod String
+  cashierName   String
+  status        String   @default("confirmed")
+  createdAt     DateTime @default(now())
+  station       Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@index([stationId, createdAt])
+}
+
+model CounterOrder {
+  id        String   @id
+  stationId String
+  item      String
+  customer  String
+  totalFcfa Int
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  station   Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@index([stationId, status, createdAt])
+}
+
+model AlertNotification {
+  id         String   @id
+  stationId  String?
+  audience   String   @default("staff")
+  type       String
+  title      String
+  subtitle   String
+  isRead     Boolean  @default(false)
+  targetRole String?
+  createdAt  DateTime @default(now())
+  station    Station? @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@index([stationId, audience, isRead, createdAt])
+}
+
+model AuditLedger {
+  id           String   @id
+  sequence     Int      @default(autoincrement())
+  timestamp    DateTime @default(now())
+  authorName   String
+  authorRole   String
+  actionType   String
+  targetType   String
+  targetId     String
+  targetName   String
+  oldValue     String?
+  newValue     String?
+  details      String
+  previousHash String
+  hash         String   @unique
+
+  @@index([timestamp])
+  @@index([targetType, targetId])
+}

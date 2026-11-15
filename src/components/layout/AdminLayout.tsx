@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -21,28 +21,95 @@ import {
 } from 'lucide-react';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { ASSETS } from '@/config/assets';
+import { useAppStore } from '@/hooks/useAppStore';
+import { store } from '@/services/store';
+import { getSystemTheme } from '@/config/themes';
 
 export const AdminLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const navLinks = [
-    { label: 'Tableau de bord', path: '/admin', icon: LayoutDashboard },
-    { label: 'Stations', path: '/admin/stations', icon: Building2 },
-    { label: 'Utilisateurs', path: '/admin/utilisateurs', icon: Users },
-    { label: 'Produits & Stocks', path: '/admin/stocks', icon: Package },
-    { label: 'Transactions', path: '/admin/transactions', icon: Layers },
-    { label: 'Rapports', path: '/admin/rapports', icon: BarChart3 },
-    { label: 'Personnalisation', path: '/admin/personnalisation', icon: Palette },
-    { label: 'Notifications', path: '/admin/notifications', icon: Bell, badge: 3 },
-    { label: 'Paramètres', path: '/admin/parametres', icon: Settings },
-    { label: 'Support', path: '/admin/support', icon: HelpCircle },
-  ];
+  const { networkConfig, alerts, stations, employees, adminSession } = useAppStore(s => ({
+    networkConfig: s.networkConfig,
+    alerts: s.alerts || [],
+    stations: s.stations || [],
+    employees: s.employees || [],
+    adminSession: s.adminSession,
+  }));
+
+  const unreadAlertsCount = alerts.filter(a => !a.isRead && a.audience !== 'client').length;
+  const activeTheme = getSystemTheme(networkConfig?.systemTheme);
+  const platformName = networkConfig?.platformName || 'StationPro';
+  const todayLabel = new Date().toLocaleDateString('fr-FR');
+
+  const navLinks = useMemo(
+    () => [
+      { label: 'Tableau de bord', path: '/admin', icon: LayoutDashboard },
+      { label: 'Stations', path: '/admin/stations', icon: Building2 },
+      { label: 'Utilisateurs', path: '/admin/utilisateurs', icon: Users },
+      { label: 'Produits & Stocks', path: '/admin/stocks', icon: Package },
+      { label: 'Transactions', path: '/admin/transactions', icon: Layers },
+      { label: 'Rapports', path: '/admin/rapports', icon: BarChart3 },
+      { label: 'Personnalisation', path: '/admin/personnalisation', icon: Palette },
+      {
+        label: 'Notifications',
+        path: '/admin/notifications',
+        icon: Bell,
+        badge: unreadAlertsCount > 0 ? unreadAlertsCount : undefined,
+      },
+      { label: 'Paramètres', path: '/admin/parametres', icon: Settings },
+      { label: 'Support', path: '/admin/support', icon: HelpCircle },
+    ],
+    [unreadAlertsCount]
+  );
+
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length < 2) return [];
+
+    const stationMatches = stations
+      .filter(s => s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map(s => ({
+        id: `st-${s.id}`,
+        title: s.name,
+        subtitle: `Station • ${s.city}`,
+        path: '/admin/stations',
+        onPick: () => store.setSelectedStation(s.id),
+      }));
+
+    const empMatches = employees
+      .filter(e => e.name.toLowerCase().includes(q) || e.title.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map(e => ({
+        id: `emp-${e.id}`,
+        title: e.name,
+        subtitle: `Employé • ${e.title}`,
+        path: '/admin/utilisateurs',
+        onPick: undefined,
+      }));
+
+    const pageMatches = navLinks
+      .filter(n => n.label.toLowerCase().includes(q))
+      .slice(0, 3)
+      .map(n => ({
+        id: `nav-${n.path}`,
+        title: n.label,
+        subtitle: 'Module Console Admin',
+        path: n.path,
+        onPick: undefined,
+      }));
+
+    return [...stationMatches, ...empMatches, ...pageMatches].slice(0, 8);
+  }, [searchQuery, stations, employees, navLinks]);
 
   const handleLogout = () => {
+    store.logoutAdmin();
+    setProfileDropdownOpen(false);
     navigate('/personnel');
   };
 
@@ -57,16 +124,16 @@ export const AdminLayout: React.FC = () => {
     <div className="min-h-screen bg-[#F0F4FB] text-slate-800 flex flex-col font-sans">
       <div className="flex-1 flex overflow-hidden">
         {/* ================= DESKTOP SIDEBAR ================= */}
-        <aside className="hidden lg:flex w-64 bg-[#0A1D37] text-white flex-col justify-between shrink-0 shadow-xl border-r border-[#152E52] select-none">
+        <aside className={`hidden lg:flex w-64 ${activeTheme.sidebarBg} text-white flex-col justify-between shrink-0 shadow-xl border-r border-white/10 select-none`}>
           <div className="p-5 flex flex-col h-full justify-between">
             <div>
               {/* Brand Header */}
-              <div className="flex items-center gap-3 pb-6 border-b border-slate-700/60">
+              <div className="flex items-center gap-3 pb-6 border-b border-white/10">
                 <BrandLogo theme="dark" mode="admin" size="md" />
               </div>
 
               {/* Navigation Links */}
-              <nav className="mt-5 space-y-1">
+              <nav className="mt-5 space-y-1" aria-label="Menu Console d'administration">
                 {navLinks.map(item => {
                   const active = isActiveLink(item.path);
                   const Icon = item.icon;
@@ -84,12 +151,10 @@ export const AdminLayout: React.FC = () => {
                         <Icon className={`w-4 h-4 ${active ? 'text-[#0A1D37]' : 'text-slate-400'}`} />
                         <span>{item.label}</span>
                       </div>
-                      {item.badge && (
+                      {item.badge !== undefined && (
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full font-bold ${
-                            active
-                              ? 'bg-[#0A1D37] text-[#F7B928]'
-                              : 'bg-rose-500 text-white'
+                            active ? 'bg-[#0A1D37] text-[#F7B928]' : 'bg-rose-500 text-white'
                           }`}
                         >
                           {item.badge}
@@ -102,40 +167,72 @@ export const AdminLayout: React.FC = () => {
             </div>
 
             {/* Bottom Section */}
-            <div className="space-y-3 pt-6 border-t border-slate-700/60">
-              {/* Licence Status Pill */}
-              <div className="p-3 rounded-2xl bg-gradient-to-r from-[#0E2C57] to-[#123668] border border-blue-500/30 text-xs shadow-inner">
+            <div className="space-y-3 pt-6 border-t border-white/10 relative">
+              <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-xs shadow-inner">
                 <div className="flex items-center gap-2 text-amber-400 font-bold mb-1">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Statut Licence</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-slate-300">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="font-medium text-emerald-300">Actif jusqu'au 31 déc. 2026</span>
+                  <span className="font-medium text-emerald-300">Réseau {platformName} Actif</span>
                 </div>
               </div>
 
-              {/* Admin Profile Row */}
-              <div
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer border border-white/5 transition-all"
+              {profileDropdownOpen && (
+                <div className="bg-slate-900 border border-white/15 rounded-xl p-1.5 shadow-xl space-y-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      navigate('/admin/personnalisation');
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-lg text-slate-200 hover:bg-white/10 transition-colors"
+                  >
+                    Personnalisation 360°
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      navigate('/admin/parametres');
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-lg text-slate-200 hover:bg-white/10 transition-colors"
+                  >
+                    Audit & Sécurité
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full text-left px-3 py-2 rounded-lg text-red-300 hover:bg-red-500/20 font-semibold transition-colors"
+                  >
+                    Verrouiller la session
+                  </button>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setProfileDropdownOpen(v => !v)}
+                aria-expanded={profileDropdownOpen}
+                className="w-full flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left"
               >
                 <div className="flex items-center gap-2.5">
                   <img
                     src={ASSETS.avatars.gerant}
-                    alt="Admin Global"
+                    alt={adminSession?.name || 'Admin Global'}
                     className="w-9 h-9 rounded-full object-cover border-2 border-amber-400/80 bg-blue-900"
                   />
                   <div className="leading-tight">
-                    <p className="text-xs font-bold text-white">Admin Global</p>
+                    <p className="text-xs font-bold text-white">{adminSession?.name || 'Admin Global'}</p>
                     <p className="text-[11px] text-slate-400">Super Administrateur</p>
                   </div>
                 </div>
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              </div>
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
 
-              {/* Logout Button */}
               <button
+                type="button"
                 onClick={handleLogout}
                 className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white/5 hover:bg-red-500/20 text-slate-300 hover:text-red-300 border border-white/10 text-xs font-medium transition-all"
               >
@@ -153,12 +250,14 @@ export const AdminLayout: React.FC = () => {
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setMobileMenuOpen(false)}
             />
-            <div className="relative w-72 max-w-[80%] bg-[#0A1D37] text-white p-5 flex flex-col justify-between shadow-2xl z-10">
+            <div className={`relative w-72 max-w-[80%] ${activeTheme.sidebarBg} text-white p-5 flex flex-col justify-between shadow-2xl z-10`}>
               <div>
-                <div className="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10">
                   <BrandLogo theme="dark" mode="admin" size="sm" />
                   <button
+                    type="button"
                     onClick={() => setMobileMenuOpen(false)}
+                    aria-label="Fermer le menu"
                     className="p-1 rounded-lg text-slate-400 hover:text-white"
                   >
                     <X className="w-5 h-5" />
@@ -184,7 +283,7 @@ export const AdminLayout: React.FC = () => {
                           <Icon className="w-4 h-4" />
                           <span>{item.label}</span>
                         </div>
-                        {item.badge && (
+                        {item.badge !== undefined && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500 text-white font-bold">
                             {item.badge}
                           </span>
@@ -195,8 +294,9 @@ export const AdminLayout: React.FC = () => {
                 </nav>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-slate-700/60">
+              <div className="space-y-3 pt-4 border-t border-white/10">
                 <button
+                  type="button"
                   onClick={handleLogout}
                   className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-500/20 text-red-300 border border-red-500/30 text-xs font-semibold"
                 >
@@ -214,9 +314,10 @@ export const AdminLayout: React.FC = () => {
           <header className="sticky top-0 z-30 bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-3 flex-1 max-w-xl">
               <button
+                type="button"
                 onClick={() => setMobileMenuOpen(true)}
                 className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100"
-                aria-label="Menu"
+                aria-label="Ouvrir le menu"
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -227,18 +328,52 @@ export const AdminLayout: React.FC = () => {
                 <input
                   type="text"
                   value={searchQuery}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setSearchFocused(false), 180)}
+                  onKeyDown={e => {
+                    if (e.key === 'Escape') {
+                      setSearchQuery('');
+                      setSearchFocused(false);
+                    }
+                  }}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher une station, un utilisateur..."
+                  placeholder="Rechercher une station, un employé, un module..."
+                  aria-label="Recherche globale console admin"
                   className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 />
+
+                {searchFocused && searchResults.length > 0 && (
+                  <div className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden divide-y divide-slate-100">
+                    {searchResults.map(item => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onMouseDown={e => {
+                          e.preventDefault();
+                          item.onPick?.();
+                          navigate(item.path);
+                          setSearchQuery('');
+                          setSearchFocused(false);
+                        }}
+                        className="w-full px-4 py-2.5 text-left hover:bg-blue-50/70 transition-colors flex items-center justify-between gap-2"
+                      >
+                        <div>
+                          <div className="text-xs font-bold text-slate-900">{item.title}</div>
+                          <div className="text-[11px] text-slate-500">{item.subtitle}</div>
+                        </div>
+                        <ExternalLink className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Right Header Controls */}
             <div className="flex items-center gap-2.5 sm:gap-4 ml-3">
-              {/* Quick links to client and staff apps */}
               <div className="hidden md:flex items-center gap-1.5 text-xs font-semibold">
                 <button
+                  type="button"
                   onClick={() => navigate('/')}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
                 >
@@ -246,6 +381,7 @@ export const AdminLayout: React.FC = () => {
                   <span>Vue Client</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => navigate('/personnel')}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-100 transition-all"
                 >
@@ -254,35 +390,37 @@ export const AdminLayout: React.FC = () => {
                 </button>
               </div>
 
-              {/* Notification Bell with Badge 3 */}
               <button
+                type="button"
                 onClick={() => navigate('/admin/notifications')}
                 className="relative p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-all"
-                aria-label="Notifications"
+                aria-label="Notifications système"
               >
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-                  3
-                </span>
+                {unreadAlertsCount > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                    {unreadAlertsCount}
+                  </span>
+                )}
               </button>
 
-              {/* User Avatar Pill */}
-              <div
+              <button
+                type="button"
                 onClick={() => navigate('/admin/parametres')}
-                className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200 cursor-pointer group"
+                className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200 cursor-pointer group text-left"
               >
                 <img
                   src={ASSETS.avatars.gerant}
-                  alt="Admin Global"
+                  alt={adminSession?.name || 'Admin Global'}
                   className="w-8 h-8 rounded-full object-cover border border-slate-300 group-hover:border-blue-500 transition-all"
                 />
                 <div className="hidden sm:block text-left leading-tight">
                   <p className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                    Admin Global
+                    {adminSession?.name || 'Admin Global'}
                   </p>
                   <p className="text-[10px] text-slate-500">Super Administrateur</p>
                 </div>
-              </div>
+              </button>
             </div>
           </header>
 
@@ -291,23 +429,21 @@ export const AdminLayout: React.FC = () => {
             <Outlet />
           </main>
 
-          {/* BOTTOM STATUS BAR (Footer from Screen) */}
-          <footer className="bg-[#0A1D37] text-slate-300 text-[11px] sm:text-xs py-2 px-4 sm:px-6 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800 select-none">
+          {/* BOTTOM STATUS BAR */}
+          <footer className={`${activeTheme.footerBg} text-slate-300 text-[11px] sm:text-xs py-2 px-4 sm:px-6 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 select-none`}>
             <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                 <span>Système opérationnel</span>
               </div>
               <span className="text-slate-600 hidden sm:inline">|</span>
-              <span className="text-slate-400">
-                Dernière mise à jour : 10/11/2026 à 09:45
-              </span>
+              <span className="text-slate-300">Synchronisation réseau : {todayLabel}</span>
               <span className="text-slate-600 hidden sm:inline">|</span>
-              <span className="text-blue-400 font-mono font-medium">Version : v2.0.0</span>
+              <span className="text-blue-300 font-mono font-medium">Version : v2.5.0</span>
             </div>
 
-            <div className="text-slate-400 text-[11px]">
-              StationPro - Plateforme de gestion des stations-services
+            <div className="text-slate-300 text-[11px]">
+              {platformName} — Plateforme de gestion des stations-services
             </div>
           </footer>
         </div>
@@ -315,4 +451,3 @@ export const AdminLayout: React.FC = () => {
     </div>
   );
 };
-

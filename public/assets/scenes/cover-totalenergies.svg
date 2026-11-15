@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <!-- Sky & Ambient -->
+    <linearGradient id="te-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4B79A1" />
+      <stop offset="40%" stop-color="#7DA7CA" />
+      <stop offset="85%" stop-color="#D5E3F0" />
+      <stop offset="100%" stop-color="#F4F7FA" />
+    </linearGradient>
+
+    <!-- Paved Forecourt -->
+    <linearGradient id="te-asphalt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8" />
+      <stop offset="35%" stop-color="#64748B" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+
+    <!-- TotalEnergies Red & Graphite Canopy -->
+    <linearGradient id="te-red-band" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D9161D" />
+      <stop offset="50%" stop-color="#ED1C24" />
+      <stop offset="100%" stop-color="#FF383F" />
+    </linearGradient>
+
+    <linearGradient id="te-graphite" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3D4451" />
+      <stop offset="100%" stop-color="#242933" />
+    </linearGradient>
+
+    <!-- Neutral LED Ceiling Spotlights -->
+    <radialGradient id="te-spot" cx="50%" cy="0%" r="90%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#F1F5F9" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Shadow -->
+    <filter id="te-drop-shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- 1. Sky & Cloud Backdrop -->
+  <rect width="1200" height="385" fill="url(#te-sky)" />
+
+  <!-- City Skyline / Tree Line -->
+  <g fill="#334155" opacity="0.3">
+    <path d="M 0 355 Q 120 330 240 355 T 480 345 T 720 355 T 960 340 T 1200 350 L 1200 385 L 0 385 Z" />
+  </g>
+
+  <!-- 2. Paved Concrete Forecourt (Matches Photo Texture) -->
+  <polygon points="0,375 1200,375 1200,600 0,600" fill="url(#te-asphalt)" />
+  <!-- Concrete refuelling pads with grid lines -->
+  <polygon points="120,600 280,375 920,375 1080,600" fill="#CBD5E1" opacity="0.35" />
+
+  <!-- 3. Background Buildings: "Bonjour" Boutique & Quartz Auto (Direct Match) -->
+  <g transform="translate(580, 260)" filter="url(#te-drop-shadow)">
+    <!-- Main Boutique Wall -->
+    <rect x="0" y="30" width="460" height="95" rx="4" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" />
+    <!-- Yellow Bonjour Brand Border -->
+    <rect x="30" y="42" width="160" height="72" rx="4" fill="#FFFFFF" stroke="#FACC15" stroke-width="4" />
+    <text x="110" y="65" font-family="system-ui, sans-serif" font-size="14" font-weight="900" fill="#ED1C24" text-anchor="middle">bonjour</text>
+    <text x="110" y="80" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#64748B" text-anchor="middle">CAFÉ &amp; BOUTIQUE</text>
+    <!-- Quartz Bay -->
+    <rect x="320" y="30" width="140" height="95" fill="#E2E8F0" stroke="#CBD5E1" />
+    <rect x="320" y="30" width="140" height="14" fill="#ED1C24" />
+    <text x="390" y="41" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#FFFFFF" text-anchor="middle">QUARTZ AUTO</text>
+  </g>
+
+  <!-- 4. Spotlights on the Ground -->
+  <polygon points="260,185 150,510 370,510" fill="url(#te-spot)" />
+  <polygon points="500,185 390,510 610,510" fill="url(#te-spot)" />
+  <polygon points="740,185 630,510 850,510" fill="url(#te-spot)" />
+  <polygon points="980,185 870,510 1090,510" fill="url(#te-spot)" />
+
+  <!-- 5. Elevated Concrete Fuel Islands & Modern Total Dispensers -->
+  <!-- Left Island -->
+  <g transform="translate(220, 395)">
+    <path d="M 0 45 L 35 12 L 205 12 L 170 45 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <polygon points="0,45 18,28 42,28 24,45" fill="#DC2626" />
+    <polygon points="24,45 42,28 66,28 48,45" fill="#FFFFFF" />
+    <polygon points="48,45 66,28 90,28 72,45" fill="#DC2626" />
+    <polygon points="72,45 90,28 114,28 96,45" fill="#FFFFFF" />
+    <polygon points="96,45 114,28 138,28 120,45" fill="#DC2626" />
+    <polygon points="120,45 138,28 170,28 152,45" fill="#FFFFFF" />
+
+    <!-- Modern TotalEnergies Dispenser with Overhead #1 Badge -->
+    <g transform="translate(60, -135)" filter="url(#te-drop-shadow)">
+      <!-- Overhead Lane Indicator Badge: #1 -->
+      <rect x="20" y="-24" width="26" height="20" rx="3" fill="#ED1C24" />
+      <text x="33" y="-10" font-family="system-ui, sans-serif" font-size="12" font-weight="900" fill="#FFFFFF" text-anchor="middle">1</text>
+      <!-- Pump Cabinet -->
+      <rect x="0" y="0" width="66" height="135" rx="5" fill="#FFFFFF" stroke="#334155" stroke-width="2" />
+      <rect x="0" y="0" width="66" height="20" fill="#242933" />
+      <text x="33" y="14" font-family="system-ui, sans-serif" font-size="8" font-weight="900" fill="#FFFFFF" text-anchor="middle">EXCELLIUM</text>
+      <!-- LCD Screen -->
+      <rect x="8" y="28" width="50" height="26" rx="3" fill="#0F172A" />
+      <text x="33" y="44" font-family="monospace" font-size="10" font-weight="bold" fill="#22C55E" text-anchor="middle">700 FCFA</text>
+      <!-- Product Grade Color Badges -->
+      <rect x="6" y="60" width="16" height="12" rx="2" fill="#22C55E" />
+      <rect x="25" y="60" width="16" height="12" rx="2" fill="#EAB308" />
+      <rect x="44" y="60" width="16" height="12" rx="2" fill="#3B82F6" />
+      <!-- Lower Body Total Logo Accent -->
+      <rect x="0" y="90" width="66" height="45" fill="#F1F5F9" />
+      <circle cx="33" cy="112" r="14" fill="#ED1C24" />
+      <circle cx="33" cy="112" r="7" fill="#FFFFFF" />
+    </g>
+  </g>
+
+  <!-- Right Island -->
+  <g transform="translate(680, 395)">
+    <path d="M 0 45 L 35 12 L 205 12 L 170 45 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <polygon points="0,45 18,28 42,28 24,45" fill="#DC2626" />
+    <polygon points="24,45 42,28 66,28 48,45" fill="#FFFFFF" />
+    <polygon points="48,45 66,28 90,28 72,45" fill="#DC2626" />
+    <polygon points="72,45 90,28 114,28 96,45" fill="#FFFFFF" />
+    <polygon points="96,45 114,28 138,28 120,45" fill="#DC2626" />
+    <polygon points="120,45 138,28 170,28 152,45" fill="#FFFFFF" />
+
+    <g transform="translate(60, -135)" filter="url(#te-drop-shadow)">
+      <rect x="20" y="-24" width="26" height="20" rx="3" fill="#ED1C24" />
+      <text x="33" y="-10" font-family="system-ui, sans-serif" font-size="12" font-weight="900" fill="#FFFFFF" text-anchor="middle">2</text>
+      <rect x="0" y="0" width="66" height="135" rx="5" fill="#FFFFFF" stroke="#334155" stroke-width="2" />
+      <rect x="0" y="0" width="66" height="20" fill="#242933" />
+      <text x="33" y="14" font-family="system-ui, sans-serif" font-size="8" font-weight="900" fill="#FFFFFF" text-anchor="middle">EXCELLIUM</text>
+      <rect x="8" y="28" width="50" height="26" rx="3" fill="#0F172A" />
+      <text x="33" y="44" font-family="monospace" font-size="10" font-weight="bold" fill="#22C55E" text-anchor="middle">650 FCFA</text>
+      <rect x="6" y="60" width="16" height="12" rx="2" fill="#22C55E" />
+      <rect x="25" y="60" width="16" height="12" rx="2" fill="#EAB308" />
+      <rect x="44" y="60" width="16" height="12" rx="2" fill="#3B82F6" />
+      <rect x="0" y="90" width="66" height="45" fill="#F1F5F9" />
+      <circle cx="33" cy="112" r="14" fill="#ED1C24" />
+      <circle cx="33" cy="112" r="7" fill="#FFFFFF" />
+    </g>
+  </g>
+
+  <!-- 6. Dark Graphite Structural Steel Columns (Matches Photo) -->
+  <rect x="340" y="170" width="36" height="240" fill="#334155" stroke="#1E293B" stroke-width="2" />
+  <rect x="368" y="170" width="8" height="240" fill="#1E293B" />
+
+  <rect x="760" y="170" width="36" height="240" fill="#334155" stroke="#1E293B" stroke-width="2" />
+  <rect x="788" y="170" width="8" height="240" fill="#1E293B" />
+
+  <!-- 7. Massive TotalEnergies Modern Canopy Structure (Matches Photo) -->
+  <g filter="url(#te-drop-shadow)">
+    <!-- Underside ceiling structure with industrial beams -->
+    <polygon points="120,180 1120,180 1020,215 180,215" fill="#E2E8F0" stroke="#CBD5E1" />
+    <!-- Overhead LED Luminaires -->
+    <ellipse cx="260" cy="198" rx="18" ry="5" fill="#FFFFFF" stroke="#94A3B8" />
+    <ellipse cx="500" cy="198" rx="18" ry="5" fill="#FFFFFF" stroke="#94A3B8" />
+    <ellipse cx="740" cy="198" rx="18" ry="5" fill="#FFFFFF" stroke="#94A3B8" />
+    <ellipse cx="980" cy="198" rx="18" ry="5" fill="#FFFFFF" stroke="#94A3B8" />
+
+    <!-- Main Canopy Graphite Lower Fascia -->
+    <polygon points="100,120 1140,120 1120,180 120,180" fill="url(#te-graphite)" />
+    <!-- Distinctive Bright Red Top Fascia Band -->
+    <polygon points="100,105 1140,105 1140,120 100,120" fill="url(#te-red-band)" />
+
+    <!-- Sub-Text on Fascia: "PRIX IMPORT NTOUM • GABON" (from Photo) -->
+    <text x="620" y="152" font-family="system-ui, sans-serif" font-size="12" font-weight="800" fill="#CBD5E1" letter-spacing="3" text-anchor="middle">PRIX IMPORT NTOUM • GABON</text>
+
+    <!-- 3D Large Red Lettrage "TotalEnergies" Standing on Canopy Roof -->
+    <g transform="translate(320, 52)">
+      <!-- Multi-color Ribbon Logo Emblem on Roof -->
+      <g transform="translate(-65, -8) scale(0.9)">
+        <path d="M 12 36 C 12 20 25 10 40 10 C 50 10 58 15 64 22 C 58 18 50 14 40 14 C 28 14 18 24 18 36 C 18 48 28 58 40 58 C 50 58 58 54 64 50 C 58 57 50 62 40 62 C 25 62 12 52 12 36 Z" fill="#ED1C24" />
+        <path d="M 24 36 C 24 26 31 18 40 18 C 47 18 53 22 57 28 C 53 24 47 22 40 22 C 32 22 28 28 28 36 C 28 44 32 50 40 50 C 47 50 53 48 57 44 C 53 50 47 54 40 54 C 31 54 24 46 24 36 Z" fill="#FF7900" />
+        <circle cx="40" cy="36" r="6" fill="#FFC20E" />
+        <path d="M 40 10 C 55 10 68 22 68 36 C 68 44 64 52 57 58 C 62 52 64 44 64 36 C 64 24 54 14 40 14 Z" fill="#00A352" />
+        <path d="M 40 6 C 58 6 72 20 72 36 C 72 46 68 56 60 62 C 66 56 70 46 70 36 C 70 22 56 10 40 10 Z" fill="#009EE0" />
+      </g>
+      <!-- Shadow 3D Text -->
+      <text x="3" y="47" font-family="system-ui, -apple-system, sans-serif" font-size="46" font-weight="900" fill="#991B1B" letter-spacing="-0.5">TotalEnergies</text>
+      <!-- Front Glowing Red Text -->
+      <text x="0" y="45" font-family="system-ui, -apple-system, sans-serif" font-size="46" font-weight="900" fill="#ED1C24" letter-spacing="-0.5">TotalEnergies</text>
+    </g>
+  </g>
+
+  <!-- 8. TotalEnergies Illuminated Pylon / Totem (Left Foreground) -->
+  <g transform="translate(50, 120)" filter="url(#te-drop-shadow)">
+    <rect x="0" y="0" width="100" height="430" rx="8" fill="#FFFFFF" stroke="#ED1C24" stroke-width="2.5" />
+    <rect x="4" y="4" width="92" height="88" rx="6" fill="#FFFFFF" />
+    <!-- Multi-color Ribbon Logo in Totem -->
+    <g transform="translate(14, 8) scale(0.9)">
+      <path d="M 12 36 C 12 20 25 10 40 10 C 50 10 58 15 64 22 C 58 18 50 14 40 14 C 28 14 18 24 18 36 C 18 48 28 58 40 58 C 50 58 58 54 64 50 C 58 57 50 62 40 62 C 25 62 12 52 12 36 Z" fill="#ED1C24" />
+      <path d="M 24 36 C 24 26 31 18 40 18 C 47 18 53 22 57 28 C 53 24 47 22 40 22 C 32 22 28 28 28 36 C 28 44 32 50 40 50 C 47 50 53 48 57 44 C 53 50 47 54 40 54 C 31 54 24 46 24 36 Z" fill="#FF7900" />
+      <circle cx="40" cy="36" r="6" fill="#FFC20E" />
+      <path d="M 40 10 C 55 10 68 22 68 36 C 68 44 64 52 57 58 C 62 52 64 44 64 36 C 64 24 54 14 40 14 Z" fill="#00A352" />
+      <path d="M 40 6 C 58 6 72 20 72 36 C 72 46 68 56 60 62 C 66 56 70 46 70 36 C 70 22 56 10 40 10 Z" fill="#009EE0" />
+    </g>
+    <text x="50" y="80" font-family="system-ui, sans-serif" font-size="10" font-weight="900" fill="#ED1C24" text-anchor="middle">TotalEnergies</text>
+
+    <!-- Digital Price Screen -->
+    <rect x="8" y="100" width="84" height="150" rx="4" fill="#090D16" />
+    <text x="14" y="122" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">EXCELLIUM</text>
+    <text x="84" y="122" font-family="monospace" font-size="13" font-weight="bold" fill="#22C55E" text-anchor="end">700</text>
+
+    <text x="14" y="152" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">GASOIL</text>
+    <text x="84" y="152" font-family="monospace" font-size="13" font-weight="bold" fill="#22C55E" text-anchor="end">650</text>
+
+    <text x="14" y="182" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">PETROLE</text>
+    <text x="84" y="182" font-family="monospace" font-size="13" font-weight="bold" fill="#EAB308" text-anchor="end">450</text>
+
+    <text x="14" y="212" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#94A3B8">GAZ TOTAL</text>
+    <text x="84" y="212" font-family="monospace" font-size="13" font-weight="bold" fill="#38BDF8" text-anchor="end">6 000</text>
+
+    <!-- Badges -->
+    <g transform="translate(8, 260)">
+      <rect x="0" y="0" width="84" height="26" rx="3" fill="#FACC15" />
+      <text x="42" y="17" font-family="system-ui, sans-serif" font-size="10" font-weight="900" fill="#ED1C24" text-anchor="middle">bonjour</text>
+
+      <rect x="0" y="32" width="84" height="24" rx="3" fill="#ED1C24" />
+      <text x="42" y="48" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">QUARTZ LUB</text>
+
+      <rect x="0" y="62" width="84" height="24" rx="3" fill="#F1F5F9" />
+      <text x="42" y="78" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold" fill="#334155" text-anchor="middle">LAVAGE TOTAL</text>
+
+      <rect x="0" y="92" width="84" height="24" rx="3" fill="#0055A5" />
+      <text x="42" y="108" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#FFFFFF" text-anchor="middle">OUVERT 24H</text>
+    </g>
+  </g>
+</svg>
+

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 100" fill="none">
+  <defs>
+    <linearGradient id="engen-blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#002D72" />
+      <stop offset="100%" stop-color="#003896" />
+    </linearGradient>
+    <linearGradient id="engen-red-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E31B23" />
+      <stop offset="100%" stop-color="#C01018" />
+    </linearGradient>
+    <filter id="engen-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <!-- Engen Shield Icon -->
+  <g transform="translate(10, 10)" filter="url(#engen-shadow)">
+    <!-- Blue circular badge -->
+    <circle cx="40" cy="40" r="38" fill="url(#engen-blue-grad)" />
+    <circle cx="40" cy="40" r="35" stroke="#FFFFFF" stroke-width="2.5" fill="none" />
+
+    <!-- Red dynamic wing trails -->
+    <path d="M 18 42 C 28 34 46 30 62 30 C 52 35 40 40 30 46 Z" fill="url(#engen-red-grad)" />
+    <path d="M 22 49 C 32 43 48 40 60 40 C 48 46 36 50 28 54 Z" fill="url(#engen-red-grad)" />
+
+    <!-- White star -->
+    <polygon points="40,22 44.5,33.5 57,34.5 47.5,42.5 50.5,55 40,48.5 29.5,55 32.5,42.5 23,34.5 35.5,33.5" fill="#FFFFFF" />
+  </g>
+
+  <!-- Typography: ENGEN -->
+  <g transform="translate(102, 14)">
+    <!-- E -->
+    <path d="M 4 6 H 32 V 17 H 17 V 26 H 29 V 36 H 17 V 47 H 32 V 58 H 4 Z" fill="#002D72" />
+    <!-- N -->
+    <path d="M 40 6 H 52 L 70 42 V 6 H 82 V 58 H 70 L 52 22 V 58 H 40 Z" fill="#002D72" />
+    <!-- G -->
+    <path d="M 120 18 C 114 10 104 6 92 6 C 74 6 62 19 62 32 C 62 46 74 58 93 58 C 108 58 118 50 121 38 H 94 V 28 H 132 V 46 C 124 55 110 64 92 64 C 68 64 50 48 50 32 C 50 16 68 0 93 0 C 108 0 122 6 130 18 Z" transform="translate(30, 0)" fill="#002D72" />
+    <!-- E -->
+    <path d="M 152 6 H 180 V 17 H 165 V 26 H 177 V 36 H 165 V 47 H 180 V 58 H 152 Z" fill="#002D72" />
+    <!-- N -->
+    <path d="M 188 6 H 200 L 218 42 V 6 H 230 V 58 H 218 L 200 22 V 58 H 188 Z" fill="#002D72" />
+  </g>
+
+  <!-- Subtext: A VIVO ENERGY COMPANY • GABON -->
+  <text x="104" y="85" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="800" letter-spacing="1.8" fill="#E31B23">A VIVO ENERGY COMPANY</text>
+  <text x="242" y="85" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="8.5" font-weight="700" letter-spacing="1.5" fill="#64748B">• GABON</text>
+</svg>
+

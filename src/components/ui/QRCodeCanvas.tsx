@@ -14,14 +14,13 @@ export const QRCodeCanvas: React.FC<QRCodeCanvasProps> = ({
   className = '',
   errorCorrectionLevel = 'M',
 }) => {
-  const [svgString, setSvgString] = useState<string>('');
+  const [dataUrl, setDataUrl] = useState<string>('');
 
   useEffect(() => {
     let isMounted = true;
-    QRCode.toString(
+    QRCode.toDataURL(
       value,
       {
-        type: 'svg',
         width: size,
         margin: 1,
         color: {
@@ -30,9 +29,9 @@ export const QRCodeCanvas: React.FC<QRCodeCanvasProps> = ({
         },
         errorCorrectionLevel,
       },
-      (err, string) => {
-        if (!err && isMounted && string) {
-          setSvgString(string);
+      (err, url) => {
+        if (!err && isMounted && url) {
+          setDataUrl(url);
         }
       }
     );
@@ -41,7 +40,7 @@ export const QRCodeCanvas: React.FC<QRCodeCanvasProps> = ({
     };
   }, [value, size, errorCorrectionLevel]);
 
-  if (!svgString) {
+  if (!dataUrl) {
     return (
       <div
         style={{ width: size, height: size }}
@@ -55,8 +54,15 @@ export const QRCodeCanvas: React.FC<QRCodeCanvasProps> = ({
   return (
     <div
       className={`bg-white p-2.5 rounded-xl border border-slate-200 inline-block shadow-sm ${className}`}
-      dangerouslySetInnerHTML={{ __html: svgString }}
-    />
+    >
+      <img
+        src={dataUrl}
+        alt={`QR Code ${value}`}
+        width={size}
+        height={size}
+        className="block"
+      />
+    </div>
   );
 };
 

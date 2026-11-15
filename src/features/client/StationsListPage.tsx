@@ -54,21 +54,25 @@ export const StationsListPage: React.FC = () => {
 
         {filteredStations.map(st => {
           const isSelected = st.id === selectedStationId;
+          const handleOpenStation = () => {
+            store.setSelectedStation(st.id);
+            navigate(`/stations/${st.id}`);
+          };
           return (
             <div
               key={st.id}
-              onClick={() => {
-                store.setSelectedStation(st.id);
-                navigate(`/stations/${st.id}`);
-              }}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+              className={`p-4 rounded-2xl border transition-all ${
                 isSelected
                   ? 'border-[#1668E3] bg-[#F7FAFF] shadow-sm'
                   : 'border-slate-200 bg-white hover:border-blue-300'
               }`}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
+              <div className="flex items-start justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={handleOpenStation}
+                  className="flex-1 flex items-start gap-3 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3]"
+                >
                   <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1668E3] flex items-center justify-center shrink-0">
                     <MapPin className="w-5 h-5 fill-[#1668E3]" />
                   </div>
@@ -83,15 +87,14 @@ export const StationsListPage: React.FC = () => {
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5">{st.address}</p>
                   </div>
-                </div>
+                </button>
 
                 <button
                   type="button"
-                  onClick={e => {
-                    e.stopPropagation();
-                    store.toggleFavoriteStation(st.id);
-                  }}
-                  className="p-1.5 text-slate-400 hover:text-red-500"
+                  onClick={() => store.toggleFavoriteStation(st.id)}
+                  aria-label={st.isFavorite ? `Retirer ${st.name} des favoris` : `Ajouter ${st.name} aux favoris`}
+                  aria-pressed={Boolean(st.isFavorite)}
+                  className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-red-500 rounded-xl"
                 >
                   <Heart
                     className={`w-5 h-5 ${
@@ -101,33 +104,65 @@ export const StationsListPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Service Badges */}
-              <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
-                <span className="flex items-center gap-1">
+              {/* Interactive Service Badges (deep-link into each service section) */}
+              <div className="w-full flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
+                <button
+                  type="button"
+                  onClick={() => {
+                    store.setSelectedStation(st.id);
+                    navigate(`/stations/${st.id}?section=pompes`);
+                  }}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50/70 hover:bg-blue-100 text-slate-700 font-semibold transition-colors"
+                >
                   <Fuel className="w-3.5 h-3.5 text-blue-600" />
                   {st.services.pumpsAvailable}/{st.services.pumpsTotal} pompes
-                </span>
+                </button>
                 {st.services.hasBoutique && (
-                  <span className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      store.setSelectedStation(st.id);
+                      navigate(`/stations/${st.id}?section=boutique`);
+                    }}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50/70 hover:bg-amber-100 text-slate-700 font-semibold transition-colors"
+                  >
                     <ShoppingCart className="w-3.5 h-3.5 text-amber-600" />
                     Boutique
-                  </span>
+                  </button>
                 )}
                 {st.services.hasCafe && (
-                  <span className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      store.setSelectedStation(st.id);
+                      navigate(`/stations/${st.id}?section=cafe`);
+                    }}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-50/70 hover:bg-orange-100 text-slate-700 font-semibold transition-colors"
+                  >
                     <Coffee className="w-3.5 h-3.5 text-orange-600" />
                     Café
-                  </span>
+                  </button>
                 )}
                 {st.services.hasCarWash && (
-                  <span className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      store.setSelectedStation(st.id);
+                      navigate(`/stations/${st.id}?section=lavage`);
+                    }}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-cyan-50/70 hover:bg-cyan-100 text-slate-700 font-semibold transition-colors"
+                  >
                     <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
                     Lavage
-                  </span>
+                  </button>
                 )}
-                <span className="ml-auto flex items-center gap-1 font-bold text-[#1668E3]">
+                <button
+                  type="button"
+                  onClick={handleOpenStation}
+                  className="ml-auto flex items-center gap-1 font-bold text-[#1668E3] hover:underline"
+                >
                   {st.distanceKm} km <ChevronRight className="w-4 h-4" />
-                </span>
+                </button>
               </div>
             </div>
           );

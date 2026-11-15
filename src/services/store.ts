@@ -6,6 +6,7 @@ import {
   TankLevel,
   FuelTransaction,
   BoutiqueSale,
+  CounterOrder,
   Reservation,
   AlertNotification,
   DailyMetrics,
@@ -14,6 +15,7 @@ import {
   AuditLogEntry,
   AuditActionType,
   NetworkConfig,
+  AdminSession,
 } from '@/types';
 import {
   INITIAL_STATIONS,
@@ -23,6 +25,7 @@ import {
   INITIAL_TANKS,
   INITIAL_FUEL_TRANSACTIONS,
   INITIAL_BOUTIQUE_SALES,
+  INITIAL_COUNTER_ORDERS,
   INITIAL_RESERVATIONS,
   INITIAL_ALERTS,
   INITIAL_DAILY_METRICS,
@@ -30,6 +33,11 @@ import {
   INITIAL_NETWORK_CONFIG,
   ROLE_DEFINITIONS,
 } from '@/data/fixtures';
+import { sha256Hex } from '@/utils/crypto';
+
+export type ReservationResult =
+  | { success: true; reservation: Reservation }
+  | { success: false; error: string };
 
 export interface AppState {
   networkConfig: NetworkConfig;
@@ -37,11 +45,13 @@ export interface AppState {
   selectedStationId: string;
   employees: Employee[];
   currentEmployee: Employee | null;
+  adminSession: AdminSession | null;
   products: Product[];
   pumps: Pump[];
   tanks: TankLevel[];
   fuelTransactions: FuelTransaction[];
   boutiqueSales: BoutiqueSale[];
+  counterOrders: CounterOrder[];
   cart: CartItem[];
   lastCompletedSale: BoutiqueSale | null;
   reservations: Reservation[];
@@ -50,7 +60,33 @@ export interface AppState {
   auditLogs: AuditLogEntry[];
 }
 
-const STORAGE_KEY = 'stationpro_state_v4';
+const STORAGE_KEY = 'stationpro_state_v5';
+const ADMIN_ACCESS_CODE = import.meta.env.VITE_ADMIN_ACCESS_CODE || '202699';
+const loginAttempts = new Map<string, { count: number; lockedUntil: number }>();
+
+function checkLockout(key: string): string | null {
+  const rec = loginAttempts.get(key);
+  if (!rec) return null;
+  const remainingMs = rec.lockedUntil - Date.now();
+  if (remainingMs > 0) {
+    const secs = Math.ceil(remainingMs / 1000);
+    return `Trop de tentatives infructueuses. Réessayez dans ${secs} s.`;
+  }
+  return null;
+}
+
+function recordFailedAttempt(key: string): void {
+  const prev = loginAttempts.get(key) || { count: 0, lockedUntil: 0 };
+  const nextCount = prev.count + 1;
+  loginAttempts.set(key, {
+    count: nextCount,
+    lockedUntil: nextCount >= 5 ? Date.now() + 30_000 : 0,
+  });
+}
+
+function clearAttempts(key: string): void {
+  loginAttempts.delete(key);
+}
 
 function loadInitialState(): AppState {
   const seed = getSeedState();
@@ -92,16 +128,45 @@ function loadInitialState(): AppState {
         stations: finalStations,
         selectedStationId: parsed.selectedStationId || seed.selectedStationId,
         employees: Array.isArray(parsed.employees) && parsed.employees.length > 0 ? parsed.employees : seed.employees,
-        currentEmployee: parsed.currentEmployee || seed.currentEmployee,
-        products: Array.isArray(parsed.products) && parsed.products.length > 0 ? parsed.products : seed.products,
-        pumps: Array.isArray(parsed.pumps) && parsed.pumps.length > 0 ? parsed.pumps : seed.pumps,
-        tanks: Array.isArray(parsed.tanks) && parsed.tanks.length > 0 ? parsed.tanks : seed.tanks,
-        fuelTransactions: Array.isArray(parsed.fuelTransactions) ? parsed.fuelTransactions : seed.fuelTransactions,
-        boutiqueSales: Array.isArray(parsed.boutiqueSales) ? parsed.boutiqueSales : seed.boutiqueSales,
+        currentEmployee: parsed.currentEmployee ?? null,
+        adminSession: parsed.adminSession ?? null,
+        products:
+          Array.isArray(parsed.products) && parsed.products.length > 0
+            ? [
+                ...parsed.products,
+                ...seed.products.filter(
+                  sp => !parsed.products.some((p: Product) => p.id === sp.id)
+                ),
+              ]
+            : seed.products,
+        pumps:
+          Array.isArray(parsed.pumps) && parsed.pumps.length > 0
+            ? [
+                ...parsed.pumps.map((p: Pump) => ({
+                  ...p,
+                  stationId: p.stationId || 'station-liberte',
+                })),
+                ...seed.pumps.filter(
+                  sp => !parsed.pumps.some((p: Pump) => p.id === sp.id)
+                ),
+              ]
+            : seed.pumps,
+        tanks: Array.isArray(parsed.tanks) && parsed.tanks.length > 0
+          ? parsed.tanks.map((t: TankLevel) => ({ ...t, stationId: t.stationId || 'station-liberte' }))
+          : seed.tanks,
+        fuelTransactions: Array.isArray(parsed.fuelTransactions)
+          ? parsed.fuelTransactions.map((tx: FuelTransaction) => ({ ...tx, stationId: tx.stationId || 'station-liberte' }))
+          : seed.fuelTransactions,
+        boutiqueSales: Array.isArray(parsed.boutiqueSales)
+          ? parsed.boutiqueSales.map((bs: BoutiqueSale) => ({ ...bs, stationId: bs.stationId || 'station-liberte' }))
+          : seed.boutiqueSales,
+        counterOrders: Array.isArray(parsed.counterOrders) ? parsed.counterOrders : seed.counterOrders,
         cart: Array.isArray(parsed.cart) ? parsed.cart : seed.cart,
         lastCompletedSale: parsed.lastCompletedSale || seed.lastCompletedSale,
         reservations: Array.isArray(parsed.reservations) ? parsed.reservations : seed.reservations,
-        alerts: Array.isArray(parsed.alerts) ? parsed.alerts : seed.alerts,
+        alerts: Array.isArray(parsed.alerts)
+          ? parsed.alerts.map((a: AlertNotification) => ({ ...a, audience: a.audience || 'staff' }))
+          : seed.alerts,
         dailyMetrics: parsed.dailyMetrics || seed.dailyMetrics,
         auditLogs: Array.isArray(parsed.auditLogs) && parsed.auditLogs.length > 0 ? parsed.auditLogs : seed.auditLogs,
       };
@@ -118,12 +183,14 @@ function getSeedState(): AppState {
     stations: INITIAL_STATIONS,
     selectedStationId: 'station-liberte',
     employees: INITIAL_EMPLOYEES,
-    currentEmployee: INITIAL_EMPLOYEES[0], // default pompiste Jean Dupont
+    currentEmployee: null,
+    adminSession: null,
     products: INITIAL_PRODUCTS,
     pumps: INITIAL_PUMPS,
     tanks: INITIAL_TANKS,
     fuelTransactions: INITIAL_FUEL_TRANSACTIONS,
     boutiqueSales: INITIAL_BOUTIQUE_SALES,
+    counterOrders: INITIAL_COUNTER_ORDERS,
     cart: [
       { product: INITIAL_PRODUCTS.find(p => p.id === 'pos-eau-50cl')!, quantity: 1 },
       { product: INITIAL_PRODUCTS.find(p => p.id === 'pos-chips')!, quantity: 1 },
@@ -182,9 +249,29 @@ export const store = {
     stationId: string;
     quantity: number;
     paymentMethod: 'place' | 'mobile_money';
-  }): Reservation {
-    const product = state.products.find(p => p.id === params.productId) || state.products[0];
-    const station = state.stations.find(s => s.id === params.stationId) || state.stations[0];
+  }): ReservationResult {
+    const product = state.products.find(p => p.id === params.productId);
+    const station = state.stations.find(s => s.id === params.stationId);
+    if (!product || !station) {
+      return { success: false, error: 'Produit ou station introuvable.' };
+    }
+    if (station.status === 'maintenance' || station.status === 'closed' || !station.isOpen) {
+      return { success: false, error: `${station.name} est actuellement fermée ou en maintenance.` };
+    }
+    if (station.advancedSettings?.enableReservations === false) {
+      return { success: false, error: `Les réservations en ligne sont désactivées sur ${station.name}.` };
+    }
+    if (params.quantity <= 0 || !Number.isFinite(params.quantity)) {
+      return { success: false, error: 'La quantité demandée est invalide.' };
+    }
+    if (!product.isAvailable || product.stockQuantity < params.quantity) {
+      return {
+        success: false,
+        error: `Stock insuffisant pour ${product.name} (${product.stockQuantity} ${product.unit} disponible(s)).`,
+      };
+    }
+
+    const durationMin = station.advancedSettings?.reservationDurationMin ?? 30;
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const randomSeq = Math.floor(100 + Math.random() * 900);
     const code = `STP-${dateStr}-${randomSeq}`;
@@ -206,31 +293,55 @@ export const store = {
       paymentMethod: params.paymentMethod,
       status: params.paymentMethod === 'mobile_money' ? 'awaiting_payment' : 'pending',
       createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      expiresAt: new Date(Date.now() + durationMin * 60 * 1000).toISOString(),
     };
 
-    // Also notify staff
-    const newAlert: AlertNotification = {
+    const updatedProducts = state.products.map(p =>
+      p.id === product.id
+        ? {
+            ...p,
+            stockQuantity: Math.max(0, p.stockQuantity - params.quantity),
+            isAvailable: p.stockQuantity - params.quantity > 0,
+          }
+        : p
+    );
+
+    const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const staffAlert: AlertNotification = {
       id: `alt-${Date.now()}`,
+      stationId: station.id,
+      audience: 'staff',
       type: 'info',
       title: `Nouvelle réservation : ${product.name} (x${params.quantity})`,
       subtitle: `Code ${code} • ${station.name}`,
-      time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      time: nowTime,
       isRead: false,
     };
 
     state = {
       ...state,
+      products: updatedProducts,
       reservations: [newRes, ...state.reservations],
-      alerts: [newAlert, ...state.alerts],
+      alerts: [staffAlert, ...state.alerts],
     };
     notify();
-    return newRes;
+    return { success: true, reservation: newRes };
   },
 
   cancelReservation(reservationId: string) {
+    const target = state.reservations.find(r => r.id === reservationId);
+    if (!target || target.status === 'cancelled' || target.status === 'collected') return;
+
+    const restockQty = target.status === 'pending' || target.status === 'awaiting_payment' ? target.quantity : 0;
     state = {
       ...state,
+      products: restockQty > 0
+        ? state.products.map(p =>
+            p.id === target.productId
+              ? { ...p, stockQuantity: p.stockQuantity + restockQty, isAvailable: true }
+              : p
+          )
+        : state.products,
       reservations: state.reservations.map(r =>
         r.id === reservationId ? { ...r, status: 'cancelled' } : r
       ),
@@ -239,28 +350,106 @@ export const store = {
   },
 
   confirmReservationPayment(reservationId: string) {
+    const target = state.reservations.find(r => r.id === reservationId);
+    if (!target || target.status === 'paid' || target.status === 'cancelled' || target.status === 'expired') return;
+
+    const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const clientAlert: AlertNotification = {
+      id: `alt-pay-client-${Date.now()}`,
+      stationId: target.stationId,
+      audience: 'client',
+      type: 'success',
+      title: `Paiement confirmé • ${target.code}`,
+      subtitle: `Votre retrait de ${target.productName} à ${target.stationName} est prêt.`,
+      time: nowTime,
+      isRead: false,
+    };
+    const staffAlert: AlertNotification = {
+      id: `alt-pay-staff-${Date.now()}`,
+      stationId: target.stationId,
+      audience: 'staff',
+      type: 'success',
+      title: `Encaissement Mobile Money confirmé : ${target.code}`,
+      subtitle: `${target.totalFCFA.toLocaleString('fr-FR')} FCFA • ${target.stationName}`,
+      time: nowTime,
+      isRead: false,
+    };
+    const auditEntry = createAuditLog(
+      'PAIEMENT_CONFIRME',
+      'reservation',
+      target.id,
+      target.code,
+      `Confirmation paiement Mobile Money de ${target.totalFCFA} FCFA (${target.stationName})`,
+      target.status,
+      'paid',
+      'Passerelle Mobile Money',
+      'Système Paiement'
+    );
+
     state = {
       ...state,
       reservations: state.reservations.map(r =>
         r.id === reservationId ? { ...r, status: 'paid' } : r
       ),
+      alerts: [staffAlert, clientAlert, ...state.alerts],
+      auditLogs: [auditEntry, ...state.auditLogs],
     };
     notify();
   },
 
-  // --- STAFF AUTH ACTIONS ---
-  login(role: StaffRole, pin: string): { success: boolean; message?: string } {
+  sweepExpiredReservations() {
+    const nowMs = Date.now();
+    const expiredIds = new Set<string>();
+    const restockByProduct = new Map<string, number>();
+
+    for (const r of state.reservations) {
+      if ((r.status === 'pending' || r.status === 'awaiting_payment') && new Date(r.expiresAt).getTime() <= nowMs) {
+        expiredIds.add(r.id);
+        restockByProduct.set(r.productId, (restockByProduct.get(r.productId) || 0) + r.quantity);
+      }
+    }
+    if (expiredIds.size === 0) return;
+
+    state = {
+      ...state,
+      reservations: state.reservations.map(r =>
+        expiredIds.has(r.id) ? { ...r, status: 'expired' } : r
+      ),
+      products: state.products.map(p => {
+        const add = restockByProduct.get(p.id) || 0;
+        return add > 0 ? { ...p, stockQuantity: p.stockQuantity + add, isAvailable: true } : p;
+      }),
+    };
+    notify();
+  },
+
+  // --- STAFF & ADMIN AUTH ACTIONS ---
+  login(role: StaffRole, pin: string, stationId?: string): { success: boolean; message?: string } {
     const roleDef = ROLE_DEFINITIONS.find(r => r.role === role);
     if (!roleDef) return { success: false, message: 'Rôle inconnu' };
 
-    // Find employee or match default demo pin
-    const emp = state.employees.find(e => e.role === role);
-    if (emp && (emp.pin === pin || pin === roleDef.defaultPin || pin === '1927' || pin === '0000')) {
-      state = { ...state, currentEmployee: emp };
+    const lockKey = `staff:${role}:${stationId || 'any'}`;
+    const lockMsg = checkLockout(lockKey);
+    if (lockMsg) return { success: false, message: lockMsg };
+
+    const matchingEmployees = state.employees.filter(
+      e => e.role === role && (!stationId || e.stationId === stationId)
+    );
+    const matched = matchingEmployees.find(e => e.pin === pin);
+
+    if (matched) {
+      clearAttempts(lockKey);
+      state = {
+        ...state,
+        currentEmployee: matched,
+        selectedStationId: matched.stationId || state.selectedStationId,
+      };
       notify();
       return { success: true };
     }
-    return { success: false, message: 'Code PIN incorrect (Code démo : ' + roleDef.defaultPin + ')' };
+
+    recordFailedAttempt(lockKey);
+    return { success: false, message: 'Code PIN incorrect. Vérifiez votre badge ou saisissez à nouveau.' };
   },
 
   logout() {
@@ -268,28 +457,77 @@ export const store = {
     notify();
   },
 
-  setCurrentRole(role: StaffRole) {
-    const emp = state.employees.find(e => e.role === role) || {
-      id: `emp-${role}`,
-      name: ROLE_DEFINITIONS.find(r => r.role === role)?.defaultEmployeeName || 'Agent',
-      role,
-      title: ROLE_DEFINITIONS.find(r => r.role === role)?.title || 'Agent',
-      subtitle: ROLE_DEFINITIONS.find(r => r.role === role)?.subtitle || 'Service',
-      avatar: ROLE_DEFINITIONS.find(r => r.role === role)?.avatar || '',
-      status: 'active',
-      stationId: state.selectedStationId,
-      pin: '1927',
+  loginAdmin(code: string): { success: boolean; message?: string } {
+    const lockKey = 'admin:console';
+    const lockMsg = checkLockout(lockKey);
+    if (lockMsg) return { success: false, message: lockMsg };
+
+    if (code.trim() !== ADMIN_ACCESS_CODE) {
+      recordFailedAttempt(lockKey);
+      return { success: false, message: 'Code administrateur invalide.' };
+    }
+
+    clearAttempts(lockKey);
+    const session: AdminSession = {
+      isAuthenticated: true,
+      name: 'Admin Global',
+      email: state.networkConfig.supportEmail,
+      loginAt: new Date().toISOString(),
     };
-    state = { ...state, currentEmployee: emp };
+    const auditEntry = createAuditLog(
+      'ADMIN_CONNEXION',
+      'admin',
+      'admin-global',
+      'Console Réseau 360°',
+      'Ouverture session Super Administrateur',
+      'Hors ligne',
+      'Authentifié',
+      session.name,
+      'Super Administrateur'
+    );
+
+    state = {
+      ...state,
+      adminSession: session,
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return { success: true };
+  },
+
+  logoutAdmin() {
+    state = { ...state, adminSession: null };
+    notify();
+  },
+
+  setCurrentRole(role: StaffRole) {
+    const roleDef = ROLE_DEFINITIONS.find(r => r.role === role);
+    const emp = state.employees.find(e => e.role === role) || {
+      id: `emp-demo-${role}`,
+      name: roleDef?.defaultEmployeeName || 'Agent',
+      role,
+      title: roleDef?.title || 'Agent',
+      subtitle: roleDef?.subtitle || 'Service',
+      avatar: roleDef?.avatar || '',
+      status: 'active' as const,
+      stationId: state.selectedStationId,
+      pin: roleDef?.defaultPin || '0000',
+    };
+    state = {
+      ...state,
+      currentEmployee: emp,
+      selectedStationId: emp.stationId || state.selectedStationId,
+    };
     notify();
   },
 
   // --- POMPISTE / PUMPS ACTIONS ---
-  updatePumpStatus(pumpNumber: number, status: Pump['status']) {
+  updatePumpStatus(pumpNumber: number, status: Pump['status'], stationId?: string) {
+    const targetStationId = stationId || state.currentEmployee?.stationId || state.selectedStationId;
     state = {
       ...state,
       pumps: state.pumps.map(p =>
-        p.number === pumpNumber ? { ...p, status } : p
+        p.number === pumpNumber && p.stationId === targetStationId ? { ...p, status } : p
       ),
     };
     notify();
@@ -301,10 +539,41 @@ export const store = {
     quantityLiters: number;
     amountFCFA: number;
     paymentMethod: 'Mobile Money' | 'Espèces' | 'Carte';
-  }) {
+    stationId?: string;
+  }): { success: boolean; message?: string } {
+    const targetStationId = params.stationId || state.currentEmployee?.stationId || state.selectedStationId;
+    const pump = state.pumps.find(p => p.stationId === targetStationId && p.number === params.pumpNumber);
+    if (!pump) {
+      return { success: false, message: `Pompe #${params.pumpNumber} introuvable sur cette station.` };
+    }
+    if (pump.status !== 'available') {
+      return { success: false, message: `Pompe #${params.pumpNumber} indisponible (${pump.status}).` };
+    }
+    if (params.quantityLiters <= 0 || !Number.isFinite(params.quantityLiters)) {
+      return { success: false, message: 'Volume à servir invalide.' };
+    }
+
+    const lowerProd = params.product.toLowerCase();
+    const targetFuelType: TankLevel['fuelType'] = lowerProd.includes('super')
+      ? 'Super'
+      : lowerProd.includes('pétrole') || lowerProd.includes('petrole')
+      ? 'Pétrole Lampant'
+      : 'Gasoil';
+
+    const matchingTank = state.tanks.find(
+      t => t.stationId === targetStationId && t.fuelType === targetFuelType
+    );
+    if (matchingTank && matchingTank.currentLiters < params.quantityLiters) {
+      return {
+        success: false,
+        message: `Niveau cuve ${targetFuelType} insuffisant (${matchingTank.currentLiters.toLocaleString('fr-FR')} L restants).`,
+      };
+    }
+
     const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const newTx: FuelTransaction = {
       id: `tx-${Date.now()}`,
+      stationId: targetStationId,
       time: nowTime,
       pumpNumber: params.pumpNumber,
       product: params.product,
@@ -314,16 +583,12 @@ export const store = {
       status: 'OK',
     };
 
-    // Update pump liters
     const updatedPumps = state.pumps.map(p =>
-      p.number === params.pumpNumber ? { ...p, litersToday: p.litersToday + params.quantityLiters } : p
+      p.id === pump.id ? { ...p, litersToday: p.litersToday + params.quantityLiters } : p
     );
 
-    // Update corresponding Tank in real-time
-    const isSuper = params.product.toLowerCase().includes('super');
-    const targetFuelType = isSuper ? 'Super' : 'Gasoil';
     const updatedTanks = state.tanks.map(tank => {
-      if (tank.fuelType === targetFuelType) {
+      if (tank.stationId === targetStationId && tank.fuelType === targetFuelType) {
         const newLiters = Math.max(0, tank.currentLiters - params.quantityLiters);
         const newPercent = Math.round((newLiters / tank.capacityLiters) * 100);
         return {
@@ -336,7 +601,6 @@ export const store = {
       return tank;
     });
 
-    // Update metrics in real-time
     const updatedMetrics: DailyMetrics = {
       ...state.dailyMetrics,
       fuelRevenueFCFA: state.dailyMetrics.fuelRevenueFCFA + params.amountFCFA,
@@ -352,12 +616,15 @@ export const store = {
       dailyMetrics: updatedMetrics,
     };
     notify();
+    return { success: true };
   },
 
-  reportIncident(title: string, subtitle: string) {
+  reportIncident(title: string, subtitle: string, stationId?: string) {
     const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const newAlert: AlertNotification = {
       id: `inc-${Date.now()}`,
+      stationId: stationId || state.currentEmployee?.stationId || state.selectedStationId,
+      audience: 'staff',
       type: 'danger',
       title,
       subtitle,
@@ -369,6 +636,72 @@ export const store = {
       alerts: [newAlert, ...state.alerts],
     };
     notify();
+  },
+
+  requestRestockAlert(productName: string, currentQty: number, stationId?: string) {
+    const targetStationId = stationId || state.currentEmployee?.stationId || state.selectedStationId;
+    const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const newAlert: AlertNotification = {
+      id: `restock-${Date.now()}`,
+      stationId: targetStationId,
+      audience: 'staff',
+      type: 'info',
+      title: `Demande réassort rayon : ${productName}`,
+      subtitle: `Stock restant : ${currentQty} • Signalé par ${state.currentEmployee?.name || 'Rayonniste'}`,
+      time: nowTime,
+      isRead: false,
+      targetRole: 'gerant',
+    };
+    const auditEntry = createAuditLog(
+      'REASSORT_DEMANDE',
+      'product',
+      productName,
+      productName,
+      `Signalement besoin de réassort rayon (${currentQty} restants)`,
+      `${currentQty}`,
+      'Réassort demandé',
+      state.currentEmployee?.name || 'Rayonniste',
+      state.currentEmployee?.title || 'Rayonniste'
+    );
+    state = {
+      ...state,
+      alerts: [newAlert, ...state.alerts],
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+  },
+
+  // --- COUNTER / CAFE ORDERS ---
+  advanceCounterOrder(orderId: string) {
+    state = {
+      ...state,
+      counterOrders: state.counterOrders.map(o => {
+        if (o.id !== orderId) return o;
+        const nextStatus: CounterOrder['status'] =
+          o.status === 'pending' ? 'ready' : o.status === 'ready' ? 'served' : 'served';
+        return { ...o, status: nextStatus };
+      }),
+    };
+    notify();
+  },
+
+  addCounterOrder(params: { item: string; customer: string; totalFCFA: number; stationId?: string }) {
+    const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const newOrder: CounterOrder = {
+      id: `cmd-${Date.now()}`,
+      stationId: params.stationId || state.currentEmployee?.stationId || state.selectedStationId,
+      time: nowTime,
+      item: params.item,
+      customer: params.customer,
+      totalFCFA: params.totalFCFA,
+      status: 'pending',
+    };
+    state = {
+      ...state,
+      counterOrders: [newOrder, ...state.counterOrders],
+    };
+    notify();
+    return newOrder;
   },
 
   // --- BOUTIQUE / POS ACTIONS ---
@@ -443,6 +776,7 @@ export const store = {
 
     const newSale: BoutiqueSale = {
       id: `sale-${Date.now()}`,
+      stationId: state.currentEmployee?.stationId || state.selectedStationId,
       saleNumber,
       ticketNumber,
       time: nowTime,
@@ -1092,7 +1426,7 @@ export const store = {
 
 function createAuditLog(
   actionType: AuditActionType,
-  targetType: 'product' | 'employee' | 'station',
+  targetType: AuditLogEntry['targetType'],
   targetId: string,
   targetName: string,
   details: string,
@@ -1108,14 +1442,11 @@ function createAuditLog(
   const dateFormatted = `${day}/${month}/${year}`;
   const timeFormatted = now.toLocaleTimeString('fr-FR');
 
-  const payload = `${now.toISOString()}|${authorName}|${actionType}|${targetId}|${oldValue}|${newValue}`;
-  let hashVal = 0;
-  for (let i = 0; i < payload.length; i++) {
-    hashVal = (hashVal << 5) - hashVal + payload.charCodeAt(i);
-    hashVal |= 0;
-  }
-  const hex = Math.abs(hashVal).toString(16).padStart(8, '0');
-  const hash = `SHA256:${hex}${Date.now().toString(16)}`;
+  const previousHash =
+    state?.auditLogs?.[0]?.hash ||
+    'SHA256:0000000000000000000000000000000000000000000000000000000000000000';
+  const payload = `${previousHash}|${now.toISOString()}|${authorName}|${actionType}|${targetId}|${oldValue}|${newValue}`;
+  const hash = `SHA256:${sha256Hex(payload)}`;
 
   return {
     id: `audit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -1131,6 +1462,7 @@ function createAuditLog(
     oldValue,
     newValue,
     details,
+    previousHash,
     hash,
   };
 }

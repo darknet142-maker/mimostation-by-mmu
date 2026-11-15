@@ -66,7 +66,13 @@ export const QrPage: React.FC = () => {
               <div className="w-full flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
                 <span className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  30 min
+                  {(() => {
+                    const remainingMin = Math.max(
+                      0,
+                      Math.ceil((new Date(res.expiresAt).getTime() - Date.now()) / 60000)
+                    );
+                    return remainingMin > 0 ? `${remainingMin} min restantes` : 'Expiré';
+                  })()}
                 </span>
                 <span className="font-extrabold text-[#0B3A82]">
                   {new Intl.NumberFormat('fr-FR').format(res.totalFCFA)} FCFA

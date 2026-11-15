@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
@@ -7,6 +7,7 @@ import { StaffRole } from '@/types';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { Button } from '@/components/ui/Button';
 import { StatusPill } from '@/components/ui/StatusPill';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ASSETS } from '@/config/assets';
 import {
   Shield,
@@ -24,15 +25,15 @@ export const StaffSettingsPage: React.FC = () => {
 
   const activeStation = stations.find(s => s.id === selectedStationId) || stations[0];
 
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
   const handleRoleSwitch = (newRole: StaffRole) => {
     store.setCurrentRole(newRole);
     navigate(`/personnel/${newRole}`);
   };
 
   const handleResetData = () => {
-    if (window.confirm('Réinitialiser toutes les données de démonstration locales ?')) {
-      store.resetAll();
-    }
+    setShowResetConfirm(true);
   };
 
   return (
@@ -126,6 +127,16 @@ export const StaffSettingsPage: React.FC = () => {
           </div>
         </div>
       </SectionCard>
+
+      <ConfirmDialog
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={() => store.resetAll()}
+        title="Réinitialiser l'environnement local"
+        message="Toutes les transactions, alertes et configurations modifiées localement seront remises aux valeurs de démonstration initiales."
+        confirmLabel="Réinitialiser"
+        variant="danger"
+      />
     </div>
   );
 };

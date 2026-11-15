@@ -5,6 +5,7 @@ export interface PinInputProps {
   onChange: (value: string) => void;
   length?: number;
   disabled?: boolean;
+  masked?: boolean;
   className?: string;
 }
 
@@ -13,28 +14,26 @@ export const PinInput: React.FC<PinInputProps> = ({
   onChange,
   length = 4,
   disabled = false,
+  masked = true,
   className = '',
 }) => {
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleCharChange = (idx: number, char: string) => {
-    // Only accept numeric digit
     const cleaned = char.replace(/\D/g, '');
+    const arr = value.padEnd(length, ' ').split('').slice(0, length);
+
     if (!cleaned) {
-      // Clear current
-      const arr = value.split('');
-      arr[idx] = '';
-      onChange(arr.join(''));
+      arr[idx] = ' ';
+      onChange(arr.join('').trimEnd());
       return;
     }
 
-    const digit = cleaned[cleaned.length - 1]; // last entered
-    const arr = value.padEnd(length, ' ').split('');
+    const digit = cleaned[cleaned.length - 1];
     arr[idx] = digit;
     const nextVal = arr.join('').trimEnd();
     onChange(nextVal);
 
-    // Auto advance
     if (idx < length - 1) {
       inputsRef.current[idx + 1]?.focus();
     }
@@ -42,8 +41,15 @@ export const PinInput: React.FC<PinInputProps> = ({
 
   const handleKeyDown = (idx: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace') {
-      if (!value[idx] && idx > 0) {
-        inputsRef.current[idx - 1]?.focus();
+      const currentChar = value[idx];
+      if (!currentChar || currentChar === ' ') {
+        if (idx > 0) {
+          e.preventDefault();
+          const arr = value.padEnd(length, ' ').split('').slice(0, length);
+          arr[idx - 1] = ' ';
+          onChange(arr.join('').trimEnd());
+          inputsRef.current[idx - 1]?.focus();
+        }
       }
     } else if (e.key === 'ArrowLeft' && idx > 0) {
       inputsRef.current[idx - 1]?.focus();
@@ -65,17 +71,19 @@ export const PinInput: React.FC<PinInputProps> = ({
   return (
     <div className={`flex items-center justify-center gap-3.5 sm:gap-4 ${className}`} onPaste={handlePaste}>
       {Array.from({ length }).map((_, i) => {
-        const char = value[i] || '';
+        const rawChar = value[i];
+        const char = rawChar && rawChar !== ' ' ? rawChar : '';
         return (
           <input
             key={i}
             ref={el => {
               inputsRef.current[i] = el;
             }}
-            type="text"
+            type={masked ? 'password' : 'text'}
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={1}
+            autoComplete="one-time-code"
             value={char}
             disabled={disabled}
             onChange={e => handleCharChange(i, e.target.value)}

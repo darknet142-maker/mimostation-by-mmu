@@ -31,7 +31,26 @@ export const ProductStationAlternativesModal: React.FC<ProductStationAlternative
   if (!product) return null;
 
   const currentStation = stations.find(s => s.id === selectedStationId) || stations[0];
-  const alternativeStations = stations.filter(s => s.id !== selectedStationId);
+  const alternativeStations = stations.filter(
+    s =>
+      s.id !== selectedStationId &&
+      (s.status || 'active') === 'active' &&
+      s.isOpen &&
+      s.advancedSettings?.enableReservations !== false
+  );
+
+  const stockStatus: 'disponible' | 'stock-faible' | 'rupture' =
+    !product.isAvailable || product.stockQuantity <= 0
+      ? 'rupture'
+      : product.stockQuantity <= product.minStockThreshold
+      ? 'stock-faible'
+      : 'disponible';
+
+  const canReserveCurrentStation =
+    stockStatus !== 'rupture' &&
+    currentStation.isOpen &&
+    (currentStation.status || 'active') === 'active' &&
+    currentStation.advancedSettings?.enableReservations !== false;
 
   const handleSelectStationAndReserve = (station: Station) => {
     store.setSelectedStation(station.id);
@@ -56,7 +75,7 @@ export const ProductStationAlternativesModal: React.FC<ProductStationAlternative
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-extrabold text-[#0F172A]">{product.name}</h3>
-              <StatusPill type="disponible" size="sm" />
+              <StatusPill type={stockStatus} size="sm" />
             </div>
             <p className="text-xs text-slate-500 mt-0.5">{product.subtitle}</p>
             <p className="text-sm font-extrabold text-[#0B3A82] mt-1">
@@ -76,7 +95,7 @@ export const ProductStationAlternativesModal: React.FC<ProductStationAlternative
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl border-2 border-[#1668E3] bg-[#F7FAFF] shadow-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl border-2 border-[#1668E3] bg-[#F7FAFF] shadow-xs flex items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#1668E3] flex items-center justify-center shrink-0">
                 <MapPin className="w-5 h-5 fill-[#1668E3]" />
@@ -87,7 +106,19 @@ export const ProductStationAlternativesModal: React.FC<ProductStationAlternative
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-[11px] font-bold text-[#1668E3]">{currentStation.distanceKm} km</span>
                   <span className="text-slate-300">•</span>
-                  <span className="text-[11px] text-emerald-600 font-semibold">En stock ({product.stockQuantity})</span>
+                  <span
+                    className={`text-[11px] font-semibold ${
+                      stockStatus === 'rupture'
+                        ? 'text-rose-600'
+                        : stockStatus === 'stock-faible'
+                        ? 'text-amber-600'
+                        : 'text-emerald-600'
+                    }`}
+                  >
+                    {stockStatus === 'rupture'
+                      ? 'Rupture de stock'
+                      : `En stock (${product.stockQuantity})`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -95,6 +126,7 @@ export const ProductStationAlternativesModal: React.FC<ProductStationAlternative
             <Button
               variant="yellow"
               size="sm"
+              disabled={!canReserveCurrentStation}
               icon={<Calendar className="w-4 h-4" />}
               onClick={() => handleSelectStationAndReserve(currentStation)}
             >
@@ -132,7 +164,7 @@ export const ProductStationAlternativesModal: React.FC<ProductStationAlternative
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[10px] font-bold text-slate-700">{altStation.distanceKm} km</span>
                       <span className="text-slate-300">•</span>
-                      <StatusPill type="disponible" size="sm" label="Disponible" />
+                      <StatusPill type="disponible" size="sm" label="Ouverte" />
                     </div>
                   </div>
                 </div>

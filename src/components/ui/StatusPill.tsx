@@ -2,7 +2,16 @@ import React from 'react';
 import { ASSETS } from '@/config/assets';
 
 export interface StatusPillProps {
-  type?: 'disponible' | 'active' | 'stock-ok' | 'stock-faible' | 'ouvert' | 'maintenance' | 'danger';
+  type?:
+    | 'disponible'
+    | 'active'
+    | 'stock-ok'
+    | 'stock-faible'
+    | 'rupture'
+    | 'ouvert'
+    | 'ferme'
+    | 'maintenance'
+    | 'danger';
   label?: string;
   className?: string;
   size?: 'sm' | 'md';
@@ -90,6 +99,9 @@ export const StatusPill: React.FC<StatusPillProps> = ({
       );
 
     case 'danger':
+    case 'rupture':
+    case 'ferme': {
+      const defaultLabel = type === 'rupture' ? 'Rupture' : type === 'ferme' ? 'Fermée' : 'Alerte';
       return (
         <span
           className={`inline-flex items-center gap-1.5 rounded-full bg-[#EF4444] text-white font-semibold ${sizeClass} ${className}`}
@@ -99,9 +111,10 @@ export const StatusPill: React.FC<StatusPillProps> = ({
             alt=""
             className={`${iconSize} object-contain shrink-0`}
           />
-          <span>{label || 'Alerte'}</span>
+          <span>{label || defaultLabel}</span>
         </span>
       );
+    }
 
     default:
       return null;

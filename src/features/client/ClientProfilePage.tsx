@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   User,
   Shield,
@@ -15,18 +16,14 @@ import {
 
 export const ClientProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { stations, selectedStationId } = useAppStore(s => ({
+  const { stations, selectedStationId, networkConfig } = useAppStore(s => ({
     stations: s.stations,
     selectedStationId: s.selectedStationId,
+    networkConfig: s.networkConfig,
   }));
 
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const activeStation = stations.find(s => s.id === selectedStationId) || stations[0];
-
-  const handleResetDemoData = () => {
-    if (window.confirm('Réinitialiser toutes les données de démonstration locales ?')) {
-      store.resetAll();
-    }
-  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 bg-white min-h-full max-w-2xl mx-auto lg:rounded-3xl lg:border lg:border-slate-200/80 lg:shadow-xs lg:my-4">
@@ -97,9 +94,11 @@ export const ClientProfilePage: React.FC = () => {
           <div className="p-3.5 flex items-center justify-between bg-white">
             <div className="flex items-center gap-3">
               <Phone className="w-4 h-4 text-[#1668E3]" />
-              <span className="text-xs font-semibold text-slate-700">Assistance StationPro</span>
+              <span className="text-xs font-semibold text-slate-700">Assistance {networkConfig?.platformName || 'StationPro'}</span>
             </div>
-            <span className="text-xs font-bold text-[#1668E3]">800 12 34 (Gratuit)</span>
+            <span className="text-xs font-bold text-[#1668E3]">
+              {networkConfig?.supportPhone || '800 12 34 (Gratuit)'}
+            </span>
           </div>
         </div>
       </div>
@@ -115,13 +114,23 @@ export const ClientProfilePage: React.FC = () => {
         </p>
         <button
           type="button"
-          onClick={handleResetDemoData}
+          onClick={() => setShowResetConfirm(true)}
           className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-red-600 font-semibold mt-1"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Réinitialiser les données démo</span>
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={() => store.resetAll()}
+        title="Réinitialiser les données de démonstration"
+        message="Toutes les réservations, ventes et personnalisations locales seront remises à leur état initial."
+        confirmLabel="Réinitialiser"
+        variant="danger"
+      />
     </div>
   );
 };

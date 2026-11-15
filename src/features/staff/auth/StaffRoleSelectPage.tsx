@@ -50,10 +50,11 @@ export const StaffRoleSelectPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {ROLE_DEFINITIONS.map(roleItem => (
-                  <div
+                  <button
                     key={roleItem.role}
+                    type="button"
                     onClick={() => navigate(`/personnel/connexion/${roleItem.role}`)}
-                    className="flex items-center justify-between p-3 bg-white rounded-2xl border border-[#DCE4F0] hover:border-blue-400 hover:shadow-md cursor-pointer transition-all duration-150 active:scale-[0.99]"
+                    className="w-full text-left flex items-center justify-between p-3 bg-white rounded-2xl border border-[#DCE4F0] hover:border-blue-400 hover:shadow-md cursor-pointer transition-all duration-150 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3]"
                   >
                     <div className="flex items-center gap-3">
                       <img
@@ -72,16 +73,17 @@ export const StaffRoleSelectPage: React.FC = () => {
                     </div>
 
                     <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
           </div>
 
           {/* Admin Console Shortcut Card */}
-          <div
+          <button
+            type="button"
             onClick={() => navigate('/admin')}
-            className="p-3.5 bg-gradient-to-r from-[#0A1D37] to-[#123668] text-white rounded-2xl border border-blue-500/30 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-amber-400/50 transition-all duration-150 active:scale-[0.99] group"
+            className="w-full text-left p-3.5 bg-gradient-to-r from-[#0A1D37] to-[#123668] text-white rounded-2xl border border-blue-500/30 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-amber-400/50 transition-all duration-150 active:scale-[0.99] group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center border border-amber-400/30">
@@ -102,7 +104,7 @@ export const StaffRoleSelectPage: React.FC = () => {
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
-          </div>
+          </button>
 
           {/* Bottom Info Banner (Screen 01A) */}
           <div className="mt-4 pt-2">

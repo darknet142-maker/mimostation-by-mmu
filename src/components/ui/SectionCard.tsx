@@ -9,6 +9,7 @@ export interface SectionCardProps {
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
+  headerRight?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
   headerClassName?: string;
@@ -22,6 +23,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   actionLabel,
   actionHref,
   onAction,
+  headerRight,
   children,
   className = '',
   headerClassName = '',
@@ -45,7 +47,9 @@ export const SectionCard: React.FC<SectionCardProps> = ({
           )}
         </div>
 
-        {actionLabel && (
+        {headerRight ? (
+          headerRight
+        ) : actionLabel ? (
           actionHref ? (
             <Link
               to={actionHref}
@@ -64,7 +68,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           )
-        )}
+        ) : null}
       </div>
 
       {/* Card Body */}

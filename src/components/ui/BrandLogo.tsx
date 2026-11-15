@@ -1,5 +1,6 @@
 import React from 'react';
 import { ASSETS } from '@/config/assets';
+import { useAppStore } from '@/hooks/useAppStore';
 
 export interface BrandLogoProps {
   theme?: 'dark' | 'light';
@@ -18,6 +19,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   sloganOverride,
   onClick,
 }) => {
+  const networkConfig = useAppStore(s => s.networkConfig);
   const isDark = theme === 'dark';
 
   const markSizes = {
@@ -32,28 +34,35 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     lg: 'text-3xl',
   };
 
-  const slogan =
-    sloganOverride ||
-    (mode === 'admin'
+  const platformName = networkConfig?.platformName?.trim() || 'StationPro';
+  const defaultSlogan =
+    mode === 'admin'
       ? "Console d'administration"
       : mode === 'client'
-      ? 'Vérifiez • Réservez • Payez'
-      : 'Gérer • Servir • Performer');
+      ? networkConfig?.platformSlogan || 'Vérifiez • Réservez • Payez'
+      : 'Gérer • Servir • Performer';
 
-  return (
-    <div
-      onClick={onClick}
-      className={`inline-flex items-center gap-2.5 select-none ${onClick ? 'cursor-pointer' : ''} ${className}`}
-    >
+  const slogan = sloganOverride || defaultSlogan;
+
+  const isDefaultBrand = platformName.toLowerCase() === 'stationpro';
+
+  const content = (
+    <>
       <img
         src={ASSETS.brand.logoMark}
-        alt="StationPro"
+        alt={platformName}
         className={`${markSizes[size]} object-contain drop-shadow-sm`}
       />
-      <div className="flex flex-col leading-none">
+      <div className="flex flex-col leading-none text-left">
         <div className={`font-display font-bold tracking-tight ${textSizes[size]}`}>
-          <span className={isDark ? 'text-white' : 'text-[#0A285F]'}>Station</span>
-          <span className="text-[#F5A623]">Pro</span>
+          {isDefaultBrand ? (
+            <>
+              <span className={isDark ? 'text-white' : 'text-[#0A285F]'}>Station</span>
+              <span className="text-[#F5A623]">Pro</span>
+            </>
+          ) : (
+            <span className={isDark ? 'text-white' : 'text-[#0A285F]'}>{platformName}</span>
+          )}
         </div>
         <span
           className={`text-[9px] font-medium tracking-wide mt-0.5 ${
@@ -63,7 +72,21 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           {slogan}
         </span>
       </div>
-    </div>
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`inline-flex items-center gap-2.5 select-none cursor-pointer rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${className}`}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>{content}</div>;
 };
 

@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <!-- Sky & Environment Gradients -->
+    <linearGradient id="ola-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E88E5" />
+      <stop offset="45%" stop-color="#64B5F6" />
+      <stop offset="80%" stop-color="#BBDEFB" />
+      <stop offset="100%" stop-color="#E3F2FD" />
+    </linearGradient>
+
+    <!-- Asphalt Forecourt -->
+    <linearGradient id="ola-asphalt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8" />
+      <stop offset="25%" stop-color="#64748B" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+
+    <!-- OLA Blue & Orange Canopy -->
+    <linearGradient id="ola-canopy-blue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#004687" />
+      <stop offset="65%" stop-color="#0066B3" />
+      <stop offset="85%" stop-color="#0072CE" />
+    </linearGradient>
+    <linearGradient id="ola-canopy-orange" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF5A00" />
+      <stop offset="100%" stop-color="#FF7A00" />
+    </linearGradient>
+
+    <!-- LED Spotlight Glow -->
+    <radialGradient id="ola-light-spot" cx="50%" cy="0%" r="90%">
+      <stop offset="0%" stop-color="#FFF9C4" stop-opacity="0.8" />
+      <stop offset="40%" stop-color="#FFF59D" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Building Shadow -->
+    <filter id="ola-drop-shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- 1. Sky Background -->
+  <rect width="1200" height="380" fill="url(#ola-sky)" />
+
+  <!-- Equatorial Jungle & Tree silhouettes -->
+  <g fill="#2E7D32" opacity="0.45">
+    <path d="M 0 340 Q 60 300 120 340 T 240 330 T 360 345 T 480 325 T 600 340 T 720 330 T 840 345 T 960 320 T 1080 340 T 1200 330 L 1200 380 L 0 380 Z" />
+    <path d="M 0 355 Q 80 325 180 355 T 380 345 T 580 355 T 780 340 T 980 350 T 1200 345 L 1200 380 L 0 380 Z" fill="#1B5E20" opacity="0.6" />
+  </g>
+
+  <!-- 2. Forecourt Asphalt & Ground -->
+  <polygon points="0,370 1200,370 1200,600 0,600" fill="url(#ola-asphalt)" />
+  <!-- Concrete safety drive lanes -->
+  <polygon points="120,600 340,370 860,370 1080,600" fill="#E2E8F0" opacity="0.35" />
+
+  <!-- 3. Background Service Station Building: "Marhaba" Boutique -->
+  <g transform="translate(560, 260)" filter="url(#ola-drop-shadow)">
+    <!-- Main white facade -->
+    <rect x="0" y="30" width="460" height="90" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+    <!-- Orange top accent band -->
+    <rect x="0" y="30" width="460" height="8" fill="#FF5A00" />
+    <!-- Shop windows & doors -->
+    <rect x="40" y="48" width="100" height="60" fill="#93C5FD" opacity="0.5" stroke="#64748B" stroke-width="1.5" />
+    <rect x="160" y="48" width="70" height="72" fill="#E2E8F0" stroke="#64748B" stroke-width="1.5" />
+    <rect x="250" y="48" width="160" height="60" fill="#93C5FD" opacity="0.5" stroke="#64748B" stroke-width="1.5" />
+    <!-- "Marhaba" Signboard -->
+    <rect x="140" y="10" width="180" height="26" rx="4" fill="#00529B" />
+    <text x="230" y="28" font-family="system-ui, sans-serif" font-size="14" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">marhaba</text>
+  </g>
+
+  <!-- 4. Spotlights on the ground -->
+  <polygon points="340,165 240,480 440,480" fill="url(#ola-light-spot)" />
+  <polygon points="560,165 460,480 660,480" fill="url(#ola-light-spot)" />
+  <polygon points="780,165 680,480 880,480" fill="url(#ola-light-spot)" />
+  <polygon points="1000,165 900,480 1100,480" fill="url(#ola-light-spot)" />
+
+  <!-- 5. Elevated Fuel Islands (Concrete curbs with red-white stripes) -->
+  <!-- Left Island -->
+  <g transform="translate(320, 395)">
+    <!-- Concrete base slab -->
+    <path d="M 0 45 L 40 10 L 220 10 L 180 45 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <!-- Safety red & white protective curbs -->
+    <polygon points="0,45 20,27 45,27 25,45" fill="#EF4444" />
+    <polygon points="25,45 45,27 70,27 50,45" fill="#FFFFFF" />
+    <polygon points="50,45 70,27 95,27 75,45" fill="#EF4444" />
+    <polygon points="75,45 95,27 120,27 100,45" fill="#FFFFFF" />
+    <polygon points="100,45 120,27 145,27 125,45" fill="#EF4444" />
+    <polygon points="125,45 145,27 180,27 160,45" fill="#FFFFFF" />
+
+    <!-- OLA Multi-product Dispenser Pump #1 -->
+    <g transform="translate(65, -130)" filter="url(#ola-drop-shadow)">
+      <rect x="0" y="0" width="70" height="135" rx="6" fill="#00529B" stroke="#003870" stroke-width="2" />
+      <rect x="8" y="10" width="54" height="28" rx="3" fill="#0A192F" />
+      <text x="35" y="24" font-family="monospace" font-size="10" font-weight="bold" fill="#4ADE80" text-anchor="middle">700 FCFA/L</text>
+      <text x="35" y="34" font-family="system-ui, sans-serif" font-size="8" font-weight="bold" fill="#F8FAFC" text-anchor="middle">SUPER • GASOIL</text>
+      <!-- Pump Nozzle Holster & Orange Accent -->
+      <rect x="0" y="55" width="70" height="8" fill="#FF5A00" />
+      <rect x="10" y="70" width="50" height="50" rx="3" fill="#FFFFFF" />
+      <!-- OLA Mini Swirl on Pump -->
+      <circle cx="35" cy="95" r="14" fill="#00529B" />
+      <circle cx="35" cy="95" r="8" fill="#FF5A00" />
+    </g>
+  </g>
+
+  <!-- Right Island -->
+  <g transform="translate(740, 395)">
+    <path d="M 0 45 L 40 10 L 220 10 L 180 45 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <polygon points="0,45 20,27 45,27 25,45" fill="#EF4444" />
+    <polygon points="25,45 45,27 70,27 50,45" fill="#FFFFFF" />
+    <polygon points="50,45 70,27 95,27 75,45" fill="#EF4444" />
+    <polygon points="75,45 95,27 120,27 100,45" fill="#FFFFFF" />
+    <polygon points="100,45 120,27 145,27 125,45" fill="#EF4444" />
+    <polygon points="125,45 145,27 180,27 160,45" fill="#FFFFFF" />
+
+    <!-- OLA Multi-product Dispenser Pump #2 -->
+    <g transform="translate(65, -130)" filter="url(#ola-drop-shadow)">
+      <rect x="0" y="0" width="70" height="135" rx="6" fill="#00529B" stroke="#003870" stroke-width="2" />
+      <rect x="8" y="10" width="54" height="28" rx="3" fill="#0A192F" />
+      <text x="35" y="24" font-family="monospace" font-size="10" font-weight="bold" fill="#4ADE80" text-anchor="middle">650 FCFA/L</text>
+      <text x="35" y="34" font-family="system-ui, sans-serif" font-size="8" font-weight="bold" fill="#F8FAFC" text-anchor="middle">SUPER • GASOIL</text>
+      <rect x="0" y="55" width="70" height="8" fill="#FF5A00" />
+      <rect x="10" y="70" width="50" height="50" rx="3" fill="#FFFFFF" />
+      <circle cx="35" cy="95" r="14" fill="#00529B" />
+      <circle cx="35" cy="95" r="8" fill="#FF5A00" />
+    </g>
+  </g>
+
+  <!-- 6. Heavy White Canopy Pillars -->
+  <!-- Pillar 1 -->
+  <rect x="400" y="150" width="40" height="255" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="432" y="150" width="8" height="255" fill="#E2E8F0" />
+  <!-- Pillar 2 -->
+  <rect x="820" y="150" width="40" height="255" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="852" y="150" width="8" height="255" fill="#E2E8F0" />
+
+  <!-- 7. Giant Modern OLA Energy Canopy Roof -->
+  <g filter="url(#ola-drop-shadow)">
+    <!-- Underside ceiling panels -->
+    <polygon points="200,165 1160,165 1060,195 240,195" fill="#F1F5F9" stroke="#E2E8F0" />
+    <!-- Recessed LED light fixtures in ceiling -->
+    <ellipse cx="340" cy="180" rx="18" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+    <ellipse cx="560" cy="180" rx="18" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+    <ellipse cx="780" cy="180" rx="18" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+    <ellipse cx="1000" cy="180" rx="18" ry="4" fill="#FFFFFF" stroke="#CBD5E1" />
+
+    <!-- Main Front Fascia (Blue with Orange angled end) -->
+    <!-- Blue section -->
+    <polygon points="190,95 1040,95 1020,165 190,165" fill="url(#ola-canopy-blue)" />
+    <!-- Bottom white trim stripe -->
+    <polygon points="190,160 1140,160 1130,165 190,165" fill="#FFFFFF" />
+    <!-- Orange angled end (Distinctive OLA Signature) -->
+    <polygon points="1040,95 1160,95 1140,165 1020,165" fill="url(#ola-canopy-orange)" />
+
+    <!-- OLA Energy Logo on Canopy Fascia -->
+    <g transform="translate(240, 105)">
+      <!-- Mini swirl -->
+      <circle cx="26" cy="26" r="22" fill="#FFFFFF" />
+      <circle cx="26" cy="26" r="17" fill="#00529B" />
+      <path d="M 26 12 C 34 12 40 18 40 26 C 40 34 32 40 26 40 C 26 34 32 30 32 26 C 32 22 28 18 26 18 Z" fill="#FF5A00" />
+      <!-- OLA Text in crisp white -->
+      <text x="60" y="34" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="900" fill="#FFFFFF" letter-spacing="1">OLA</text>
+      <text x="135" y="34" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="900" fill="#FFB020" letter-spacing="2">ENERGY</text>
+      <text x="220" y="34" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#E2E8F0" letter-spacing="1">GABON</text>
+    </g>
+  </g>
+
+  <!-- 8. Tall Illuminated OLA Totem / Pylon (Foreground Left) -->
+  <g transform="translate(60, 110)" filter="url(#ola-drop-shadow)">
+    <!-- Main Tower Structure -->
+    <rect x="0" y="0" width="105" height="440" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+
+    <!-- Top Branding Box with OLA Swirl & Logo -->
+    <rect x="4" y="4" width="97" height="90" rx="6" fill="#00529B" />
+    <circle cx="52" cy="38" r="24" fill="#FFFFFF" />
+    <!-- Swirl in totem -->
+    <circle cx="52" cy="38" r="19" fill="#00529B" />
+    <path d="M 52 22 C 61 22 68 29 68 38 C 68 47 59 54 52 54 C 52 47 59 42 59 38 C 59 34 55 29 52 29 Z" fill="#FF5A00" />
+    <text x="52" y="82" font-family="system-ui, sans-serif" font-size="13" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">OLA Energy</text>
+
+    <!-- Digital Price Board (Black backplate with glowing LED) -->
+    <rect x="8" y="105" width="89" height="155" rx="4" fill="#090D16" />
+    <!-- Product 1: Super -->
+    <text x="16" y="126" font-family="system-ui, sans-serif" font-size="9" font-weight="bold" fill="#94A3B8">SUPER</text>
+    <text x="90" y="126" font-family="monospace" font-size="14" font-weight="bold" fill="#22C55E" text-anchor="end">700</text>
+    <line x1="14" y1="134" x2="91" y2="134" stroke="#1E293B" stroke-width="1" />
+    <!-- Product 2: Gasoil -->
+    <text x="16" y="156" font-family="system-ui, sans-serif" font-size="9" font-weight="bold" fill="#94A3B8">GASOIL</text>
+    <text x="90" y="156" font-family="monospace" font-size="14" font-weight="bold" fill="#22C55E" text-anchor="end">650</text>
+    <line x1="14" y1="164" x2="91" y2="164" stroke="#1E293B" stroke-width="1" />
+    <!-- Product 3: Pétrole -->
+    <text x="16" y="186" font-family="system-ui, sans-serif" font-size="9" font-weight="bold" fill="#94A3B8">PETROLE</text>
+    <text x="90" y="186" font-family="monospace" font-size="14" font-weight="bold" fill="#EAB308" text-anchor="end">450</text>
+    <line x1="14" y1="194" x2="91" y2="194" stroke="#1E293B" stroke-width="1" />
+    <!-- Product 4: Gaz Butane -->
+    <text x="16" y="216" font-family="system-ui, sans-serif" font-size="9" font-weight="bold" fill="#94A3B8">GAZ 6KG</text>
+    <text x="90" y="216" font-family="monospace" font-size="14" font-weight="bold" fill="#38BDF8" text-anchor="end">6 000</text>
+    <line x1="14" y1="224" x2="91" y2="224" stroke="#1E293B" stroke-width="1" />
+    <!-- Time / Temp -->
+    <text x="52" y="248" font-family="monospace" font-size="11" font-weight="bold" fill="#F97316" text-anchor="middle">29°C • 10:45</text>
+
+    <!-- Services Badges on Totem -->
+    <rect x="8" y="270" width="89" height="34" rx="4" fill="#FF5A00" />
+    <text x="52" y="291" font-family="system-ui, sans-serif" font-size="12" font-weight="900" fill="#FFFFFF" text-anchor="middle">marhaba</text>
+
+    <g transform="translate(10, 314)" fill="#475569" font-family="system-ui, sans-serif" font-size="9" font-weight="bold">
+      <rect x="0" y="0" width="85" height="22" rx="3" fill="#F1F5F9" />
+      <text x="42" y="15" text-anchor="middle">VIDANGE RAPIDE</text>
+      <rect x="0" y="26" width="85" height="22" rx="3" fill="#F1F5F9" />
+      <text x="42" y="41" text-anchor="middle">LAVAGE AUTO</text>
+      <rect x="0" y="52" width="85" height="22" rx="3" fill="#F1F5F9" />
+      <text x="42" y="67" text-anchor="middle">CARTE O'CARD</text>
+      <rect x="0" y="78" width="85" height="22" rx="3" fill="#00529B" />
+      <text x="42" y="93" fill="#FFFFFF" text-anchor="middle">OUVERT 24H/24</text>
+    </g>
+  </g>
+</svg>
+

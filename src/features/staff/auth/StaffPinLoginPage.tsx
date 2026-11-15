@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ROLE_DEFINITIONS } from '@/data/fixtures';
 import { store } from '@/services/store';
+import { useAppStore } from '@/hooks/useAppStore';
 import { StaffRole } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { PinInput } from '@/components/ui/PinInput';
@@ -12,6 +13,8 @@ import {
   ArrowRight,
   AlertCircle,
   Camera,
+  KeyRound,
+  MapPin,
 } from 'lucide-react';
 
 import { ASSETS } from '@/config/assets';
@@ -20,22 +23,22 @@ export const StaffPinLoginPage: React.FC = () => {
   const { role } = useParams<{ role: StaffRole }>();
   const navigate = useNavigate();
 
+  const { stations, selectedStationId } = useAppStore(s => ({
+    stations: s.stations || [],
+    selectedStationId: s.selectedStationId,
+  }));
+
   const roleDef = ROLE_DEFINITIONS.find(r => r.role === role) || ROLE_DEFINITIONS[0];
 
-  const [pin, setPin] = useState<string>('1927'); // Pre-filled with demo 1927 from Screen 01B!
+  const [pin, setPin] = useState<string>('');
+  const [stationId, setStationId] = useState<string>(selectedStationId || stations[0]?.id || 'station-liberte');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
   const [scannerModalOpen, setScannerModalOpen] = useState<boolean>(false);
 
-  useEffect(() => {
-    // When role changes, set default pin
-    if (roleDef.defaultPin) {
-      setPin(roleDef.defaultPin);
-    }
-  }, [roleDef]);
-
   const handleLogin = (pinToUse = pin) => {
-    if (pinToUse.length !== 4) {
+    const cleanPin = pinToUse.replace(/\s+/g, '');
+    if (cleanPin.length !== 4) {
       setErrorMsg('Veuillez entrer un code PIN à 4 chiffres.');
       return;
     }
@@ -44,7 +47,7 @@ export const StaffPinLoginPage: React.FC = () => {
     setErrorMsg('');
 
     setTimeout(() => {
-      const res = store.login(roleDef.role, pinToUse);
+      const res = store.login(roleDef.role, cleanPin, stationId);
       setIsLoggingIn(false);
 
       if (res.success) {
@@ -52,11 +55,12 @@ export const StaffPinLoginPage: React.FC = () => {
       } else {
         setErrorMsg(res.message || 'Code PIN incorrect.');
       }
-    }, 350);
+    }, 300);
   };
 
   const handleBadgeScanned = () => {
     setScannerModalOpen(false);
+    setPin(roleDef.defaultPin);
     handleLogin(roleDef.defaultPin);
   };
 
@@ -110,21 +114,58 @@ export const StaffPinLoginPage: React.FC = () => {
               </p>
             </div>
 
-            {/* 4 Square PIN Boxes (Screen 01B) */}
-            <div className="pt-2">
+            {/* Station selection */}
+            <div className="space-y-1.5">
+              <label htmlFor="staff-station-select" className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#1668E3]" />
+                <span>Station d&apos;affectation</span>
+              </label>
+              <select
+                id="staff-station-select"
+                value={stationId}
+                onChange={e => {
+                  setStationId(e.target.value);
+                  setErrorMsg('');
+                }}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1668E3]"
+              >
+                {stations.map(st => (
+                  <option key={st.id} value={st.id}>
+                    {st.name} — {st.city}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 4 Square PIN Boxes */}
+            <div className="pt-1 space-y-3">
               <PinInput
                 value={pin}
                 onChange={val => {
                   setPin(val);
                   setErrorMsg('');
-                  if (val.length === 4) {
+                  if (val.replace(/\s+/g, '').length === 4) {
                     handleLogin(val);
                   }
                 }}
               />
 
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPin(roleDef.defaultPin);
+                    setErrorMsg('');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-[11px] font-bold transition-colors"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Pré-remplir PIN Démo ({roleDef.defaultPin})</span>
+                </button>
+              </div>
+
               {errorMsg && (
-                <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-red-600 mt-3 animate-in fade-in">
+                <div role="alert" className="flex items-center justify-center gap-1.5 text-xs font-bold text-red-600 mt-2 animate-in fade-in">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{errorMsg}</span>
                 </div>

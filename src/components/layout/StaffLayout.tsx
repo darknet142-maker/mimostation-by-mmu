@@ -69,21 +69,22 @@ export const StaffLayout: React.FC = () => {
       services: { pumpsTotal: 6, pumpsAvailable: 6, hasBoutique: true, hasCafe: true, hasCarWash: true },
     }
   ];
-  const activeStation = safeStations.find(s => s.id === selectedStationId) || safeStations[0];
+  const activeStation = safeStations.find(s => s.id === (currentEmployee?.stationId || selectedStationId)) || safeStations[0];
   const safeAlerts = Array.isArray(alerts) ? alerts : [];
-  const unreadAlertsCount = safeAlerts.filter(a => !a.isRead).length;
+  const unreadAlertsCount = safeAlerts.filter(
+    a => !a.isRead && a.audience !== 'client' && (!a.stationId || a.stationId === activeStation.id)
+  ).length;
 
-  // Real-time clock formatted as in screenshots: "09:48 | Lun. 10 Nov. 2026"
+  // Real-time clock formatted as: "09:48 | Lun. 10 Nov. 2026"
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       setCurrentTime(
         now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
       );
-      // Format: "Lun. 10 Nov. 2026"
       const days = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
       const months = ['Janv.', 'Févr.', 'Mars', 'Avril', 'Mai', 'Juin', 'Juil.', 'Août', 'Sept.', 'Oct.', 'Nov.', 'Déc.'];
-      setCurrentDate(`${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} 2026`);
+      setCurrentDate(`${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`);
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
@@ -233,13 +234,15 @@ export const StaffLayout: React.FC = () => {
             alt=""
             className="absolute bottom-16 left-0 right-0 w-full object-cover pointer-events-none opacity-80"
           />
-          <Link
-            to="/admin"
-            className="relative z-10 w-full flex items-center gap-2.5 px-3.5 py-2.5 mb-2.5 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/20 to-amber-600/10 hover:bg-amber-500/25 text-amber-300 font-bold text-xs backdrop-blur-xs transition-all shadow-sm"
-          >
-            <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>Console Admin Réseau</span>
-          </Link>
+          {role === 'gerant' && (
+            <Link
+              to="/admin"
+              className="relative z-10 w-full flex items-center gap-2.5 px-3.5 py-2.5 mb-2.5 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/20 to-amber-600/10 hover:bg-amber-500/25 text-amber-300 font-bold text-xs backdrop-blur-xs transition-all shadow-sm"
+            >
+              <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Console Admin Réseau</span>
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => setShowLogoutConfirm(true)}
@@ -301,8 +304,8 @@ export const StaffLayout: React.FC = () => {
                   <Clock className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-white tracking-wide">{currentTime || '09:47'}</div>
-                  <div className="text-xs text-blue-200">{currentDate || 'Lun. 10 Nov. 2026'}</div>
+                  <div className="text-sm font-bold text-white tracking-wide">{currentTime || '--:--'}</div>
+                  <div className="text-xs text-blue-200">{currentDate}</div>
                 </div>
               </div>
             </>
@@ -327,71 +330,83 @@ export const StaffLayout: React.FC = () => {
                     <StatusPill type="active" label="En service" size="sm" />
                   </div>
                   <p className="text-sm text-blue-100 font-medium mt-0.5">
-                    {currentEmployee?.name || 'Jean Dupont'}
+                    {currentEmployee?.name || 'Agent en service'}
                   </p>
                 </div>
               </div>
 
               {/* Location & Live Clock */}
               <div className="flex items-center gap-8 relative z-10">
-                {/* Interactive Station Dropdown */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setStationDropdownOpen(!stationDropdownOpen)}
-                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all text-left"
-                  >
+                {/* Station indicator (dropdown only for Gerant) */}
+                {role === 'gerant' ? (
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setStationDropdownOpen(!stationDropdownOpen)}
+                      className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all text-left"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
+                        <MapPin className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold flex items-center gap-1.5">
+                          <span>{activeStation.name}</span>
+                          <ChevronDown className="w-3.5 h-3.5 text-blue-200" />
+                        </div>
+                        <div className="text-[11px] text-blue-200">{activeStation.city}, {activeStation.country}</div>
+                      </div>
+                    </button>
+
+                    {stationDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-64 bg-white text-slate-900 rounded-xl border border-slate-200 shadow-2xl z-50 p-2 space-y-1">
+                        <div className="text-[10px] font-bold text-slate-400 px-3 py-1 uppercase">
+                          Changer de station active
+                        </div>
+                        {stations.map(st => (
+                          <button
+                            key={st.id}
+                            type="button"
+                            onClick={() => {
+                              store.setSelectedStation(st.id);
+                              setStationDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors ${
+                              st.id === activeStation.id
+                                ? 'bg-[#1668E3] text-white font-bold'
+                                : 'hover:bg-slate-100 text-slate-700'
+                            }`}
+                          >
+                            <div>
+                              <div>{st.name}</div>
+                              <div className={`text-[10px] ${st.id === activeStation.id ? 'text-blue-100' : 'text-slate-400'}`}>
+                                {st.address}
+                              </div>
+                            </div>
+                            {st.id === activeStation.id && <span className="text-[10px] bg-white text-[#1668E3] font-bold px-1.5 py-0.5 rounded-full">Active</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/10 text-white">
                     <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
                       <MapPin className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold flex items-center gap-1.5">
-                        <span>{activeStation.name}</span>
-                        <ChevronDown className="w-3.5 h-3.5 text-blue-200" />
-                      </div>
+                      <div className="text-sm font-bold">{activeStation.name}</div>
                       <div className="text-[11px] text-blue-200">{activeStation.city}, {activeStation.country}</div>
                     </div>
-                  </button>
-
-                  {stationDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white text-slate-900 rounded-xl border border-slate-200 shadow-2xl z-50 p-2 space-y-1">
-                      <div className="text-[10px] font-bold text-slate-400 px-3 py-1 uppercase">
-                        Changer de station active
-                      </div>
-                      {stations.map(st => (
-                        <button
-                          key={st.id}
-                          type="button"
-                          onClick={() => {
-                            store.setSelectedStation(st.id);
-                            setStationDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors ${
-                            st.id === selectedStationId
-                              ? 'bg-[#1668E3] text-white font-bold'
-                              : 'hover:bg-slate-100 text-slate-700'
-                          }`}
-                        >
-                          <div>
-                            <div>{st.name}</div>
-                            <div className={`text-[10px] ${st.id === selectedStationId ? 'text-blue-100' : 'text-slate-400'}`}>
-                              {st.address}
-                            </div>
-                          </div>
-                          {st.id === selectedStationId && <span className="text-[10px] bg-white text-[#1668E3] font-bold px-1.5 py-0.5 rounded-full">Active</span>}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white">
                     <Clock className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-white tracking-wide">{currentTime || '09:48'}</div>
-                    <div className="text-xs text-blue-200">{currentDate || 'Lun. 10 Nov. 2026'}</div>
+                    <div className="text-sm font-bold text-white tracking-wide">{currentTime || '--:--'}</div>
+                    <div className="text-xs text-blue-200">{currentDate}</div>
                   </div>
                 </div>
 
@@ -492,23 +507,30 @@ export const StaffLayout: React.FC = () => {
                 </div>
               </div>
 
-              {/* Station selector in mobile drawer */}
+              {/* Station indicator in mobile drawer */}
               <div className="p-2.5 rounded-xl bg-white/10 mb-4 text-xs">
                 <div className="text-[10px] text-blue-200 uppercase font-semibold mb-1 flex items-center gap-1">
                   <MapPin className="w-3 h-3 text-[#F7B928]" />
                   <span>Station active</span>
                 </div>
-                <select
-                  value={selectedStationId}
-                  onChange={e => store.setSelectedStation(e.target.value)}
-                  className="w-full bg-black/20 border border-white/20 rounded-lg p-1.5 text-xs text-white font-bold focus:outline-none"
-                >
-                  {stations.map(st => (
-                    <option key={st.id} value={st.id} className="bg-slate-900 text-white">
-                      {st.name} ({st.city})
-                    </option>
-                  ))}
-                </select>
+                {role === 'gerant' ? (
+                  <select
+                    value={activeStation.id}
+                    onChange={e => store.setSelectedStation(e.target.value)}
+                    aria-label="Changer de station active"
+                    className="w-full bg-black/20 border border-white/20 rounded-lg p-1.5 text-xs text-white font-bold focus:outline-none"
+                  >
+                    {stations.map(st => (
+                      <option key={st.id} value={st.id} className="bg-slate-900 text-white">
+                        {st.name} ({st.city})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="font-bold text-white px-1 py-0.5">
+                    {activeStation.name} ({activeStation.city})
+                  </div>
+                )}
               </div>
 
               {/* Navigation items */}
