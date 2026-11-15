@@ -13,12 +13,14 @@ import {
 
 export interface ProductStationAlternativesModalProps {
   product: Product | null;
+  highlightedStationId?: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export const ProductStationAlternativesModal: React.FC<ProductStationAlternativesModalProps> = ({
   product,
+  highlightedStationId,
   isOpen,
   onClose,
 }) => {
@@ -30,10 +32,11 @@ export const ProductStationAlternativesModal: React.FC<ProductStationAlternative
 
   if (!product) return null;
 
-  const currentStation = stations.find(s => s.id === selectedStationId) || stations[0];
+  const targetStationId = highlightedStationId || selectedStationId;
+  const currentStation = stations.find(s => s.id === targetStationId) || stations[0];
   const alternativeStations = stations.filter(
     s =>
-      s.id !== selectedStationId &&
+      s.id !== currentStation.id &&
       (s.status || 'active') === 'active' &&
       s.isOpen &&
       s.advancedSettings?.enableReservations !== false

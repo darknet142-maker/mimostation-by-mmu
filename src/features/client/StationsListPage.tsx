@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
 import { OPERATORS, resolveStationBranding } from '@/config/operators';
@@ -17,13 +17,35 @@ import {
 
 export const StationsListPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { stations, selectedStationId } = useAppStore(s => ({
     stations: s.stations,
     selectedStationId: s.selectedStationId,
   }));
 
+  const initialBrand = searchParams.get('brand') as OperatorId | null;
+  const validBrand = OPERATORS.some(o => o.id === initialBrand) ? initialBrand : null;
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [brandFilter, setBrandFilter] = useState<'all' | OperatorId>('all');
+  const [brandFilter, setBrandFilter] = useState<'all' | OperatorId>(validBrand || 'all');
+
+  useEffect(() => {
+    const param = searchParams.get('brand') as OperatorId | null;
+    if (param && OPERATORS.some(o => o.id === param)) {
+      setBrandFilter(param);
+    }
+  }, [searchParams]);
+
+  const handleBrandFilterChange = (next: 'all' | OperatorId) => {
+    setBrandFilter(next);
+    const nextParams = new URLSearchParams(searchParams);
+    if (next === 'all') {
+      nextParams.delete('brand');
+    } else {
+      nextParams.set('brand', next);
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
 
   const filteredStations = stations.filter(st => {
     const branding = resolveStationBranding(st);
@@ -56,7 +78,7 @@ export const StationsListPage: React.FC = () => {
       <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtrer par marque">
         <button
           type="button"
-          onClick={() => setBrandFilter('all')}
+          onClick={() => handleBrandFilterChange('all')}
           className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
             brandFilter === 'all'
               ? 'bg-[#0F172A] text-white'
@@ -71,7 +93,7 @@ export const StationsListPage: React.FC = () => {
             <button
               key={op.id}
               type="button"
-              onClick={() => setBrandFilter(op.id)}
+              onClick={() => handleBrandFilterChange(op.id)}
               className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                 isActive
                   ? 'border-[#1668E3] bg-blue-50 text-[#1668E3] shadow-xs'

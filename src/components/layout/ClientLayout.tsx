@@ -51,7 +51,11 @@ export const ClientLayout: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const isHomeRoute = location.pathname === '/';
   const currentStation = safeStations.find(s => s.id === selectedStationId) || safeStations[0];
+  const openStationsCount = safeStations.filter(
+    s => s.isOpen && (s.status || 'active') === 'active'
+  ).length;
   const safeAlerts = Array.isArray(alerts) ? alerts : [];
   const safeReservations = Array.isArray(reservations) ? reservations : [];
   const unreadAlertsCount = safeAlerts.filter(a => !a.isRead && a.audience === 'client').length;
@@ -100,41 +104,68 @@ export const ClientLayout: React.FC = () => {
             <BrandLogo mode="client" theme="dark" size="md" onClick={() => navigate('/')} />
           </div>
 
-          {/* Current Station Info Widget */}
-          <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-blue-200 uppercase tracking-wider flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[#F7B928]" />
-                Station en cours
-              </span>
-              {isClosed ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-200 bg-red-500/25 px-2 py-0.5 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                  Fermée
+          {/* Current Station or Global Network Widget */}
+          {isHomeRoute ? (
+            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-blue-200 uppercase tracking-wider flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#F7B928]" />
+                  Réseau National
                 </span>
-              ) : isMaintenance ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-200 bg-amber-500/25 px-2 py-0.5 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  Maintenance
-                </span>
-              ) : (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  {currentStation.isOpen24h ? 'Ouverte 24/7' : 'Ouverte'}
+                  {openStationsCount} ouvertes
                 </span>
-              )}
+              </div>
+              <div>
+                <h4 className="text-sm font-extrabold text-white">Multi-Enseignes Gabon</h4>
+                <p className="text-xs text-blue-100/80 mt-0.5">
+                  Aucune station imposée : explorez librement toutes les marques.
+                </p>
+              </div>
+              <div className="pt-2 flex items-center justify-between border-t border-white/10 text-xs">
+                <span className="text-blue-200">{safeStations.length} stations au total</span>
+                <Link to="/stations" className="text-[#F7B928] hover:underline font-bold text-[11px] flex items-center gap-0.5">
+                  Explorer <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
             </div>
-            <div>
-              <h4 className="text-sm font-extrabold text-white">{currentStation.name}</h4>
-              <p className="text-xs text-blue-100/80 mt-0.5">{currentStation.address}</p>
+          ) : (
+            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-blue-200 uppercase tracking-wider flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#F7B928]" />
+                  Station en cours
+                </span>
+                {isClosed ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-200 bg-red-500/25 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    Fermée
+                  </span>
+                ) : isMaintenance ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-200 bg-amber-500/25 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    Maintenance
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    {currentStation.isOpen24h ? 'Ouverte 24/7' : 'Ouverte'}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h4 className="text-sm font-extrabold text-white">{currentStation.name}</h4>
+                <p className="text-xs text-blue-100/80 mt-0.5">{currentStation.address}</p>
+              </div>
+              <div className="pt-2 flex items-center justify-between border-t border-white/10 text-xs">
+                <span className="text-blue-200">Distance : <strong className="text-white">{currentStation.distanceKm} km</strong></span>
+                <Link to="/stations" className="text-[#F7B928] hover:underline font-bold text-[11px] flex items-center gap-0.5">
+                  Changer <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
             </div>
-            <div className="pt-2 flex items-center justify-between border-t border-white/10 text-xs">
-              <span className="text-blue-200">Distance : <strong className="text-white">{currentStation.distanceKm} km</strong></span>
-              <Link to="/stations" className="text-[#F7B928] hover:underline font-bold text-[11px] flex items-center gap-0.5">
-                Changer <ChevronRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
+          )}
 
           {/* Navigation Links */}
           <nav className="space-y-1.5" aria-label="Navigation latérale desktop">
@@ -231,14 +262,23 @@ export const ClientLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Selected Station Indicator */}
+            {/* Selected Station or Network Indicator */}
             <Link
               to="/stations"
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-semibold transition-colors"
             >
               <MapPin className="w-4 h-4 text-[#1668E3]" />
-              <span>{currentStation.name}</span>
-              <span className="text-slate-400">({currentStation.distanceKm} km)</span>
+              {isHomeRoute ? (
+                <>
+                  <span>Réseau Multi-Stations</span>
+                  <span className="text-emerald-700 font-bold">({openStationsCount} ouvertes)</span>
+                </>
+              ) : (
+                <>
+                  <span>{currentStation.name}</span>
+                  <span className="text-slate-400">({currentStation.distanceKm} km)</span>
+                </>
+              )}
             </Link>
 
             {/* Notification Bell */}
