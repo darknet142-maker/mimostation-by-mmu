@@ -5,10 +5,10 @@ import { store } from '@/services/store';
 import { useAppStore } from '@/hooks/useAppStore';
 import { StaffRole } from '@/types';
 import { Button } from '@/components/ui/Button';
+import { BackButton } from '@/components/ui/BackButton';
 import { PinInput } from '@/components/ui/PinInput';
 import { Modal } from '@/components/ui/Modal';
 import {
-  ArrowLeft,
   Lock,
   ArrowRight,
   AlertCircle,
@@ -74,15 +74,14 @@ export const StaffPinLoginPage: React.FC = () => {
       {/* Responsive centered container */}
       <div className="w-full max-w-md md:max-w-xl lg:max-w-xl bg-white min-h-screen flex flex-col shadow-2xl relative">
         {/* Navy Header Bar (Screen 01B) */}
-        <header className="bg-[#0A285F] text-white px-4 py-3.5 flex items-center justify-between shadow-md">
-          <button
-            type="button"
-            onClick={() => navigate('/personnel')}
-            className="p-1 -ml-1 text-white hover:bg-white/10 rounded-full transition-colors flex items-center justify-center"
-            aria-label="Retour au choix du poste"
-          >
-            <ArrowLeft className="w-6 h-6 stroke-[2.5]" />
-          </button>
+        <header className="bg-[#0A285F] text-white px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-md">
+          <BackButton
+            fallbackTo="/personnel"
+            label="Postes"
+            ariaLabel="Retour au choix du poste"
+            variant="ghost-dark"
+            compactOnMobile
+          />
           <h1 className="text-base sm:text-lg font-bold text-white text-center flex-1 pr-6">
             Connexion
           </h1>

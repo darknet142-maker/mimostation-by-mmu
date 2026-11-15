@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { BackButton } from '@/components/ui/BackButton';
 import { SmartSearchBar } from '@/components/client/SmartSearchBar';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
@@ -11,7 +12,6 @@ import {
   QrCode,
   User,
   Bell,
-  ArrowLeft,
   Lock,
   ChevronRight,
   ShieldCheck,
@@ -63,16 +63,31 @@ export const ClientLayout: React.FC = () => {
   const isClosed = currentStation.status === 'closed' || !currentStation.isOpen;
   const isMaintenance = currentStation.status === 'maintenance';
 
-  // Determine if on subpage needing back arrow
+  // Determine if on subpage needing back arrow bar
   const isSubPage =
     location.pathname.startsWith('/stations/') ||
     location.pathname.includes('/reserver') ||
-    location.pathname.includes('/paiement');
+    location.pathname.includes('/paiement') ||
+    location.pathname === '/notifications';
+
+  const getClientBackFallback = (): string => {
+    const path = location.pathname;
+    if (path.includes('/reserver')) {
+      const stationSlug = path.split('/')[2];
+      return stationSlug ? `/stations/${stationSlug}` : '/stations';
+    }
+    if (path.startsWith('/stations/')) return '/stations';
+    if (path.includes('/paiement')) return '/reservations';
+    return '/';
+  };
+
+  const clientBackFallback = getClientBackFallback();
 
   const getPageTitle = () => {
     if (location.pathname.includes('/reserver')) return 'Réserver un produit';
     if (location.pathname.includes('/paiement')) return 'Paiement Mobile Money';
     if (location.pathname.startsWith('/stations/')) return 'Détails de la station';
+    if (location.pathname === '/notifications') return 'Notifications';
     return '';
   };
 
@@ -256,8 +271,11 @@ export const ClientLayout: React.FC = () => {
       {/* ================= MAIN CONTENT AREA ================= */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Desktop Top Header Bar (>= 1024px) */}
-        <header className="hidden lg:flex items-center justify-between px-8 py-3.5 bg-white border-b border-slate-200/80 sticky top-0 z-20 shadow-xs">
-          <div className="flex items-center gap-4 flex-1 max-w-xl">
+        <header className="hidden lg:flex items-center justify-between gap-4 px-8 py-3.5 bg-white border-b border-slate-200/80 sticky top-0 z-20 shadow-xs">
+          <div className="flex items-center gap-3 flex-1 max-w-2xl">
+            {!isHomeRoute && (
+              <BackButton fallbackTo={clientBackFallback} variant="pill-light" />
+            )}
             <SmartSearchBar mode="embedded" />
           </div>
 
@@ -309,23 +327,30 @@ export const ClientLayout: React.FC = () => {
         {/* Mobile Header Bar (< 1024px) */}
         <div className="lg:hidden w-full">
           {isSubPage ? (
-            <header className="sticky top-0 z-40 bg-[#0B3A82] text-white px-4 py-3.5 flex items-center justify-between shadow-md">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="p-1.5 -ml-1.5 rounded-full hover:bg-white/10 active:scale-95 transition-all text-white flex items-center justify-center"
-                aria-label="Retour"
-              >
-                <ArrowLeft className="w-6 h-6 stroke-[2.5]" />
-              </button>
+            <header className="sticky top-0 z-40 bg-[#0B3A82] text-white px-3 py-2.5 flex items-center justify-between shadow-md">
+              <BackButton
+                fallbackTo={clientBackFallback}
+                variant="ghost-dark"
+                compactOnMobile
+              />
               <h1 className="text-base sm:text-lg font-bold text-white text-center flex-1 pr-6 truncate">
                 {getPageTitle()}
               </h1>
               <div className="w-4" />
             </header>
           ) : (
-            <header className="sticky top-0 z-40 bg-[#0A285F] px-4 py-3 flex items-center justify-between shadow-md">
-              <BrandLogo mode="client" theme="dark" size="sm" onClick={() => navigate('/')} />
+            <header className="sticky top-0 z-40 bg-[#0A285F] px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-md">
+              <div className="flex items-center gap-1.5 min-w-0">
+                {!isHomeRoute && (
+                  <BackButton
+                    fallbackTo={clientBackFallback}
+                    variant="ghost-dark"
+                    compactOnMobile
+                    className="-ml-1"
+                  />
+                )}
+                <BrandLogo mode="client" theme="dark" size="sm" onClick={() => navigate('/')} />
+              </div>
               <div className="flex items-center gap-2">
                 <Link
                   to="/personnel"

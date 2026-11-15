@@ -20,6 +20,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { BackButton } from '@/components/ui/BackButton';
 import { ASSETS } from '@/config/assets';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
@@ -106,6 +107,9 @@ export const AdminLayout: React.FC = () => {
 
     return [...stationMatches, ...empMatches, ...pageMatches].slice(0, 8);
   }, [searchQuery, stations, employees, navLinks]);
+
+  const isAdminRoot = location.pathname === '/admin' || location.pathname === '/admin/dashboard';
+  const adminBackFallback = isAdminRoot ? '/personnel' : '/admin';
 
   const handleLogout = () => {
     store.logoutAdmin();
@@ -311,16 +315,22 @@ export const AdminLayout: React.FC = () => {
         {/* ================= MAIN CONTENT WRAPPER ================= */}
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
           {/* TOP HEADER BAR */}
-          <header className="sticky top-0 z-30 bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-3 flex-1 max-w-xl">
+          <header className="sticky top-0 z-30 bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-2xl">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100"
+                className="lg:hidden min-w-[44px] min-h-[44px] p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 flex items-center justify-center shrink-0"
                 aria-label="Ouvrir le menu"
               >
                 <Menu className="w-5 h-5" />
               </button>
+
+              <BackButton
+                fallbackTo={adminBackFallback}
+                variant="pill-light"
+                compactOnMobile
+              />
 
               {/* Global Admin Search Bar */}
               <div className="relative w-full">

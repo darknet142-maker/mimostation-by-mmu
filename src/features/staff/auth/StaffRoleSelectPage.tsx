@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROLE_DEFINITIONS } from '@/data/fixtures';
 import { ASSETS } from '@/config/assets';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { BackButton } from '@/components/ui/BackButton';
 import { Shield, ChevronRight } from 'lucide-react';
 
 export const StaffRoleSelectPage: React.FC = () => {
@@ -12,10 +13,18 @@ export const StaffRoleSelectPage: React.FC = () => {
     <div className="min-h-screen bg-[#0A285F] flex flex-col justify-between items-center">
       {/* Responsive centered container */}
       <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl bg-white min-h-screen flex flex-col shadow-2xl relative">
-        {/* Top Header with StationPro Logo */}
-        <div className="bg-[#0A285F] pt-6 pb-4 px-4 flex flex-col items-center text-center">
+        {/* Top Header with Back Button & StationPro Logo */}
+        <header className="bg-[#0A285F] pt-4 pb-4 px-4 flex items-center justify-between gap-2">
+          <BackButton
+            fallbackTo="/"
+            label="Accueil"
+            ariaLabel="Retour à l'espace client"
+            variant="header-dark"
+            compactOnMobile
+          />
           <BrandLogo theme="dark" mode="staff" size="md" />
-        </div>
+          <div className="w-[44px] sm:w-[88px] shrink-0" aria-hidden="true" />
+        </header>
 
         {/* 3D Gas Station Hero Banner (Screen 01A) */}
         <div className="relative w-full h-44 bg-gradient-to-b from-blue-300 to-blue-100 overflow-hidden shrink-0">

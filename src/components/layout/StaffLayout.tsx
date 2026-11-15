@@ -4,6 +4,7 @@ import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
 import { StaffRole } from '@/types';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { BackButton } from '@/components/ui/BackButton';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ASSETS } from '@/config/assets';
@@ -92,6 +93,9 @@ export const StaffLayout: React.FC = () => {
   }, []);
 
   const role: StaffRole = currentEmployee?.role || 'pompiste';
+  const isStaffRoot =
+    location.pathname === `/personnel/${role}` || location.pathname === `/personnel/${role}/`;
+  const staffBackFallback = isStaffRoot ? '/personnel' : `/personnel/${role}`;
 
   // Specific navigation items per role using official SVGs exclusively
   const getNavItems = (): NavItem[] => {
@@ -261,8 +265,9 @@ export const StaffLayout: React.FC = () => {
           {role === 'pompiste' ? (
             /* Pompiste Dedicated Header from Capture */
             <>
-              {/* Left: Pompiste en service */}
+              {/* Left: Pompiste en service + Retour */}
               <div className="flex items-center gap-4 relative z-10">
+                <BackButton fallbackTo={staffBackFallback} variant="header-dark" />
                 <div className="relative">
                   <img
                     src={currentEmployee?.avatar || ASSETS.avatars.pompiste}
@@ -312,8 +317,9 @@ export const StaffLayout: React.FC = () => {
           ) : (
             /* Standard Staff Header for Other Roles */
             <>
-              {/* User profile & status */}
+              {/* User profile & status + Retour */}
               <div className="flex items-center gap-4 relative z-10">
+                <BackButton fallbackTo={staffBackFallback} variant="header-dark" />
                 <div className="relative">
                   <img
                     src={currentEmployee?.avatar || ASSETS.avatars.pompiste}
@@ -436,16 +442,21 @@ export const StaffLayout: React.FC = () => {
         </header>
 
         {/* ================= MOBILE HEADER (< 1024px) ================= */}
-        <header className="lg:hidden sticky top-0 z-40 bg-[#0A285F] text-white px-4 py-3 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-3">
+        <header className="lg:hidden sticky top-0 z-40 bg-[#0A285F] text-white px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-md">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-white"
+              className="min-w-[44px] min-h-[44px] p-2 rounded-xl hover:bg-white/10 text-white flex items-center justify-center"
               aria-label="Ouvrir le menu"
             >
               <Menu className="w-6 h-6" />
             </button>
+            <BackButton
+              fallbackTo={staffBackFallback}
+              variant="ghost-dark"
+              compactOnMobile
+            />
             <BrandLogo theme="dark" mode="staff" size="sm" onClick={() => navigate(`/personnel/${role}`)} />
           </div>
 

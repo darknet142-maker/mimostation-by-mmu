@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
 import { StaffRole } from '@/types';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { ShieldCheck, Lock, Eye, EyeOff, ArrowLeft, KeyRound, AlertCircle } from 'lucide-react';
 
 interface StaffAuthGuardProps {
@@ -31,7 +32,7 @@ export const AdminAuthGuard: React.FC = () => {
   const { adminSession } = useAppStore(s => ({
     adminSession: s.adminSession,
   }));
-  const navigate = useNavigate();
+  const handleBack = useSafeBack('/');
 
   const [accessCode, setAccessCode] = useState('');
   const [showCode, setShowCode] = useState(false);
@@ -139,11 +140,11 @@ export const AdminAuthGuard: React.FC = () => {
 
         <button
           type="button"
-          onClick={() => navigate('/')}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold transition-colors"
+          onClick={handleBack}
+          className="w-full min-h-[44px] flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Retour au portail client
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+          Retour à l&apos;écran précédent
         </button>
       </div>
     </main>
