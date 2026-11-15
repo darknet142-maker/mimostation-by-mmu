@@ -6,6 +6,7 @@ import { StatusPill } from '@/components/ui/StatusPill';
 import { Button } from '@/components/ui/Button';
 import { ProductStationAlternativesModal } from '@/components/client/ProductStationAlternativesModal';
 import { StationCover } from '@/components/station/StationCover';
+import { HomeAdCarousel } from '@/components/client/HomeAdCarousel';
 import { ASSETS } from '@/config/assets';
 import { OPERATORS, resolveStationBranding } from '@/config/operators';
 import { Product, Station } from '@/types';
@@ -187,9 +188,16 @@ export const ClientHomePage: React.FC = () => {
   return (
     <div className="flex flex-col bg-[#F8FAFC] min-h-full pb-6">
       {/* =====================================================================
+          0. CARROUSEL PUBLICITAIRE FULL HD (1920×1080) DES STATIONS PARTENAIRES
+         ===================================================================== */}
+      <div className="px-4 sm:px-6 pt-4">
+        <HomeAdCarousel />
+      </div>
+
+      {/* =====================================================================
           1. PRÉSENTATION GLOBALE MULTI-ENSEIGNES (AUCUNE STATION PRÉ-IMPOSÉE)
          ===================================================================== */}
-      <section className="bg-gradient-to-br from-[#061838] via-[#0B3A82] to-[#1668E3] text-white px-4 sm:px-6 pt-5 pb-6 rounded-b-3xl shadow-lg space-y-5">
+      <section className="mx-4 sm:mx-6 mt-4 bg-gradient-to-br from-[#061838] via-[#0B3A82] to-[#1668E3] text-white px-4 sm:px-6 py-5 sm:py-6 rounded-2xl sm:rounded-3xl shadow-lg space-y-5">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-[11px] font-bold">

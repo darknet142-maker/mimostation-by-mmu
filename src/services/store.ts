@@ -16,6 +16,7 @@ import {
   AuditActionType,
   NetworkConfig,
   AdminSession,
+  HomeAdBannerSlide,
 } from '@/types';
 import {
   INITIAL_STATIONS,
@@ -31,6 +32,7 @@ import {
   INITIAL_DAILY_METRICS,
   INITIAL_AUDIT_LOGS,
   INITIAL_NETWORK_CONFIG,
+  INITIAL_HOME_AD_BANNERS,
   ROLE_DEFINITIONS,
 } from '@/data/fixtures';
 import { sha256Hex } from '@/utils/crypto';
@@ -58,6 +60,7 @@ export interface AppState {
   alerts: AlertNotification[];
   dailyMetrics: DailyMetrics;
   auditLogs: AuditLogEntry[];
+  homeAdBanners: HomeAdBannerSlide[];
 }
 
 const STORAGE_KEY = 'stationpro_state_v5';
@@ -182,6 +185,10 @@ function loadInitialState(): AppState {
           : seed.alerts,
         dailyMetrics: parsed.dailyMetrics || seed.dailyMetrics,
         auditLogs: Array.isArray(parsed.auditLogs) && parsed.auditLogs.length > 0 ? parsed.auditLogs : seed.auditLogs,
+        homeAdBanners:
+          Array.isArray(parsed.homeAdBanners) && parsed.homeAdBanners.length > 0
+            ? parsed.homeAdBanners
+            : seed.homeAdBanners,
       };
     }
   } catch (e) {
@@ -214,6 +221,7 @@ function getSeedState(): AppState {
     alerts: INITIAL_ALERTS,
     dailyMetrics: INITIAL_DAILY_METRICS,
     auditLogs: INITIAL_AUDIT_LOGS,
+    homeAdBanners: INITIAL_HOME_AD_BANNERS,
   };
 }
 
@@ -1454,6 +1462,101 @@ export const store = {
     state = {
       ...state,
       pumps: state.pumps.filter(p => p.id !== pumpId),
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+  },
+
+  // --- SUPER ADMIN ADVERTISING CAROUSEL (1920x1080) ---
+  addHomeAdBanner(
+    input: Omit<HomeAdBannerSlide, 'id' | 'createdAt'>,
+    authorName = 'Admin Global'
+  ) {
+    const newSlide: HomeAdBannerSlide = {
+      ...input,
+      id: `ad-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    const auditEntry = createAuditLog(
+      'CONFIGURATION_RESEAU',
+      'station',
+      newSlide.stationId,
+      newSlide.stationName,
+      `Publication bannière publicitaire 1920×1080 "${newSlide.title}" pour ${newSlide.stationName}`,
+      'Aucune bannière',
+      newSlide.title,
+      authorName,
+      'Super Administrateur'
+    );
+    state = {
+      ...state,
+      homeAdBanners: [newSlide, ...state.homeAdBanners],
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return newSlide;
+  },
+
+  updateHomeAdBanner(
+    id: string,
+    updates: Partial<HomeAdBannerSlide>,
+    authorName = 'Admin Global'
+  ) {
+    const current = state.homeAdBanners.find(b => b.id === id);
+    if (!current) return;
+    const updatedSlide = { ...current, ...updates };
+    const auditEntry = createAuditLog(
+      'CONFIGURATION_RESEAU',
+      'station',
+      updatedSlide.stationId,
+      updatedSlide.stationName,
+      `Mise à jour publicité accueil "${updatedSlide.title}" (Statut: ${
+        updatedSlide.isActive ? 'Active' : 'En pause'
+      })`,
+      current.title,
+      updatedSlide.title,
+      authorName,
+      'Super Administrateur'
+    );
+    state = {
+      ...state,
+      homeAdBanners: state.homeAdBanners.map(b => (b.id === id ? updatedSlide : b)),
+      auditLogs: [auditEntry, ...state.auditLogs],
+    };
+    notify();
+    return updatedSlide;
+  },
+
+  moveHomeAdBanner(id: string, direction: 'up' | 'down') {
+    const idx = state.homeAdBanners.findIndex(b => b.id === id);
+    if (idx === -1) return;
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= state.homeAdBanners.length) return;
+    const copy = [...state.homeAdBanners];
+    const tmp = copy[idx];
+    copy[idx] = copy[targetIdx];
+    copy[targetIdx] = tmp;
+    state = { ...state, homeAdBanners: copy };
+    notify();
+  },
+
+  deleteHomeAdBanner(id: string, authorName = 'Admin Global') {
+    const current = state.homeAdBanners.find(b => b.id === id);
+    if (!current) return;
+    const auditEntry = createAuditLog(
+      'CONFIGURATION_RESEAU',
+      'station',
+      current.stationId,
+      current.stationName,
+      `Retrait de la publicité accueil "${current.title}" (${current.stationName})`,
+      current.title,
+      'Supprimée',
+      authorName,
+      'Super Administrateur'
+    );
+    state = {
+      ...state,
+      homeAdBanners: state.homeAdBanners.filter(b => b.id !== id),
       auditLogs: [auditEntry, ...state.auditLogs],
     };
     notify();

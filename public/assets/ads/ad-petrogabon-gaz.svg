@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="bg-petro" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#03281A" />
+      <stop offset="60%" stop-color="#006A40" />
+      <stop offset="100%" stop-color="#008751" />
+    </linearGradient>
+    <radialGradient id="glow-petro" cx="78%" cy="50%" r="48%">
+      <stop offset="0%" stop-color="#FFC107" stop-opacity="0.32" />
+      <stop offset="100%" stop-color="#FFC107" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg-petro)" />
+  <rect width="1920" height="1080" fill="url(#glow-petro)" />
+  <!-- Gas Cylinder Hero Card -->
+  <g transform="translate(1220 165)">
+    <rect x="0" y="0" width="560" height="740" rx="52" fill="#032015" opacity="0.52" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="3" />
+    <g transform="translate(145 100)">
+      <path d="M85 45 Q135 20 185 45 L185 85 L85 85 Z" fill="#FFC107" />
+      <rect x="115" y="10" width="40" height="45" rx="10" fill="#E2E8F0" />
+      <rect x="35" y="85" width="200" height="295" rx="75" fill="#10B981" stroke="#FFFFFF" stroke-width="10" />
+      <rect x="65" y="175" width="140" height="105" rx="22" fill="#FFFFFF" />
+      <text x="135" y="228" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="38" fill="#006A40">6 KG</text>
+      <text x="135" y="264" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="22" fill="#0F172A">BUTANE</text>
+    </g>
+    <text x="280" y="555" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="44" fill="#FFFFFF">STOCK GARANTI 30 MIN</text>
+    <rect x="115" y="595" width="330" height="72" rx="36" fill="#FFC107" />
+    <text x="280" y="643" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="36" fill="#032015">6 000 FCFA</text>
+  </g>
+  <!-- Editorial Copy Left -->
+  <g transform="translate(120 165)">
+    <rect x="0" y="0" width="410" height="62" rx="31" fill="#FFC107" />
+    <text x="205" y="41" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="24" fill="#032015">PETROGABON • FRANCEVILLE &amp; OWENDO</text>
+    <text x="0" y="185" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="88" fill="#FFFFFF">Bouteille Gaz 6 kg</text>
+    <text x="0" y="285" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="88" fill="#FFC107">bloquée en 1 clic</text>
+    <text x="0" y="390" font-family="Inter, Arial, sans-serif" font-weight="500" font-size="36" fill="#ECFDF5">Ne vous déplacez plus pour rien : vérifiez le stock en direct,</text>
+    <text x="0" y="445" font-family="Inter, Arial, sans-serif" font-weight="500" font-size="36" fill="#ECFDF5">réservez votre bouteille et retirez-la en priorité avec votre QR.</text>
+    <rect x="0" y="540" width="530" height="128" rx="28" fill="#FFFFFF" opacity="0.14" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="2" />
+    <text x="38" y="597" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="30" fill="#FFFFFF">Station Mbolo &amp; Owendo Port</text>
+    <text x="38" y="643" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="26" fill="#FFC107">Paiement Airtel Money, Moov Money ou Caisse</text>
+  </g>
+</svg>

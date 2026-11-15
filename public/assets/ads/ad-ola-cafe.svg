@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="bg-ola" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#041E3B" />
+      <stop offset="60%" stop-color="#00529B" />
+      <stop offset="100%" stop-color="#FF5A00" />
+    </linearGradient>
+    <radialGradient id="glow-ola" cx="80%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#FF9E44" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#FF9E44" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg-ola)" />
+  <rect width="1920" height="1080" fill="url(#glow-ola)" />
+  <circle cx="1550" cy="540" r="380" fill="#FFFFFF" opacity="0.06" />
+  <circle cx="1550" cy="540" r="270" fill="#FF5A00" opacity="0.18" />
+  <!-- Coffee & Croissant Hero Card -->
+  <g transform="translate(1220 200)">
+    <rect x="0" y="0" width="560" height="680" rx="52" fill="#061D3A" opacity="0.58" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="3" />
+    <!-- Cup Vector -->
+    <g transform="translate(140 130)">
+      <path d="M55 45 Q65 10 90 0 M120 45 Q135 5 155 0 M185 45 Q195 10 215 0" stroke="#F7B928" stroke-width="10" stroke-linecap="round" fill="none" />
+      <rect x="40" y="75" width="200" height="185" rx="34" fill="#FFFFFF" />
+      <path d="M240 110 L285 110 Q315 110 315 145 L315 170 Q315 205 285 205 L240 205" stroke="#FFFFFF" stroke-width="22" fill="none" />
+      <rect x="20" y="275" width="240" height="24" rx="12" fill="#F7B928" />
+      <text x="140" y="182" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="42" fill="#00529B">OLA</text>
+    </g>
+    <text x="280" y="510" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="46" fill="#FFFFFF">COMBO MATIN</text>
+    <text x="280" y="566" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="30" fill="#FDE68A">Expresso + Croissant Pur Beurre</text>
+    <rect x="115" y="592" width="330" height="64" rx="32" fill="#FF5A00" />
+    <text x="280" y="635" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="32" fill="#FFFFFF">1 800 FCFA SEULEMENT</text>
+  </g>
+  <!-- Editorial Copy Left -->
+  <g transform="translate(120 155)">
+    <rect x="0" y="0" width="390" height="62" rx="31" fill="#FFFFFF" />
+    <text x="195" y="41" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="24" fill="#00529B">OLA ENERGY • STATION ÉTOILE</text>
+    <text x="0" y="185" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="88" fill="#FFFFFF">Votre pause Café</text>
+    <text x="0" y="285" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="88" fill="#F7B928">prête avant l&apos;arrivée</text>
+    <text x="0" y="390" font-family="Inter, Arial, sans-serif" font-weight="500" font-size="36" fill="#E2E8F0">Commandez au comptoir Click &amp; Collect pendant votre plein.</text>
+    <text x="0" y="445" font-family="Inter, Arial, sans-serif" font-weight="500" font-size="36" fill="#E2E8F0">Viennoiseries chaudes, sandwichs et jus locaux dès 06h00.</text>
+    <rect x="0" y="535" width="480" height="128" rx="28" fill="#FFFFFF" opacity="0.14" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="2" />
+    <text x="38" y="592" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="30" fill="#FFFFFF">Boulevard Léon Mba • Port-Gentil</text>
+    <text x="38" y="638" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="26" fill="#F7B928">Service express 24h/24 — Retrait QR Comptoir</text>
+  </g>
+</svg>

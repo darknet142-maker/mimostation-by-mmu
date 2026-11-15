@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="bg-tot" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E070A" />
+      <stop offset="55%" stop-color="#8A1118" />
+      <stop offset="100%" stop-color="#ED1C24" />
+    </linearGradient>
+    <radialGradient id="glow-tot" cx="76%" cy="48%" r="48%">
+      <stop offset="0%" stop-color="#FFC107" stop-opacity="0.34" />
+      <stop offset="100%" stop-color="#FFC107" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg-tot)" />
+  <rect width="1920" height="1080" fill="url(#glow-tot)" />
+  <g opacity="0.10" stroke="#FFFFFF" stroke-width="2">
+    <path d="M0 860 L1920 620 M0 940 L1920 700 M0 1020 L1920 780" />
+  </g>
+  <!-- Right Side Hero Visual: Oil & Fuel Canopy Motif -->
+  <g transform="translate(1160 150)">
+    <rect x="40" y="60" width="600" height="720" rx="56" fill="#0F172A" opacity="0.45" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="3" />
+    <circle cx="340" cy="360" r="210" fill="#FFC107" opacity="0.18" />
+    <g transform="translate(215 170)">
+      <path d="M60 80 L190 80 L225 140 L225 380 Q225 410 195 410 L55 410 Q25 410 25 380 L25 140 Z" fill="#F7B928" />
+      <rect x="68" y="25" width="114" height="55" rx="14" fill="#FFFFFF" />
+      <rect x="52" y="190" width="146" height="135" rx="20" fill="#0F172A" />
+      <text x="125" y="252" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="38" fill="#F7B928">QUARTZ</text>
+      <text x="125" y="294" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="24" fill="#FFFFFF">5W-40 PRO</text>
+    </g>
+    <rect x="120" y="625" width="440" height="82" rx="41" fill="#FFFFFF" />
+    <text x="340" y="677" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="32" fill="#8A1118">VIDANGE OFFERTE*</text>
+  </g>
+  <!-- Left Editorial Poster Block -->
+  <g transform="translate(120 150)">
+    <rect x="0" y="0" width="380" height="62" rx="31" fill="#F7B928" />
+    <text x="190" y="41" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="24" fill="#0F172A">PROMO STATION LIBERTÉ</text>
+    <text x="0" y="185" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="88" fill="#FFFFFF">Protégez votre</text>
+    <text x="0" y="285" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="88" fill="#F7B928">moteur dès aujourd&apos;hui</text>
+    <text x="0" y="385" font-family="Inter, Arial, sans-serif" font-weight="500" font-size="36" fill="#F8FAFC" opacity="0.92">Pour l&apos;achat d&apos;un bidon TotalEnergies Quartz 5W-40,</text>
+    <text x="0" y="438" font-family="Inter, Arial, sans-serif" font-weight="500" font-size="36" fill="#F8FAFC" opacity="0.92">contrôle des 5 niveaux + pression pneus inclus en piste.</text>
+    <rect x="0" y="530" width="520" height="140" rx="28" fill="#FFFFFF" opacity="0.14" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="2" />
+    <text x="42" y="592" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="32" fill="#FFFFFF">TotalEnergies • Avenue de l&apos;Indépendance</text>
+    <text x="42" y="640" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="26" fill="#F7B928">À partir de 18 500 FCFA — Réservation QR en ligne</text>
+  </g>
+</svg>

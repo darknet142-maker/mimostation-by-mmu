@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
-import { Station, NetworkConfig, OperatorId } from '@/types';
-import { OPERATORS, getOperator, resolveStationBranding, readSvgFile } from '@/config/operators';
+import { Station, NetworkConfig, OperatorId, HomeAdBannerSlide } from '@/types';
+import {
+  OPERATORS,
+  getOperator,
+  resolveStationBranding,
+  readSvgFile,
+  readAdBannerImageFile,
+} from '@/config/operators';
 import { StationCover } from '@/components/station/StationCover';
 import {
   StationCanopyPreview,
@@ -17,15 +24,39 @@ import {
   Upload,
   AlertCircle,
   RotateCcw,
+  Megaphone,
+  ArrowUp,
+  ArrowDown,
+  Trash2,
+  Eye,
+  EyeOff,
+  ImagePlus,
 } from 'lucide-react';
 
 export const AdminCustomizationPage: React.FC = () => {
-  const { stations, networkConfig } = useAppStore(s => ({
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { stations, networkConfig, homeAdBanners, adminSession } = useAppStore(s => ({
     stations: s.stations || [],
     networkConfig: s.networkConfig,
+    homeAdBanners: s.homeAdBanners || [],
+    adminSession: s.adminSession,
   }));
 
-  const [activeTab, setActiveTab] = useState<'station' | 'platform'>('station');
+  const initialTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<'station' | 'platform' | 'ads'>(
+    initialTab === 'ads' ? 'ads' : initialTab === 'platform' ? 'platform' : 'station'
+  );
+
+  const handleTabChange = (tab: 'station' | 'platform' | 'ads') => {
+    setActiveTab(tab);
+    setSvgError(null);
+    if (tab === 'station') {
+      searchParams.delete('tab');
+    } else {
+      searchParams.set('tab', tab);
+    }
+    setSearchParams(searchParams, { replace: true });
+  };
 
   const [selectedStationId, setSelectedStationId] = useState<string>(
     stations[0]?.id || 'station-liberte'
@@ -69,6 +100,84 @@ export const AdminCustomizationPage: React.FC = () => {
   );
 
   const [savedSuccess, setSavedSuccess] = useState<string | null>(null);
+
+  // Régie Pub Accueil (Full HD 1920x1080) states
+  const [adStationId, setAdStationId] = useState<string>(stations[0]?.id || 'station-liberte');
+  const [adTitle, setAdTitle] = useState<string>('');
+  const [adSubtitle, setAdSubtitle] = useState<string>('');
+  const [adBadgeLabel, setAdBadgeLabel] = useState<string>('Offre Station');
+  const [adCtaLabel, setAdCtaLabel] = useState<string>("Voir l'offre");
+  const [adTargetSection, setAdTargetSection] = useState<HomeAdBannerSlide['targetSection']>('overview');
+  const [adImageUrl, setAdImageUrl] = useState<string>('');
+  const [adIsActive, setAdIsActive] = useState<boolean>(true);
+  const [isProcessingAdImage, setIsProcessingAdImage] = useState<boolean>(false);
+  const [confirmDeleteAdId, setConfirmDeleteAdId] = useState<string | null>(null);
+
+  const authorDisplayName = adminSession?.name || 'Super Admin';
+
+  const handleAdImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSvgError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsProcessingAdImage(true);
+    try {
+      const processedUrl = await readAdBannerImageFile(file);
+      setAdImageUrl(processedUrl);
+    } catch (err) {
+      setSvgError(
+        err instanceof Error
+          ? err.message
+          : "Impossible de traiter le visuel publicitaire (1920x1080)."
+      );
+    } finally {
+      setIsProcessingAdImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handlePublishAdBanner = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSvgError(null);
+
+    if (!adImageUrl.trim()) {
+      setSvgError(
+        'Importez une image publicitaire (JPG, PNG, WebP, SVG) ou renseignez une URL 1920×1080 avant de publier.'
+      );
+      return;
+    }
+    if (!adTitle.trim()) {
+      setSvgError('Le titre de la campagne publicitaire est obligatoire.');
+      return;
+    }
+
+    const station = stations.find(s => s.id === adStationId);
+    store.addHomeAdBanner(
+      {
+        stationId: adStationId,
+        stationName: station?.name || 'Station partenaire',
+        title: adTitle.trim(),
+        subtitle: adSubtitle.trim() || undefined,
+        imageUrl: adImageUrl.trim(),
+        badgeLabel: adBadgeLabel.trim() || 'Offre Station',
+        ctaLabel: adCtaLabel.trim() || "Voir l'offre",
+        targetSection: adTargetSection || 'overview',
+        isActive: adIsActive,
+      },
+      authorDisplayName
+    );
+
+    setAdTitle('');
+    setAdSubtitle('');
+    setAdImageUrl('');
+    setAdBadgeLabel('Offre Station');
+    setAdCtaLabel("Voir l'offre");
+    setAdTargetSection('overview');
+    setAdIsActive(true);
+    setSavedSuccess(
+      `Publicité Full HD de "${station?.name || adStationId}" ajoutée au carrousel d'accueil !`
+    );
+    setTimeout(() => setSavedSuccess(null), 4000);
+  };
 
   const handleSelectStation = (id: string) => {
     setSelectedStationId(id);
@@ -208,10 +317,10 @@ export const AdminCustomizationPage: React.FC = () => {
       </div>
 
       {/* Navigation Subtabs */}
-      <div className="flex items-center gap-3 border-b border-slate-200 pb-2">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-b border-slate-200 pb-2">
         <button
           type="button"
-          onClick={() => setActiveTab('station')}
+          onClick={() => handleTabChange('station')}
           className={`pb-2 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
             activeTab === 'station'
               ? 'border-blue-600 text-blue-600'
@@ -222,7 +331,22 @@ export const AdminCustomizationPage: React.FC = () => {
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab('platform')}
+          onClick={() => handleTabChange('ads')}
+          className={`pb-2 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all inline-flex items-center gap-1.5 ${
+            activeTab === 'ads'
+              ? 'border-amber-500 text-amber-700'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Megaphone className="w-4 h-4 shrink-0" aria-hidden="true" />
+          <span>Régie Pub Accueil (1920×1080)</span>
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800">
+            {homeAdBanners.filter(b => b.isActive).length}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleTabChange('platform')}
           className={`pb-2 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
             activeTab === 'platform'
               ? 'border-blue-600 text-blue-600'
@@ -254,7 +378,7 @@ export const AdminCustomizationPage: React.FC = () => {
       )}
 
       {/* VIEW 1: STATION LEVEL CUSTOMIZATION */}
-      {activeTab === 'station' ? (
+      {activeTab === 'station' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left: Interactive Controls */}
           <div className="lg:col-span-5 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-5">
@@ -518,8 +642,421 @@ export const AdminCustomizationPage: React.FC = () => {
             />
           </div>
         </div>
-      ) : (
-        /* VIEW 2: GLOBAL 360° PLATFORM BRANDING & WHITE-LABEL */
+      )}
+
+      {/* VIEW 2: RÉGIE PUB ACCUEIL (FULL HD 1920×1080 STATION ADS) */}
+      {activeTab === 'ads' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left: Upload & Configure Ad Submitted by Station */}
+          <form
+            onSubmit={handlePublishAdBanner}
+            className="lg:col-span-5 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4"
+          >
+            <div className="pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2 text-amber-600 mb-1">
+                <Megaphone className="w-4 h-4" aria-hidden="true" />
+                <span className="text-[11px] font-extrabold uppercase tracking-wider">
+                  Carrousel Infini Accueil Client
+                </span>
+              </div>
+              <h2 className="text-base font-black text-[#0A1D37]">
+                Ajouter une publicité station (1920×1080)
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Importez les visuels envoyés par chaque station. Tout visuel JPG, PNG ou WebP est normalisé au format Full HD 16:9 (1920×1080).
+              </p>
+            </div>
+
+            {/* Station Émettrice */}
+            <div className="space-y-1.5">
+              <label htmlFor="ad-station-select" className="text-xs font-bold text-slate-700 block">
+                Station émettrice de la publicité
+              </label>
+              <select
+                id="ad-station-select"
+                value={adStationId}
+                onChange={e => setAdStationId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800"
+              >
+                {stations.map(st => (
+                  <option key={st.id} value={st.id}>
+                    {st.name} — {st.city}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Upload Full HD 1920x1080 Image OR External URL */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700">
+                  Visuel Full HD 1920×1080 (envoyé par la station)
+                </span>
+                {adImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setAdImageUrl('')}
+                    className="text-[11px] font-bold text-red-600 hover:underline"
+                  >
+                    Retirer l&apos;image
+                  </button>
+                )}
+              </div>
+
+              <label className="w-full min-h-[44px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 bg-blue-50/40 hover:bg-blue-50 text-xs font-bold text-blue-700 cursor-pointer transition-colors">
+                <ImagePlus className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>
+                  {isProcessingAdImage
+                    ? 'Optimisation Full HD 1920×1080 en cours...'
+                    : 'Importer une image (JPG, PNG, WebP, SVG)'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif,.svg,image/svg+xml"
+                  onChange={handleAdImageUpload}
+                  disabled={isProcessingAdImage}
+                  className="hidden"
+                />
+              </label>
+
+              <div>
+                <label htmlFor="ad-image-url" className="text-[11px] font-semibold text-slate-500 block mb-1">
+                  Ou coller une URL d&apos;image Full HD (https://... ou /assets/ads/...)
+                </label>
+                <input
+                  id="ad-image-url"
+                  type="text"
+                  value={adImageUrl}
+                  onChange={e => setAdImageUrl(e.target.value)}
+                  placeholder="/assets/ads/ad-total-quartz.svg"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              {/* Live 16:9 Full HD Preview Card */}
+              <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-[16/9] relative">
+                {adImageUrl ? (
+                  <>
+                    <img
+                      src={adImageUrl}
+                      alt="Aperçu Full HD 1920x1080"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-slate-950/90 to-transparent pointer-events-none" />
+                    <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black">
+                      {adBadgeLabel || 'Offre Station'}
+                    </div>
+                    <div className="absolute inset-x-3 bottom-2.5 text-white">
+                      <p className="text-xs font-black truncate">
+                        {adTitle || 'Titre de votre campagne publicitaire'}
+                      </p>
+                      {adSubtitle && (
+                        <p className="text-[10px] text-slate-200 truncate">{adSubtitle}</p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                    <span className="text-xs font-bold text-slate-300">Aperçu ratio 16:9 (1920×1080 px)</span>
+                    <span className="text-[10px] text-slate-500 mt-1">
+                      Chargez un visuel publicitaire pour prévisualiser l&apos;affichage client
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Ad Metadata */}
+            <div className="space-y-3 text-xs">
+              <div>
+                <label htmlFor="ad-title" className="font-bold text-slate-700 block mb-1">
+                  Titre principal de la bannière *
+                </label>
+                <input
+                  id="ad-title"
+                  type="text"
+                  required
+                  value={adTitle}
+                  onChange={e => setAdTitle(e.target.value)}
+                  placeholder="Ex: Vidange Quartz & Filtres -15% ce week-end"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="ad-subtitle" className="font-bold text-slate-700 block mb-1">
+                  Message / Accroche de la station
+                </label>
+                <input
+                  id="ad-subtitle"
+                  type="text"
+                  value={adSubtitle}
+                  onChange={e => setAdSubtitle(e.target.value)}
+                  placeholder="Ex: Offre valable en boutique et sur réservation QR..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="ad-badge" className="font-bold text-slate-700 block mb-1">
+                    Badge promotionnel
+                  </label>
+                  <input
+                    id="ad-badge"
+                    type="text"
+                    value={adBadgeLabel}
+                    onChange={e => setAdBadgeLabel(e.target.value)}
+                    placeholder="Offre Station"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="ad-cta" className="font-bold text-slate-700 block mb-1">
+                    Texte du bouton
+                  </label>
+                  <input
+                    id="ad-cta"
+                    type="text"
+                    value={adCtaLabel}
+                    onChange={e => setAdCtaLabel(e.target.value)}
+                    placeholder="Voir l'offre"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="ad-target-section" className="font-bold text-slate-700 block mb-1">
+                  Destination au clic sur le bouton
+                </label>
+                <select
+                  id="ad-target-section"
+                  value={adTargetSection || 'overview'}
+                  onChange={e =>
+                    setAdTargetSection(e.target.value as HomeAdBannerSlide['targetSection'])
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-800"
+                >
+                  <option value="overview">Fiche complète de la station</option>
+                  <option value="pompes">Pompes &amp; Cuves carburant</option>
+                  <option value="boutique">Boutique &amp; Inventaire</option>
+                  <option value="cafe">Espace Café &amp; Restauration</option>
+                  <option value="lavage">Centre de Lavage</option>
+                </select>
+              </div>
+
+              <label className="flex items-center gap-2 pt-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={adIsActive}
+                  onChange={e => setAdIsActive(e.target.checked)}
+                  className="w-4 h-4 rounded text-blue-600"
+                />
+                <span className="font-semibold text-slate-700">
+                  Diffuser immédiatement sur le carrousel d&apos;accueil
+                </span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isProcessingAdImage}
+              className="w-full min-h-[44px] py-2.5 rounded-xl bg-[#0B4DB3] hover:bg-blue-800 disabled:opacity-60 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <Upload className="w-4 h-4" aria-hidden="true" />
+              <span>Publier sur le carrousel d&apos;accueil</span>
+            </button>
+          </form>
+
+          {/* Right: Ordered Queue of Active & Paused Station Banners */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm sm:text-base font-black text-[#0A1D37]">
+                  Campagnes diffusées en boucle infinie ({homeAdBanners.length})
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Ordre de passage automatique sur l&apos;écran d&apos;accueil client • Format Full HD 1920×1080
+                </p>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-extrabold">
+                {homeAdBanners.filter(b => b.isActive).length} active(s)
+              </span>
+            </div>
+
+            {homeAdBanners.length === 0 ? (
+              <div className="bg-white rounded-2xl p-10 border border-dashed border-slate-300 text-center space-y-2">
+                <Megaphone className="w-8 h-8 text-slate-300 mx-auto" aria-hidden="true" />
+                <p className="text-sm font-bold text-slate-700">Aucune publicité configurée</p>
+                <p className="text-xs text-slate-500">
+                  Utilisez le formulaire à gauche pour ajouter la première bannière 1920×1080 d&apos;une station.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {homeAdBanners.map((banner, index) => {
+                  const station = stations.find(s => s.id === banner.stationId);
+                  const branding = station ? resolveStationBranding(station) : null;
+                  const isConfirmingDelete = confirmDeleteAdId === banner.id;
+
+                  return (
+                    <article
+                      key={banner.id}
+                      className={`bg-white rounded-2xl p-4 border shadow-xs transition-all flex flex-col sm:flex-row gap-4 ${
+                        banner.isActive
+                          ? 'border-slate-200'
+                          : 'border-slate-200 bg-slate-50/70 opacity-80'
+                      }`}
+                    >
+                      {/* 16:9 Thumbnail */}
+                      <div className="w-full sm:w-52 shrink-0 aspect-[16/9] rounded-xl overflow-hidden bg-slate-900 border border-slate-200 relative">
+                        <img
+                          src={banner.imageUrl}
+                          alt={banner.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-slate-950/80 text-white text-[10px] font-black">
+                          #{index + 1} • 16:9
+                        </span>
+                      </div>
+
+                      {/* Metadata + Controls */}
+                      <div className="flex-1 min-w-0 flex flex-col justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              {branding && (
+                                <img
+                                  src={branding.logo}
+                                  alt=""
+                                  className="w-4 h-4 object-contain rounded shrink-0"
+                                />
+                              )}
+                              <span className="text-[11px] font-extrabold text-blue-700 truncate">
+                                {station?.name || banner.stationName}
+                              </span>
+                            </div>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                banner.isActive
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : 'bg-slate-200 text-slate-700'
+                              }`}
+                            >
+                              {banner.isActive ? 'En diffusion' : 'En pause'}
+                            </span>
+                          </div>
+
+                          <h3 className="text-sm font-black text-slate-900 line-clamp-1">
+                            {banner.title}
+                          </h3>
+                          {banner.subtitle && (
+                            <p className="text-xs text-slate-500 line-clamp-2">{banner.subtitle}</p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-2 pt-1 text-[10px] font-bold text-slate-500">
+                            <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                              {banner.badgeLabel || 'Offre Station'}
+                            </span>
+                            <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                              Bouton : {banner.ctaLabel || "Voir l'offre"} →{' '}
+                              {banner.targetSection || 'overview'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions Bar */}
+                        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={() => store.moveHomeAdBanner(banner.id, 'up')}
+                            aria-label={`Monter ${banner.title}`}
+                            className="min-h-[36px] px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 inline-flex items-center gap-1"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span>Monter</span>
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === homeAdBanners.length - 1}
+                            onClick={() => store.moveHomeAdBanner(banner.id, 'down')}
+                            aria-label={`Descendre ${banner.title}`}
+                            className="min-h-[36px] px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 inline-flex items-center gap-1"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span>Descendre</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              store.updateHomeAdBanner(
+                                banner.id,
+                                { isActive: !banner.isActive },
+                                authorDisplayName
+                              )
+                            }
+                            className="min-h-[36px] px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1"
+                          >
+                            {banner.isActive ? (
+                              <>
+                                <EyeOff className="w-3.5 h-3.5" aria-hidden="true" />
+                                <span>Pause</span>
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+                                <span>Activer</span>
+                              </>
+                            )}
+                          </button>
+
+                          {isConfirmingDelete ? (
+                            <div className="ml-auto flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  store.deleteHomeAdBanner(banner.id, authorDisplayName);
+                                  setConfirmDeleteAdId(null);
+                                  setSavedSuccess(`Publicité "${banner.title}" supprimée.`);
+                                  setTimeout(() => setSavedSuccess(null), 3000);
+                                }}
+                                className="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold"
+                              >
+                                Confirmer
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteAdId(null)}
+                                className="min-h-[36px] px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                              >
+                                Annuler
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteAdId(banner.id)}
+                              aria-label={`Supprimer ${banner.title}`}
+                              className="ml-auto min-h-[36px] px-2.5 py-1.5 rounded-lg border border-red-200 text-xs font-bold text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                              <span>Supprimer</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 3: GLOBAL 360° PLATFORM BRANDING & WHITE-LABEL */}
+      {activeTab === 'platform' && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-4xl space-y-6">
           <div className="pb-4 border-b border-slate-100">
             <h2 className="text-base sm:text-lg font-bold text-[#0A1D37]">

@@ -144,3 +144,77 @@ export const readSvgFile = (file: File): Promise<string> =>
     reader.onerror = () => reject(new Error('Lecture du fichier impossible.'));
     reader.readAsText(file);
   });
+
+/**
+ * Lit une image publicitaire (JPG, PNG, WebP, AVIF ou SVG) envoyée par une station
+ * pour le carrousel d'accueil Full HD (1920x1080).
+ * Redimensionne proprement les rasters au format 1920x1080 (object-cover) compressé.
+ */
+export const readAdBannerImageFile = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
+    if (isSvg) {
+      readSvgFile(file).then(resolve).catch(reject);
+      return;
+    }
+
+    const allowedRaster = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+    if (!allowedRaster.includes(file.type) && !/\.(jpe?g|png|webp|avif)$/i.test(file.name)) {
+      reject(new Error('Format non supporté. Utilisez JPG, PNG, WebP, AVIF ou SVG (1920×1080).'));
+      return;
+    }
+
+    if (file.size > 12 * 1024 * 1024) {
+      reject(new Error('Fichier image trop volumineux (12 Mo maximum).'));
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const targetW = 1920;
+        const targetH = 1080;
+        const canvas = document.createElement('canvas');
+        canvas.width = targetW;
+        canvas.height = targetH;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('Impossible de traiter l’image dans le navigateur.'));
+          return;
+        }
+
+        // Cover-fit 16:9 (1920x1080 Full HD)
+        const srcRatio = img.width / Math.max(1, img.height);
+        const dstRatio = targetW / targetH;
+        let sx = 0;
+        let sy = 0;
+        let sw = img.width;
+        let sh = img.height;
+        if (srcRatio > dstRatio) {
+          sw = img.height * dstRatio;
+          sx = (img.width - sw) / 2;
+        } else if (srcRatio < dstRatio) {
+          sh = img.width / dstRatio;
+          sy = (img.height - sh) / 2;
+        }
+
+        ctx.fillStyle = '#0A1D37';
+        ctx.fillRect(0, 0, targetW, targetH);
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
+
+        const dataUrl = canvas.toDataURL('image/webp', 0.84);
+        URL.revokeObjectURL(objectUrl);
+        resolve(dataUrl);
+      } catch {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('Échec de conversion au format Full HD 1920×1080.'));
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Image illisible ou corrompue.'));
+    };
+    img.src = objectUrl;
+  });

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="bg-wash" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06253A" />
+      <stop offset="55%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#0EA5E9" />
+    </linearGradient>
+    <radialGradient id="glow-wash" cx="76%" cy="45%" r="48%">
+      <stop offset="0%" stop-color="#E0F2FE" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#E0F2FE" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg-wash)" />
+  <rect width="1920" height="1080" fill="url(#glow-wash)" />
+  <!-- Sparkle Bubbles -->
+  <g fill="#FFFFFF" opacity="0.16">
+    <circle cx="1320" cy="210" r="48" />
+    <circle cx="1710" cy="280" r="68" />
+    <circle cx="1640" cy="830" r="54" />
+    <circle cx="1220" cy="790" r="38" />
+  </g>
+  <!-- Wash Bay Feature Card -->
+  <g transform="translate(1200 185)">
+    <rect x="0" y="0" width="580" height="700" rx="52" fill="#062238" opacity="0.52" stroke="#FFFFFF" stroke-opacity="0.26" stroke-width="3" />
+    <g transform="translate(115 125)">
+      <path d="M40 220 L85 115 Q105 80 155 80 L255 80 Q305 80 325 115 L360 220 Z" fill="#FFFFFF" />
+      <rect x="20" y="210" width="360" height="90" rx="34" fill="#E0F2FE" />
+      <circle cx="100" cy="300" r="44" fill="#0F172A" stroke="#38BDF8" stroke-width="10" />
+      <circle cx="300" cy="300" r="44" fill="#0F172A" stroke="#38BDF8" stroke-width="10" />
+      <polygon points="340,25 352,55 385,60 356,76 365,108 338,85 308,98 322,68 300,45 330,50" fill="#F7B928" />
+    </g>
+    <text x="290" y="510" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="44" fill="#FFFFFF">LAVAGE VIP 4×4 &amp; CHÂSSIS</text>
+    <text x="290" y="562" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="28" fill="#BAE6FD">Haute pression + Cire hydrophobe + Habitacle</text>
+    <rect x="120" y="596" width="340" height="68" rx="34" fill="#F7B928" />
+    <text x="290" y="641" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="32" fill="#0F172A">RÉSERVER CRÉNEAU</text>
+  </g>
+  <!-- Editorial Copy Left -->
+  <g transform="translate(120 165)">
+    <rect x="0" y="0" width="380" height="62" rx="31" fill="#FFFFFF" />
+    <text x="190" y="41" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="24" fill="#0284C7">BAIE LAVAGE • STATION AKANDA</text>
+    <text x="0" y="185" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="88" fill="#FFFFFF">Véhicule impeccable</text>
+    <text x="0" y="285" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="88" fill="#F7B928">en 30 minutes chrono</text>
+    <text x="0" y="390" font-family="Inter, Arial, sans-serif" font-weight="500" font-size="36" fill="#E0F2FE">Choisissez votre gabarit (Berline, SUV/4×4, Utilitaire),</text>
+    <text x="0" y="445" font-family="Inter, Arial, sans-serif" font-weight="500" font-size="36" fill="#E0F2FE">bloquez votre passage en baie et évitez toute attente.</text>
+    <rect x="0" y="540" width="530" height="128" rx="28" fill="#FFFFFF" opacity="0.16" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="2" />
+    <text x="38" y="597" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="30" fill="#FFFFFF">Boulevard Triomphal • Akanda</text>
+    <text x="38" y="643" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="26" fill="#F7B928">Express dès 3 000 FCFA • Pass QR immédiat</text>
+  </g>
+</svg>

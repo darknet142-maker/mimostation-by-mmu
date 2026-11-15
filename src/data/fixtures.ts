@@ -13,6 +13,7 @@ import {
   DailyMetrics,
   AuditLogEntry,
   NetworkConfig,
+  HomeAdBannerSlide,
 } from '@/types';
 import { ASSETS } from '@/config/assets';
 
@@ -1177,7 +1178,63 @@ export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
     oldValue: '25 000 L',
     newValue: '34 000 L',
     details: 'Dépotage citerne N°CT-4428. Volumétrie contrôlée conforme.',
+    previousHash: undefined,
     hash: 'SHA256:88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589',
+  },
+];
+
+export const INITIAL_HOME_AD_BANNERS: HomeAdBannerSlide[] = [
+  {
+    id: 'ad-slide-liberte-quartz',
+    stationId: 'station-liberte',
+    stationName: 'Station Liberté',
+    title: 'Vidange & Lubrifiants Quartz 5W-40 — Contrôle 5 niveaux offert',
+    subtitle: 'Offre transmise par Station Liberté • Avenue de l’Indépendance',
+    badgeLabel: 'Promo Station • Liberté',
+    imageUrl: '/assets/ads/ad-total-quartz.svg',
+    ctaLabel: 'Voir la Boutique',
+    targetSection: 'boutique',
+    isActive: true,
+    createdAt: '2026-11-15T08:00:00.000Z',
+  },
+  {
+    id: 'ad-slide-etoile-cafe',
+    stationId: 'station-etoile',
+    stationName: 'Station Étoile',
+    title: 'Combo Matin Café Expresso + Croissant Pur Beurre à 1 800 FCFA',
+    subtitle: 'Offre transmise par Station Étoile • Port-Gentil',
+    badgeLabel: 'Espace Café • OLA Energy',
+    imageUrl: '/assets/ads/ad-ola-cafe.svg',
+    ctaLabel: 'Commander au Comptoir',
+    targetSection: 'cafe',
+    isActive: true,
+    createdAt: '2026-11-15T08:15:00.000Z',
+  },
+  {
+    id: 'ad-slide-mbolo-gaz',
+    stationId: 'station-mbolo',
+    stationName: 'Station Mbolo',
+    title: 'Bouteilles Gaz Butane 6 kg garanties en ligne pendant 30 min',
+    subtitle: 'Offre transmise par Station Mbolo • Franceville',
+    badgeLabel: 'Stock Gaz Direct',
+    imageUrl: '/assets/ads/ad-petrogabon-gaz.svg',
+    ctaLabel: 'Réserver Gaz 6 kg',
+    targetSection: 'boutique',
+    isActive: true,
+    createdAt: '2026-11-15T08:30:00.000Z',
+  },
+  {
+    id: 'ad-slide-akanda-lavage',
+    stationId: 'station-akanda',
+    stationName: 'Station Akanda',
+    title: 'Lavage VIP 4×4 + Châssis Haute Pression sur créneau prioritaire',
+    subtitle: 'Offre transmise par Station Akanda • Boulevard Triomphal',
+    badgeLabel: 'Lavage Auto • Akanda',
+    imageUrl: '/assets/ads/ad-akanda-lavage.svg',
+    ctaLabel: 'Réserver mon Lavage',
+    targetSection: 'lavage',
+    isActive: true,
+    createdAt: '2026-11-15T08:45:00.000Z',
   },
 ];
 

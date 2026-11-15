@@ -281,6 +281,20 @@ export interface AdminSession {
   loginAt: string;
 }
 
+export interface HomeAdBannerSlide {
+  id: string;
+  stationId: string;
+  stationName: string;
+  title: string;
+  subtitle?: string;
+  badgeLabel?: string;
+  imageUrl: string;
+  ctaLabel?: string;
+  targetSection?: 'overview' | 'pompes' | 'boutique' | 'cafe' | 'lavage';
+  isActive: boolean;
+  createdAt: string;
+}
+
 export interface DailyMetrics {
   fuelRevenueFCFA: number;
   boutiqueRevenueFCFA: number;
