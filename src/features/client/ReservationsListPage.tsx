@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Modal } from '@/components/ui/Modal';
 import { QRCodeCanvas } from '@/components/ui/QRCodeCanvas';
+import { ASSETS } from '@/config/assets';
+import { resolveStationBranding } from '@/config/operators';
 import { Reservation } from '@/types';
 import {
   Calendar,
@@ -17,12 +19,20 @@ import {
 
 export const ReservationsListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { reservations } = useAppStore(s => ({
+  const { reservations, products, stations } = useAppStore(s => ({
     reservations: s.reservations,
+    products: s.products,
+    stations: s.stations,
   }));
 
   const [selectedResForQr, setSelectedResForQr] = useState<Reservation | null>(null);
   const [resToCancel, setResToCancel] = useState<Reservation | null>(null);
+
+  const getProductImage = (res: Reservation): string => {
+    if (res.productImage) return res.productImage;
+    const matched = products.find(p => p.id === res.productId);
+    return matched?.image || ASSETS.official.services.panier;
+  };
 
   const getStatusBadge = (status: Reservation['status']) => {
     switch (status) {
@@ -90,66 +100,99 @@ export const ReservationsListPage: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {reservations.map(res => (
-            <div
-              key={res.id}
-              className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-extrabold text-[#1668E3]">
-                      {res.code}
-                    </span>
-                    {getStatusBadge(res.status)}
+          {reservations.map(res => {
+            const productImg = getProductImage(res);
+            const stationObj = stations.find(s => s.id === res.stationId);
+            const stationBrand = stationObj ? resolveStationBranding(stationObj) : null;
+
+            return (
+              <div
+                key={res.id}
+                className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3.5"
+              >
+                {/* Header: Large visual Product Image + Name + Price + Status */}
+                <div className="flex items-start gap-3.5">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#F8FAFC] border border-slate-200 p-2 flex items-center justify-center shrink-0">
+                    <img
+                      src={productImg}
+                      alt={res.productName}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
-                  <h3 className="text-sm font-bold text-[#0F172A] mt-1">
-                    {res.productName} ({res.quantity} {res.unit})
-                  </h3>
-                </div>
-                <div className="text-right">
-                  <span className="text-sm font-extrabold text-[#0B3A82]">
-                    {new Intl.NumberFormat('fr-FR').format(res.totalFCFA)} FCFA
-                  </span>
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  <span>{res.stationName}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  <span>30 min validité</span>
-                </div>
-              </div>
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      {getStatusBadge(res.status)}
+                      <span className="font-mono text-[11px] font-extrabold text-[#1668E3] bg-blue-50 px-2 py-0.5 rounded-md">
+                        {res.code}
+                      </span>
+                    </div>
 
-              <div className="flex gap-2 pt-1">
-                <Button
-                  variant="soft-blue"
-                  size="sm"
-                  fullWidth
-                  icon={<QrCode className="w-4 h-4" />}
-                  onClick={() => setSelectedResForQr(res)}
-                >
-                  Afficher QR
-                </Button>
+                    <h3 className="text-base font-extrabold text-[#0F172A] leading-snug">
+                      {res.productName}
+                    </h3>
 
-                {res.status === 'pending' || res.status === 'awaiting_payment' ? (
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg">
+                        Quantité : {res.quantity} {res.unit}
+                      </span>
+                      <span className="text-base font-black text-[#0B3A82]">
+                        {new Intl.NumberFormat('fr-FR').format(res.totalFCFA)} FCFA
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Station Brand + Validity Row */}
+                <div className="flex items-center justify-between gap-2 text-xs text-slate-600 pt-2.5 border-t border-slate-100">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {stationBrand ? (
+                      <img
+                        src={stationBrand.logo}
+                        alt={stationBrand.operator?.name || res.stationName}
+                        className="w-5 h-5 rounded object-contain bg-white border border-slate-200 p-0.5 shrink-0"
+                      />
+                    ) : (
+                      <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                    )}
+                    <span className="font-bold text-slate-800 truncate">
+                      {stationBrand?.operator ? `${stationBrand.operator.name} • ` : ''}
+                      {res.stationName}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0 font-semibold text-slate-500">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <span>30 min</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-0.5">
                   <Button
-                    variant="ghost"
+                    variant="soft-blue"
                     size="sm"
-                    className="text-red-600 hover:bg-red-50"
-                    icon={<Ban className="w-4 h-4" />}
-                    onClick={() => setResToCancel(res)}
+                    fullWidth
+                    icon={<QrCode className="w-4 h-4" />}
+                    onClick={() => setSelectedResForQr(res)}
                   >
-                    Annuler
+                    Afficher QR
                   </Button>
-                ) : null}
+
+                  {res.status === 'pending' || res.status === 'awaiting_payment' ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600 hover:bg-red-50"
+                      icon={<Ban className="w-4 h-4" />}
+                      onClick={() => setResToCancel(res)}
+                    >
+                      Annuler
+                    </Button>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -164,11 +207,20 @@ export const ReservationsListPage: React.FC = () => {
         >
           <div className="flex flex-col items-center text-center space-y-4">
             <QRCodeCanvas value={selectedResForQr.code} size={200} />
-            <div>
-              <h4 className="font-bold text-slate-900">{selectedResForQr.productName}</h4>
-              <p className="text-xs text-slate-500">
-                {selectedResForQr.quantity} {selectedResForQr.unit} • {selectedResForQr.stationName}
-              </p>
+            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-3 w-full text-left">
+              <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1.5 flex items-center justify-center shrink-0">
+                <img
+                  src={getProductImage(selectedResForQr)}
+                  alt={selectedResForQr.productName}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-sm text-slate-900">{selectedResForQr.productName}</h4>
+                <p className="text-xs font-semibold text-slate-600">
+                  {selectedResForQr.quantity} {selectedResForQr.unit} • {selectedResForQr.stationName}
+                </p>
+              </div>
             </div>
             <p className="text-xs text-slate-500 bg-blue-50 p-3 rounded-xl border border-blue-100">
               Présentez ce QR Code au personnel de la station pour finaliser votre retrait.

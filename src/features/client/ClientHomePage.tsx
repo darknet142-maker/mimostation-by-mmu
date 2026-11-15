@@ -166,28 +166,54 @@ export const ClientHomePage: React.FC = () => {
               <div className="text-xs font-bold text-slate-400 px-3 py-1 uppercase">
                 Choisir une station
               </div>
-              {stations.map(st => (
-                <button
-                  key={st.id}
-                  type="button"
-                  onClick={() => {
-                    store.setSelectedStation(st.id);
-                    setViewMode('station');
-                    setStationDropdownOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${
-                    st.id === selectedStationId
-                      ? 'bg-blue-50 text-[#1668E3] font-bold'
-                      : 'hover:bg-slate-50 text-slate-700'
-                  }`}
-                >
-                  <div>
-                    <div>{st.name}</div>
-                    <div className="text-xs text-slate-400">{st.distanceKm} km • {st.address}</div>
-                  </div>
-                  {st.id === selectedStationId && <span className="text-xs bg-[#10B981] text-white px-2 py-0.5 rounded-full">Actuelle</span>}
-                </button>
-              ))}
+              {stations.map(st => {
+                const stBrand = resolveStationBranding(st);
+                return (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => {
+                      store.setSelectedStation(st.id);
+                      setViewMode('station');
+                      setStationDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2.5 ${
+                      st.id === selectedStationId
+                        ? 'bg-blue-50 text-[#1668E3] font-bold'
+                        : 'hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={stBrand.logo}
+                        alt=""
+                        className="w-7 h-7 rounded-lg bg-white border border-slate-200 p-1 object-contain shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate">{st.name}</span>
+                          {stBrand.operator && (
+                            <span
+                              className="text-[9px] font-extrabold px-1.5 py-0.5 rounded text-white shrink-0"
+                              style={{ backgroundColor: stBrand.primaryColor }}
+                            >
+                              {stBrand.operator.name}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-400 truncate">
+                          {st.distanceKm} km • {st.address}
+                        </div>
+                      </div>
+                    </div>
+                    {st.id === selectedStationId && (
+                      <span className="text-xs bg-[#10B981] text-white px-2 py-0.5 rounded-full shrink-0">
+                        Actuelle
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
               <div className="border-t border-slate-100 pt-1">
                 <button
                   type="button"

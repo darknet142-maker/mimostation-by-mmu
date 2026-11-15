@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { QRCodeCanvas } from '@/components/ui/QRCodeCanvas';
 import { Button } from '@/components/ui/Button';
+import { ASSETS } from '@/config/assets';
 import { QrCode, Clock } from 'lucide-react';
 
 export const QrPage: React.FC = () => {
   const navigate = useNavigate();
-  const { reservations } = useAppStore(s => ({
+  const { reservations, products } = useAppStore(s => ({
     reservations: s.reservations,
+    products: s.products,
   }));
 
   const activeReservations = reservations.filter(
@@ -56,11 +58,26 @@ export const QrPage: React.FC = () => {
 
               <QRCodeCanvas value={res.code} size={160} />
 
-              <div>
-                <h3 className="text-base font-bold text-[#0F172A]">{res.productName}</h3>
-                <p className="text-xs text-slate-500">
-                  {res.quantity} {res.unit} • {res.stationName}
-                </p>
+              <div className="flex items-center gap-3 w-full bg-slate-50 rounded-2xl p-3 border border-slate-100 text-left">
+                <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1.5 flex items-center justify-center shrink-0">
+                  <img
+                    src={
+                      res.productImage ||
+                      products.find(p => p.id === res.productId)?.image ||
+                      ASSETS.official.services.panier
+                    }
+                    alt={res.productName}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-base font-extrabold text-[#0F172A] truncate">
+                    {res.productName}
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-600">
+                    {res.quantity} {res.unit} • {res.stationName}
+                  </p>
+                </div>
               </div>
 
               <div className="w-full flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">

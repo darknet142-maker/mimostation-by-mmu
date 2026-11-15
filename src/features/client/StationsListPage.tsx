@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/hooks/useAppStore';
 import { store } from '@/services/store';
+import { OPERATORS, resolveStationBranding } from '@/config/operators';
+import { OperatorId } from '@/types';
 import {
   MapPin,
   Search,
@@ -21,13 +23,20 @@ export const StationsListPage: React.FC = () => {
   }));
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [brandFilter, setBrandFilter] = useState<'all' | OperatorId>('all');
 
-  const filteredStations = stations.filter(
-    st =>
+  const filteredStations = stations.filter(st => {
+    const branding = resolveStationBranding(st);
+    const brandName = branding.operator?.name.toLowerCase() || '';
+    const matchesSearch =
       st.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       st.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      st.city.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      st.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      brandName.includes(searchQuery.toLowerCase());
+    const matchesBrand =
+      brandFilter === 'all' || branding.operator?.id === brandFilter;
+    return matchesSearch && matchesBrand;
+  });
 
   return (
     <div className="p-4 space-y-4 bg-white min-h-full">
@@ -38,9 +47,42 @@ export const StationsListPage: React.FC = () => {
           type="text"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Rechercher une station, un quartier..."
+          placeholder="Rechercher une station, une marque (Total, OLA, PetroGabon, Engen)..."
           className="w-full pl-10 pr-4 py-2.5 bg-[#F1F5F9] rounded-xl text-sm border-0 focus:ring-2 focus:ring-[#1668E3] focus:outline-none"
         />
+      </div>
+
+      {/* Brand / Enseigne Filter Bar */}
+      <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtrer par marque">
+        <button
+          type="button"
+          onClick={() => setBrandFilter('all')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+            brandFilter === 'all'
+              ? 'bg-[#0F172A] text-white'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          Toutes les marques
+        </button>
+        {OPERATORS.map(op => {
+          const isActive = brandFilter === op.id;
+          return (
+            <button
+              key={op.id}
+              type="button"
+              onClick={() => setBrandFilter(op.id)}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                isActive
+                  ? 'border-[#1668E3] bg-blue-50 text-[#1668E3] shadow-xs'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <img src={op.logo} alt="" className="w-4 h-4 object-contain" />
+              <span>{op.name}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Stations List: 1 col on mobile, 2 cols on tablet/desktop */}
@@ -54,6 +96,8 @@ export const StationsListPage: React.FC = () => {
 
         {filteredStations.map(st => {
           const isSelected = st.id === selectedStationId;
+          const branding = resolveStationBranding(st);
+          const brandName = branding.operator?.name || 'Réseau StationPro';
           const handleOpenStation = () => {
             store.setSelectedStation(st.id);
             navigate(`/stations/${st.id}`);
@@ -73,19 +117,37 @@ export const StationsListPage: React.FC = () => {
                   onClick={handleOpenStation}
                   className="flex-1 flex items-start gap-3 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1668E3]"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1668E3] flex items-center justify-center shrink-0">
-                    <MapPin className="w-5 h-5 fill-[#1668E3]" />
+                  <div
+                    className="w-12 h-12 rounded-xl bg-white border-2 flex items-center justify-center p-1.5 shrink-0 shadow-xs"
+                    style={{ borderColor: branding.primaryColor }}
+                  >
+                    <img
+                      src={branding.logo}
+                      alt={`Logo ${brandName}`}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-[#0F172A]">{st.name}</h3>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                      <span
+                        className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md text-white"
+                        style={{ backgroundColor: branding.primaryColor }}
+                      >
+                        {brandName}
+                      </span>
                       {isSelected && (
                         <span className="text-[10px] font-bold bg-[#1668E3] text-white px-2 py-0.5 rounded-full">
                           Ma station
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">{st.address}</p>
+                    <h3 className="text-sm font-extrabold text-[#0F172A] leading-tight">
+                      {st.name}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1 truncate">
+                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="truncate">{st.address}</span>
+                    </p>
                   </div>
                 </button>
 

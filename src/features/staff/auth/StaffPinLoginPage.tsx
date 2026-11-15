@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ROLE_DEFINITIONS } from '@/data/fixtures';
 import { store } from '@/services/store';
@@ -35,6 +35,11 @@ export const StaffPinLoginPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
   const [scannerModalOpen, setScannerModalOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    setPin('');
+    setErrorMsg('');
+  }, [role]);
 
   const handleLogin = (pinToUse = pin) => {
     const cleanPin = pinToUse.replace(/\s+/g, '');
@@ -156,11 +161,12 @@ export const StaffPinLoginPage: React.FC = () => {
                   onClick={() => {
                     setPin(roleDef.defaultPin);
                     setErrorMsg('');
+                    handleLogin(roleDef.defaultPin);
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-[11px] font-bold transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-bold transition-colors"
                 >
                   <KeyRound className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Pré-remplir PIN Démo ({roleDef.defaultPin})</span>
+                  <span>Tester en 1 clic — PIN Démo ({roleDef.defaultPin})</span>
                 </button>
               </div>
 

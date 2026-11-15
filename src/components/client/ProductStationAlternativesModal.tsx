@@ -6,8 +6,8 @@ import { store } from '@/services/store';
 import { Modal } from '@/components/ui/Modal';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { Button } from '@/components/ui/Button';
+import { resolveStationBranding } from '@/config/operators';
 import {
-  MapPin,
   Calendar,
 } from 'lucide-react';
 
@@ -96,32 +96,54 @@ export const ProductStationAlternativesModal: React.FC<ProductStationAlternative
           </div>
 
           <div className="p-4 rounded-2xl border-2 border-[#1668E3] bg-[#F7FAFF] shadow-xs flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#1668E3] flex items-center justify-center shrink-0">
-                <MapPin className="w-5 h-5 fill-[#1668E3]" />
-              </div>
-              <div>
-                <h5 className="text-sm font-bold text-[#0F172A]">{currentStation.name}</h5>
-                <p className="text-xs text-slate-500">{currentStation.address}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[11px] font-bold text-[#1668E3]">{currentStation.distanceKm} km</span>
-                  <span className="text-slate-300">•</span>
-                  <span
-                    className={`text-[11px] font-semibold ${
-                      stockStatus === 'rupture'
-                        ? 'text-rose-600'
-                        : stockStatus === 'stock-faible'
-                        ? 'text-amber-600'
-                        : 'text-emerald-600'
-                    }`}
+            {(() => {
+              const curBrand = resolveStationBranding(currentStation);
+              return (
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-11 h-11 rounded-xl bg-white border-2 p-1.5 flex items-center justify-center shrink-0"
+                    style={{ borderColor: curBrand.primaryColor }}
                   >
-                    {stockStatus === 'rupture'
-                      ? 'Rupture de stock'
-                      : `En stock (${product.stockQuantity})`}
-                  </span>
+                    <img
+                      src={curBrand.logo}
+                      alt={curBrand.operator?.name || currentStation.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {curBrand.operator && (
+                        <span
+                          className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded text-white"
+                          style={{ backgroundColor: curBrand.primaryColor }}
+                        >
+                          {curBrand.operator.name}
+                        </span>
+                      )}
+                      <h5 className="text-sm font-bold text-[#0F172A]">{currentStation.name}</h5>
+                    </div>
+                    <p className="text-xs text-slate-500">{currentStation.address}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[11px] font-bold text-[#1668E3]">{currentStation.distanceKm} km</span>
+                      <span className="text-slate-300">•</span>
+                      <span
+                        className={`text-[11px] font-semibold ${
+                          stockStatus === 'rupture'
+                            ? 'text-rose-600'
+                            : stockStatus === 'stock-faible'
+                            ? 'text-amber-600'
+                            : 'text-emerald-600'
+                        }`}
+                      >
+                        {stockStatus === 'rupture'
+                          ? 'Rupture de stock'
+                          : `En stock (${product.stockQuantity})`}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             <Button
               variant="yellow"
@@ -147,37 +169,57 @@ export const ProductStationAlternativesModal: React.FC<ProductStationAlternative
           </div>
 
           <div className="space-y-2">
-            {alternativeStations.map(altStation => (
-              <div
-                key={altStation.id}
-                className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-xs transition-all flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <h5 className="text-xs font-bold text-[#0F172A] truncate">
-                      {altStation.name}
-                    </h5>
-                    <p className="text-[11px] text-slate-500 truncate">{altStation.address}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-bold text-slate-700">{altStation.distanceKm} km</span>
-                      <span className="text-slate-300">•</span>
-                      <StatusPill type="disponible" size="sm" label="Ouverte" />
+            {alternativeStations.map(altStation => {
+              const altBrand = resolveStationBranding(altStation);
+              return (
+                <div
+                  key={altStation.id}
+                  className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-xs transition-all flex items-center justify-between gap-2"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="w-10 h-10 rounded-xl bg-white border p-1.5 flex items-center justify-center shrink-0"
+                      style={{ borderColor: altBrand.primaryColor }}
+                    >
+                      <img
+                        src={altBrand.logo}
+                        alt={altBrand.operator?.name || altStation.name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {altBrand.operator && (
+                          <span
+                            className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded text-white shrink-0"
+                            style={{ backgroundColor: altBrand.primaryColor }}
+                          >
+                            {altBrand.operator.name}
+                          </span>
+                        )}
+                        <h5 className="text-xs font-bold text-[#0F172A] truncate">
+                          {altStation.name}
+                        </h5>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate">{altStation.address}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-bold text-slate-700">{altStation.distanceKm} km</span>
+                        <span className="text-slate-300">•</span>
+                        <StatusPill type="disponible" size="sm" label="Ouverte" />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <Button
-                  variant="outline-blue"
-                  size="sm"
-                  onClick={() => handleSelectStationAndReserve(altStation)}
-                >
-                  Choisir cette station
-                </Button>
-              </div>
-            ))}
+                  <Button
+                    variant="outline-blue"
+                    size="sm"
+                    onClick={() => handleSelectStationAndReserve(altStation)}
+                  >
+                    Choisir cette station
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -127,7 +127,20 @@ function loadInitialState(): AppState {
         networkConfig: parsed.networkConfig ? { ...seed.networkConfig, ...parsed.networkConfig } : seed.networkConfig,
         stations: finalStations,
         selectedStationId: parsed.selectedStationId || seed.selectedStationId,
-        employees: Array.isArray(parsed.employees) && parsed.employees.length > 0 ? parsed.employees : seed.employees,
+        employees: (() => {
+          if (!Array.isArray(parsed.employees) || parsed.employees.length === 0) {
+            return seed.employees;
+          }
+          const patched = parsed.employees.map((e: Employee) =>
+            e.id === 'emp-4' && e.pin === '3310' && e.role === 'pompiste'
+              ? seed.employees.find(se => se.id === 'emp-4') || e
+              : e
+          );
+          const missingSeed = seed.employees.filter(
+            se => !patched.some((e: Employee) => e.id === se.id)
+          );
+          return [...patched, ...missingSeed];
+        })(),
         currentEmployee: parsed.currentEmployee ?? null,
         adminSession: parsed.adminSession ?? null,
         products:
@@ -428,28 +441,56 @@ export const store = {
     const roleDef = ROLE_DEFINITIONS.find(r => r.role === role);
     if (!roleDef) return { success: false, message: 'Rôle inconnu' };
 
-    const lockKey = `staff:${role}:${stationId || 'any'}`;
+    const cleanPin = pin.trim();
+    const targetStationId = stationId || state.selectedStationId || state.stations[0]?.id || 'station-liberte';
+    const lockKey = `staff:${role}:${targetStationId}`;
     const lockMsg = checkLockout(lockKey);
     if (lockMsg) return { success: false, message: lockMsg };
 
-    const matchingEmployees = state.employees.filter(
-      e => e.role === role && (!stationId || e.stationId === stationId)
+    // 1. Exact station + role + pin match
+    let matched = state.employees.find(
+      e => e.role === role && e.pin === cleanPin && e.stationId === targetStationId
     );
-    const matched = matchingEmployees.find(e => e.pin === pin);
+
+    // 2. Fallback: employee with matching role & pin on the network (allows multi-station demo testing)
+    if (!matched) {
+      const networkMatch = state.employees.find(e => e.role === role && e.pin === cleanPin);
+      if (networkMatch) {
+        matched = { ...networkMatch, stationId: targetStationId };
+      }
+    }
+
+    // 3. Fallback: official demo PIN for the requested role on any station
+    if (!matched && cleanPin === roleDef.defaultPin) {
+      matched = {
+        id: `emp-demo-${role}`,
+        name: roleDef.defaultEmployeeName,
+        role: roleDef.role,
+        title: roleDef.title,
+        subtitle: roleDef.subtitle,
+        avatar: roleDef.avatar,
+        status: 'active',
+        stationId: targetStationId,
+        pin: roleDef.defaultPin,
+      };
+    }
 
     if (matched) {
       clearAttempts(lockKey);
       state = {
         ...state,
         currentEmployee: matched,
-        selectedStationId: matched.stationId || state.selectedStationId,
+        selectedStationId: targetStationId,
       };
       notify();
       return { success: true };
     }
 
     recordFailedAttempt(lockKey);
-    return { success: false, message: 'Code PIN incorrect. Vérifiez votre badge ou saisissez à nouveau.' };
+    return {
+      success: false,
+      message: `Code PIN incorrect. PIN démo pour ${roleDef.title} : ${roleDef.defaultPin}`,
+    };
   },
 
   logout() {
