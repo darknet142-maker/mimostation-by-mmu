@@ -21,6 +21,9 @@ import {
   Navigation,
   ChevronRight,
   Calendar,
+  Phone,
+  Clock,
+  Smartphone,
 } from 'lucide-react';
 
 export const StationDetailPage: React.FC = () => {
@@ -186,12 +189,92 @@ export const StationDetailPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <StatusPill
               type={stationOpenStatus ? 'ouvert' : 'ferme'}
               label={stationOpenLabel}
               size="sm"
             />
+            {branding.operator && (
+              <span
+                className="text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-0.5 rounded-full text-white"
+                style={{ backgroundColor: branding.primaryColor }}
+              >
+                {branding.operator.legalName}
+              </span>
+            )}
+          </div>
+
+          {station.description && (
+            <p className="text-xs text-slate-600 mt-2.5 leading-relaxed">
+              {station.description}
+            </p>
+          )}
+
+          {/* Contact, Horaires, Mobile Money & Itinéraire */}
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs">
+            <div className="flex items-start gap-2">
+              <Phone className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                  Téléphone Station
+                </span>
+                {station.phone ? (
+                  <a
+                    href={`tel:${station.phone.replace(/\s+/g, '')}`}
+                    className="font-extrabold text-[#1668E3] hover:underline"
+                  >
+                    {station.phone}
+                  </a>
+                ) : (
+                  <span className="font-semibold text-slate-600">Standard réseau</span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                  Horaires d&apos;ouverture
+                </span>
+                <span className="font-bold text-slate-800">
+                  {station.status === 'maintenance'
+                    ? 'Maintenance en cours'
+                    : station.isOpen
+                    ? station.isOpen24h
+                      ? 'Ouvert 24h/24 • 7j/7'
+                      : '06h00 – 22h00'
+                    : 'Fermée actuellement'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <Smartphone className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                  Paiements & Itinéraire
+                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-slate-800">
+                    {station.advancedSettings?.enableMobileMoney !== false
+                      ? 'Airtel / Moov Money'
+                      : 'Espèces & Carte'}
+                  </span>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      `${station.name}, ${station.address}, ${station.city}, ${station.country}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-extrabold text-[#1668E3] hover:underline"
+                  >
+                    GPS →
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
